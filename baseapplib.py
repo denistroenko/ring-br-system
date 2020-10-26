@@ -1,0 +1,288 @@
+
+# version 0.0.8
+
+# imports
+import random
+import smtplib
+from email.mime.text import MIMEText
+
+
+class PasswordGenerator:
+
+    def __init__(self):
+        self.use_special_symbols = False
+        self.password_len = 12
+        self.curent_password = ""
+        self.get_new_password()
+
+    def __str__(self):
+        return \
+            "Это класс 'Генератор Паролей'.\n" + \
+            "Функция get_new_password() " + \
+            "генерирует пароль указанной длины, " + \
+            "равной атрибуту password_len.\n" + \
+            "Атрибут use_special_symbols " + \
+            "определяет, использовать ли при генерации специальные " + \
+            "символы.\nГенерация ВСЕГДА возвращает " + \
+            "пароль, состоящий из РАВНОГО количества частей:\n" + \
+            "цифры/буквы/БУКВЫ/опционально-спец.символы"
+
+    def get_new_password(self):
+        # Даем списки, из которых будет генерироваться пароль
+        list_of_chars = list("qwertyuiopasdfghjklzxcvbnm")
+        list_of_CHARS = list("QWERTYUIOPASDFGHJKLZXCVBNM")
+        list_of_numbers = list("1234567890")
+        list_of_symbols = list("""~!@#$%^&*()[]{};:"'<>,.""")
+
+        if self.use_special_symbols:
+            # Распределяем доли пароля как четверть от его длины
+            # на каждый список (букв, БУКВ, цифр и символов)
+            count_of_chars = int(self.password_len / 4)
+            count_of_CHARS = int(self.password_len / 4)
+            count_of_numbers = int(self.password_len / 4)
+            count_of_symbols = self.password_len - \
+                (count_of_chars + count_of_CHARS + count_of_numbers)
+        else:
+            count_of_CHARS = int(self.password_len / 3)
+            count_of_numbers = int(self.password_len / 3)
+            count_of_chars = \
+                self.password_len - (count_of_CHARS + count_of_numbers)
+            count_of_symbols = 0
+
+        # Если нужная доля пароля превышает кол-во элементов списка этой доли,
+        # то умножим список на ......
+        if len(list_of_numbers) < count_of_numbers:
+            list_of_numbers *= \
+                int(count_of_numbers / len(list_of_numbers) + 1)
+        if len(list_of_CHARS) < count_of_CHARS:
+            list_of_CHARS *= \
+                int((count_of_CHARS / len(list_of_CHARS)) + 1)
+        if len(list_of_numbers) < count_of_numbers:
+            list_of_numbers *= \
+                int((count_of_numbers / len(list_of_numbers)) + 1)
+        if len(list_of_symbols) < count_of_symbols:
+            list_of_symbols *= \
+                int((count_of_symbols / len(list_of_symbols)) + 1)
+
+        # Перетасовываем элементы списка
+        random.shuffle(list_of_chars)
+        random.shuffle(list_of_CHARS)
+        random.shuffle(list_of_numbers)
+        random.shuffle(list_of_symbols)
+
+        # Обрезаем списки
+        list_of_chars = list_of_chars[:count_of_chars]
+        list_of_CHARS = list_of_CHARS[:count_of_CHARS]
+        list_of_numbers = list_of_numbers[:count_of_numbers]
+        if self.use_special_symbols:
+            list_of_symbols = list_of_symbols[:count_of_symbols]
+
+        # Соединяем списки
+        main_list = list_of_chars + list_of_CHARS + list_of_numbers
+        if self.use_special_symbols:
+            main_list += list_of_symbols
+
+        # Перетасовываем элементы списка
+        random.shuffle(main_list)
+
+        # Возвращаем значение (строку)
+        # Превращаем список в строку ("" - разделитель)
+        self.curent_password = "".join(main_list)
+        return self.curent_password
+
+
+class EmailSender:
+
+    def __init__(self, smtp_hostname: str, login: str, password: str,
+                 from_address: str, use_SSL: bool = True, SSL_port: int = 465):
+
+        self.__host = smtp_hostname
+        self.__login = login
+        self.__password = password
+        self.__from = from_address
+        self.__use_SSL = use_SSL
+        self.__SSL_port = SSL_port
+
+    def send_email(self, to_address: str, subject: str, message: str,
+                   use_html_format: bool = False):
+
+        if use_html_format:
+            msg = MIMEText(message, "html", "utf8")
+        else:
+            msg = MIMEText(message, "plain", "utf8")
+
+        msg['Subject'] = subject
+        msg['From'] = self.__from
+        msg['To'] = to_address
+
+        if self.__use_SSL:
+            server = smtplib.SMTP_SSL(self.__host, self.__SSL_port)
+        else:
+            server = smtplib.SMTP(self.__host)
+
+        server.login(self.__login, self.__password)
+        server.sendmail(self.__from, to_address, msg.as_string())
+        server.quit()
+
+
+class HtmlLetter:
+
+    def __init__(self, background_color: str = '#fff',
+                 color: str = '#333', font_size: int = 14):
+
+        self.__background_color = background_color
+        self.__color = color
+        self.__font_size = font_size
+        self.__html_letter = '<html>\n\t<body style="' + \
+            'background-color: {}; ' + \
+            'color: {}; ' + \
+            'font-size: {}px; ' + \
+            '">\n{}\n' + '\t</body>\n</html>'
+        self.__body = ''
+
+    def get(self):
+
+        html_letter = \
+            self.__html_letter.format(self.__background_color,
+                                      self.__color,
+                                      str(self.__font_size),
+                                      self.__body)
+        return html_letter
+
+    def add(self,
+            text: str = '',
+            tag_type: str = 'div',
+            weight: int = 0,
+            color: str = '',
+            font_size: int = 0,
+            border: bool = False,
+            width: str = '100%'):
+
+        text_block = '\t\t'
+        text_block += '<' + tag_type + ' style="'
+        if weight > 0:
+            text_block += 'font-weight: ' + str(weight) + '; '
+        if color != '':
+            text_block += 'color: ' + color + '; '
+        if font_size > 0:
+            text_block += 'font-size: ' + str(font_size) + 'px; '
+        if border:
+            text_block += 'border: 1px solid ' + color + '; '
+        text_block += 'width: ' + width + '; '
+        text_block += '">'
+        if text != '':
+            text_block += text
+        else:
+            text_block += '<br>'
+        text_block += '</' + tag_type + '>\n'
+
+        self.__body += text_block
+
+    def reset(self):
+
+        self.__body = ''
+
+
+class Config:
+
+    def __init__(self):
+        self.settings = {}
+
+    def read_file(self,
+                  file_name: str = 'config',
+                  separator: str = '=',
+                  comment: str = '#',
+                  section_start: str = '[',
+                  section_end: str = ']'):
+        ok = True
+
+        try:
+            with open(file_name, 'r') as file:
+                # считать все строки файла в список
+                lines = file.readlines()  # грязный список
+
+                # удаляем пробелы, табы и переводы строк
+                for index in range(len(lines)):
+                    lines[index] = lines[index].replace(' ', '')
+                    lines[index] = lines[index].replace('\n', '')
+                    lines[index] = lines[index].replace('\t', '')
+
+                # удаляем строки, начинающиеся с комментария, если это
+                # не пустые строки
+                for line in lines:
+                    if len(line) > 0:
+                        if line[0] == comment:
+                            lines.remove(line)
+
+                # удаляем правую часть строки после комментария
+                for index in range(len(lines)):
+                    if comment in lines[index]:
+                        lines[index] = lines[index].split(comment)[0]
+
+                # удаляем пустые строки из списка
+                while "" in lines:
+                    lines.remove("")
+
+                # проходим по списку,
+                # если встречаем разделитель, делим элемент на 2,
+                # и загружаем key:value в словарь
+                settings = {}  # Временный словарь для параметров секции
+                section = "main"  # Секция по-умолчанию
+                for line in lines:
+                    if section_start in line and section_end in line:
+                        section = line[1:-1]
+                        settings = {}
+                    if separator in line:
+                        settings_pair = line.split(separator)
+                        # Работать только в том случае, если
+                        # separator один на строку
+                        if len(settings_pair) == 2:
+                            settings[settings_pair[0]] = settings_pair[1]
+                            self.settings[section] = settings
+
+        except FileNotFoundError:
+            print('ОШИБКА! Файл', file_name, 'не найден!')
+            ok = False
+
+        return ok
+
+    def write_file(self,
+                   file_name: str = 'config_exp',
+                   separator: str = '=',
+                   comment: str = '#',
+                   section_start: str = '[',
+                   section_end: str = ']'):
+
+        ok = True
+
+        try:
+            with open(file_name, 'w') as file:
+                for section in self.settings:
+                    tab = 25 - len(section)
+                    if tab < 2:
+                        tab = 2
+                    file.write(section_start +
+                               section +
+                               section_end +
+                               ' ' * tab + comment + ' Секция параметров ' +
+                               section + '\n\n')
+                    for setting in self.settings[section]:
+                        tab = 24 - (len(setting) +
+                                    len(self.settings[section][setting]))
+                        if tab < 2:
+                            tab = 2
+                        file.write(setting + ' ' + separator + ' ' +
+                                   self.settings[section][setting] +
+                                   ' ' * tab + comment +
+                                   ' Значение параметра ' +
+                                   setting + '\n')
+                    file.write('\n\n')
+
+        except FileNotFoundError:
+            print('ОШИБКА! Файл', file_name, 'не найден!')
+            ok = False
+
+        return ok
+
+    def clear(self):
+        self.settings = {}
