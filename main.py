@@ -1,7 +1,6 @@
 from classes import *
 from baseapplib import *
 import random
-import os
 import sys
 
 # GLOBAL CONFIG
@@ -9,50 +8,36 @@ config = Config()
 
 def set_config_defaults():
     global config
-    # Главная секция
-    config.settings['main'] = {}
+
     # Папка с архивами (куда складывать, чем управлять)
-    config.settings['main']['ring_dir'] = '/mnt/ring'
+    config.set('main', 'ring_dir', '/mnt/ring/')  # Критический
     # Удаленная папка (Откуда брать)
-    config.settings['main']['remote_dir'] = '/mnt/remote'
-    # Секция кольца
-    config.settings['ring'] = {}
+    config.set('main', 'remote_dir', '/mnt/remote/')  # Критический
+
     # Префикс имен файлов
-    config.settings['ring']['prefix'] = 'ring_file_'
+    config.set('ring', 'prefix', 'ring_archive_')
     # Количество объекток архивов для хранения
-    config.settings['ring']['count'] = '30'
+    config.set('ring', 'count', '30')
     # Срок хранения архивов в днях
-    config.settings['ring']['time'] = '30'
-    # Тип кольца архивов: count - по количеству, time - по давности,
-    # count+time - по давности, но также и по количеству
-    config.settings['ring']['type'] = 'count'
+    config.set('ring', 'time', '30')
+    # Макс. занимаемое пространство для папки с архивами
+    config.set('ring', 'space', '200')
+    # Тип кольца архивов: (count|time|space)
+    config.set('ring', 'type', 'count')
+
+    # Слать ли отчет администратору (yes|no)
+    config.set('email', 'send_admin_email', 'no')
+    # admin email
+    config.set('email', 'admin_email', '')
+    # Слать ли отчет конечному пользователю
+    config.set('email', 'send_user_email', 'no')
+    # user email
+    config.set('email', 'user_email', '')
 
 
 def print_settings():
     global config
-    for key_section in config.settings:
-        for key_setting in config.settings[key_section]:
-            print('[{}] [{}] = {}'.format\
-                  (key_section, key_setting,
-                   config.settings[key_section][key_setting])
-                 )
-
-
-def print_title(message, border_simbol = "#"):
-    os.system('clear')
-    width = 90
-    if len(border_simbol) * (width // len(border_simbol)) != width:
-        width = len(border_simbol) * (width // len(border_simbol))
-    print(border_simbol * (width // len(border_simbol)))
-    for string in message:
-        half1 = width // 2 - len(string) // 2 - len(border_simbol)
-        half2 = width - (half1 + len(string)) - len(border_simbol) * 2
-        print(border_simbol +
-            ' ' * half1 +
-            string +
-            ' ' * half2 +
-            border_simbol)
-    print(border_simbol * (width // len(border_simbol)))
+    print(config)
 
 
 def print_file_line(year, month, day, time, file_name, file_size,
@@ -132,7 +117,7 @@ def test():
                     color_difference = '\033[37m\033[41m')
         prev_size = size
     config.write_file()
-    os.system('cat ./config_exp')
+    system('cat ./config_exp')
 
 
 def print_help():
@@ -147,19 +132,20 @@ def analyze():
 
 
 def main():
+    console = Console()
+    args = console.get_args()
+
+    if '--help' in args:
+        print_help()
+        exit()
+
     # Set default settings in global config
     set_config_defaults()
-
-    # If "--help" in args command line, then print help and exit
-    for param in sys.argv:
-        if param == '--help':
-            print_help()
-            exit()
 
     # Print message and print all settings in global config
     message = ['Algorithm Computers', 'a-computers.ru', 'dev@a-computers.ru',
                 '', '"Ring"', 'Утилита управления архивными файлами']
-    print_title(message, '*')
+    console.print_title(message, '*')
     print()
 
     # Read config file
@@ -167,14 +153,11 @@ def main():
     config.read_file()
 
     # Read args command line
-    for param in sys.argv:
-        if param == '--settings' or param == '-s':
-            print('Текущие настройки программы:')
-            print_settings()
-            print()
-        if param == '--test' or param == '-t':
-            test()
-        if param == '--analyze' or param == '-a':
-            analyze()
+    if '--settings' in args or '-s' in args:
+        print('Текущие настройки программы:')
+        print_settings()
+        print()
+    if '--test' in args or '-t' in args:
+        test()
 
 main()

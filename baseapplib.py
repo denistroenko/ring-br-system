@@ -1,10 +1,12 @@
 
-# version 0.0.8
+# version 0.0.12
 
 # imports
 import random
 import smtplib
 from email.mime.text import MIMEText
+from os import system
+from sys import argv
 
 
 class PasswordGenerator:
@@ -188,6 +190,15 @@ class Config:
     def __init__(self):
         self.settings = {}
 
+    def __str__(self) -> str:
+        out_str = ''
+        for key_section in self.settings:
+            for key_setting in self.settings[key_section]:
+                out_str += '[{}] [{}] = {}\n'.format\
+                    (key_section, key_setting,
+                    self.settings[key_section][key_setting])
+        return out_str
+
     def read_file(self,
                   file_name: str = 'config',
                   separator: str = '=',
@@ -214,7 +225,7 @@ class Config:
                         if line[0] == comment:
                             lines.remove(line)
 
-                # удаляем правую часть строки после комментария
+                # удаляем правую час ть строки после комментария
                 for index in range(len(lines)):
                     if comment in lines[index]:
                         lines[index] = lines[index].split(comment)[0]
@@ -267,15 +278,17 @@ class Config:
                                ' ' * tab + comment + ' Секция параметров ' +
                                section + '\n\n')
                     for setting in self.settings[section]:
-                        tab = 24 - (len(setting) +
-                                    len(self.settings[section][setting]))
-                        if tab < 2:
-                            tab = 2
-                        file.write(setting + ' ' + separator + ' ' +
-                                   self.settings[section][setting] +
-                                   ' ' * tab + comment +
-                                   ' Значение параметра ' +
-                                   setting + '\n')
+                        if len(self.settings[section][setting]) > 0:
+                            tab = 24 - (len(setting) +
+                                        len(self.settings[section][setting]))
+                            if tab < 2:
+                                tab = 2
+
+                            file.write(setting + ' ' + separator + ' ' +
+                                    self.settings[section][setting] +
+                                    ' ' * tab + comment +
+                                    ' Значение параметра ' +
+                                    setting + '\n')
                     file.write('\n\n')
 
         except FileNotFoundError:
@@ -286,3 +299,46 @@ class Config:
 
     def clear(self):
         self.settings = {}
+
+    def get(self, section: str, setting: str) -> str:
+        return str(self.settings[section][setting])
+
+    def set(self, section: str, setting: str, value: str):
+        if section not in self.settings.keys():
+            self.settings[section] = {}
+        self.settings[section][setting] = str(value)
+
+
+class Console:
+
+    def __init__(self):
+        self.__args_list = []
+        self.__args_list = argv[1:]
+
+    def get_args(self) -> list:
+        result = []
+        for arg in self.__args_list:
+            if arg[0:2] == '--':
+                result.append('--{}'.format(arg[2:]))
+            elif arg[0:1] == '-':
+                for liter in arg[1:]:
+                    result.append('-{}'.format(liter))
+            else:
+                result.append(arg)
+        return result
+
+    def print_title(self, title: list, border_simbol: str = "#"):
+        system('clear')
+        width = 50
+        if len(border_simbol) * (width // len(border_simbol)) != width:
+            width = len(border_simbol) * (width // len(border_simbol))
+        print(border_simbol * (width // len(border_simbol)))
+        for string in title:
+            half1 = width // 2 - len(string) // 2 - len(border_simbol)
+            half2 = width - (half1 + len(string)) - len(border_simbol) * 2
+            print(border_simbol +
+                ' ' * half1 +
+                string +
+                ' ' * half2 +
+                border_simbol)
+        print(border_simbol * (width // len(border_simbol)))
