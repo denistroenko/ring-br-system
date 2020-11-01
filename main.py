@@ -5,6 +5,7 @@ import sys
 
 # GLOBAL CONFIG
 config = Config()
+ring_files_list = []
 
 def set_config_defaults():
     global config
@@ -76,7 +77,7 @@ def print_file_line(year, month, day, time, file_name, file_size,
 
 
 def test():
-    files_list = []
+    global ring_files_list
     for i in range(10):
         year = random.randint(2000, 2020)
         month = random.randint(1, 12)
@@ -93,10 +94,10 @@ def test():
         file = RingFile('', '')
         file.set_date_modify(year, month, day, hour, minute, second)
         file.set_size(size)
-        files_list.append(file)
+        ring_files_list.append(file)
     prev_size = 0
-    for file in files_list:
-        date = file.get_modify_date()
+    for file in ring_files_list:
+        date = file.get_date_modify()
         time = date.time()
         size = file.get_size()
 
@@ -120,15 +121,41 @@ def test():
     system('cat ./config_exp')
 
 
+def load_ring_files():
+    global ring_files_list
+    ring_files_list = []
+
+
 def print_help():
     print('--help\t\t\t- выдает это сообщение помощи по командам')
     print('--settings -s\t\t- вывод текущих настроек программы')
-    print('--analyze -a\t\t- ???')
     print('--test -t\t\t- ???')
 
 
-def analyze():
-    print()
+def ring_cut(cut_type: str):
+    ok = True
+    return ok
+
+
+def ring_cut_count(count: int):
+    ok = True
+    return ok
+
+
+def ring_cut_time(days: int):
+    ok = True
+    return ok
+
+
+def ring_cut_space(gigabytes: int):
+    ok = True
+    return ok
+
+
+def sort_ring_files_list():
+    global ring_files_list
+    new_list = sorted(ring_files_list, key=lambda file: file.get_date_modify())
+    ring_files_list = new_list
 
 
 def main():
@@ -152,6 +179,12 @@ def main():
     print('Чтение файла настроек...')
     config.read_file()
 
+    # Load ring files (objects)
+    load_ring_files()
+
+    # Sort ring files (list)
+    sort_ring_files_list()
+
     # Read args command line
     if '--settings' in args or '-s' in args:
         print('Текущие настройки программы:')
@@ -159,5 +192,7 @@ def main():
         print()
     if '--test' in args or '-t' in args:
         test()
+
+
 
 main()
