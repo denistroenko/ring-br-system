@@ -1,7 +1,61 @@
 from classes import *
+from baseapplib import *
 import random
+import os
+import sys
 
-def print_line(year, month, day, time, file_name, file_size,
+# GLOBAL CONFIG
+config = Config()
+
+def set_config_defaults():
+    global config
+    # Главная секция
+    config.settings['main'] = {}
+    # Папка с архивами (куда складывать, чем управлять)
+    config.settings['main']['ring_dir'] = '/mnt/ring'
+    # Удаленная папка (Откуда брать)
+    config.settings['main']['remote_dir'] = '/mnt/remote'
+    # Секция кольца
+    config.settings['ring'] = {}
+    # Префикс имен файлов
+    config.settings['ring']['prefix'] = 'ring_file_'
+    # Количество объекток архивов для хранения
+    config.settings['ring']['count'] = '30'
+    # Срок хранения архивов в днях
+    config.settings['ring']['time'] = '30'
+    # Тип кольца архивов: count - по количеству, time - по давности,
+    # count+time - по давности, но также и по количеству
+    config.settings['ring']['type'] = 'count'
+
+
+def print_settings():
+    global config
+    for key_section in config.settings:
+        for key_setting in config.settings[key_section]:
+            print('[{}] [{}] = {}'.format\
+                  (key_section, key_setting,
+                   config.settings[key_section][key_setting])
+                 )
+
+
+def print_title(message, border_simbol = "#"):
+    os.system('clear')
+    width = 90
+    if len(border_simbol) * (width // len(border_simbol)) != width:
+        width = len(border_simbol) * (width // len(border_simbol))
+    print(border_simbol * (width // len(border_simbol)))
+    for string in message:
+        half1 = width // 2 - len(string) // 2 - len(border_simbol)
+        half2 = width - (half1 + len(string)) - len(border_simbol) * 2
+        print(border_simbol +
+            ' ' * half1 +
+            string +
+            ' ' * half2 +
+            border_simbol)
+    print(border_simbol * (width // len(border_simbol)))
+
+
+def print_file_line(year, month, day, time, file_name, file_size,
                color_year= '\033[30m\033[47m',
                color_month = '\033[30m\033[47m',
                color_day = '\033[30m\033[47m',
@@ -28,7 +82,6 @@ def print_line(year, month, day, time, file_name, file_size,
 
 
 def test():
-
     files_list = []
     for i in range(10):
         year = random.randint(2000, 2020)
@@ -38,19 +91,60 @@ def test():
         minute = random.randint(1, 59)
         second = random.randint(1, 59)
         size = random.randint(1000, 999999999)
-
         file = RingFile('', '')
         file.set_date_modify(year, month, day, hour, minute, second)
         file.set_size(size)
-
         files_list.append(file)
-
     for file in files_list:
         date = file.get_modify_date()
         time = date.time()
         size = file.get_size()
-
-        print_line(date.year, date.month, date.day, time,
+        print_file_line(date.year, date.month, date.day, time,
                    'filename', size)
+    config.write_file()
+    os.system('cat ./config_exp')
 
-test()
+
+def print_help():
+    print('--help\t\t\t- выдает это сообщение помощи по командам')
+    print('--settings -s\t\t- вывод текущих настроек программы')
+    print('--analyze -a\t\t- ???')
+    print('--test -t\t\t- ???')
+
+
+def analyze():
+    print()
+
+
+def main():
+    # Set default settings in global config
+    set_config_defaults()
+
+    # If "--help" in args command line, then print help and exit
+    for param in sys.argv:
+        if param == '--help':
+            print_help()
+            exit()
+
+    # Print message and print all settings in global config
+    message = ['Algorithm Computers', 'a-computers.ru', 'dev@a-computers.ru',
+                '', '"Ring"', 'Утилита управления архивными файлами']
+    print_title(message, '*')
+    print()
+
+    # Read config file
+    print('Чтение файла настроек...')
+    config.read_file()
+
+    # Read args command line
+    for param in sys.argv:
+        if param == '--settings' or param == '-s':
+            print('Текущие настройки программы:')
+            print_settings()
+            print()
+        if param == '--test' or param == '-t':
+            test()
+        if param == '--analyze' or param == '-a':
+            analyze()
+
+main()
