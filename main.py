@@ -56,12 +56,14 @@ def print_title(message, border_simbol = "#"):
 
 
 def print_file_line(year, month, day, time, file_name, file_size,
+               difference,
                color_year= '\033[30m\033[47m',
                color_month = '\033[30m\033[47m',
                color_day = '\033[30m\033[47m',
                color_time = '\033[37m\033[40m',
                color_file_name = '\033[34m\033[40m',
-               color_file_size = '\033[32m\033[40m',
+               color_file_size = '\033[37m\033[40m',
+               color_difference = '\033[32m\033[40m',
                color_default = '\033[37m\033[40m',
                date_separator = '-'):
 
@@ -69,6 +71,7 @@ def print_file_line(year, month, day, time, file_name, file_size,
     year = "{:04d}".format(year)
     month = "{:02d}".format(month)
     day = "{:02d}".format(day)
+    # file_size = "{: 10d}".format(file_size)
 
     line = f'{color_year}{year}{date_separator}'
     line += f'{color_month}{month}{date_separator}'
@@ -76,6 +79,12 @@ def print_file_line(year, month, day, time, file_name, file_size,
     line += f'{color_default} {color_time}{time}'
     line += f'{color_default} {color_file_name}{file_name}'
     line += f'{color_default} {color_file_size}{file_size}'
+    line += f'{color_default} {color_difference}{difference}%'
+    if difference > 100:
+        line += f'{color_default} {color_difference}(+{difference-100}%)'
+    else:
+        line += f'{color_default} {color_difference}({difference-100}%)'
+
     line += f'{color_default} '
 
     print(line)
@@ -90,17 +99,38 @@ def test():
         hour = random.randint(1, 23)
         minute = random.randint(1, 59)
         second = random.randint(1, 59)
-        size = random.randint(1000, 999999999)
+        size = random.randint(1000, 1000)
+        if i == 4: size = 970
+        if i == 5: size = 950
+        if i ==7: size = 900
+        if i ==8: size = 1000
+        if i ==9: size = 200
         file = RingFile('', '')
         file.set_date_modify(year, month, day, hour, minute, second)
         file.set_size(size)
         files_list.append(file)
+    prev_size = 0
     for file in files_list:
         date = file.get_modify_date()
         time = date.time()
         size = file.get_size()
-        print_file_line(date.year, date.month, date.day, time,
-                   'filename', size)
+
+        if prev_size == 0:
+            prev_size = size
+        difference = size / prev_size
+
+        if difference > 0.9 and difference < 1.1:
+            print_file_line(date.year, date.month, date.day, time,
+                   'filename', size, round(difference * 100))
+        elif difference > 0.8 and difference < 1.2:
+            print_file_line(date.year, date.month, date.day, time,
+                   'filename', size, round(difference * 100),
+                    color_difference = '\033[31m')
+        else:
+            print_file_line(date.year, date.month, date.day, time,
+                   'filename', size, round(difference * 100),
+                    color_difference = '\033[37m\033[41m')
+        prev_size = size
     config.write_file()
     os.system('cat ./config_exp')
 
