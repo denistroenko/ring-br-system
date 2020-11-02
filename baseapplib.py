@@ -328,7 +328,6 @@ class Console:
         return result
 
     def print_title(self, title: list, border_simbol: str = "#"):
-        system('clear')
         width = 50
         if len(border_simbol) * (width // len(border_simbol)) != width:
             width = len(border_simbol) * (width // len(border_simbol))
@@ -342,3 +341,6 @@ class Console:
                 ' ' * half2 +
                 border_simbol)
         print(border_simbol * (width // len(border_simbol)))
+
+    def clear_screen(self):
+        system('clear')

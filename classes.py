@@ -35,3 +35,38 @@ class RingFile:
 
     def get_size(self) -> int:
         return self.__size
+
+    def delete_from_disk(self):
+        print('Файл типа удален')
+
+class Ring:
+    def __init__(self):
+        self.files = []
+
+    def sort(self):
+        new_list = sorted(self.files, key=lambda file: file.get_date_modify())
+        self.files= new_list
+
+    def append(self, file_object: object):
+        self.files.append(file_object)
+
+    def clear(self):
+        self.files = []
+
+    def load(self, path: str):
+        pass
+
+    def cut_count(self, count: int) -> bool:
+        ok = True
+        while len(self.files) > count:
+            self.files[0].delete_from_disk()
+            self.files.pop(0)
+        return ok
+
+    def cut_time(self, days: int) -> bool:
+        ok = True
+        return ok
+
+    def cut_space(self, gigabytes: int) -> bool:
+        ok = True
+        return ok

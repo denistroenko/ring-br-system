@@ -2,10 +2,12 @@ from classes import *
 from baseapplib import *
 import random
 import sys
+import globalvars
 
-# GLOBAL CONFIG
+# GLOBAL objects
+console = Console()
 config = Config()
-ring_files_list = []
+ring = Ring()
 
 def set_config_defaults():
     global config
@@ -76,8 +78,8 @@ def print_file_line(year, month, day, time, file_name, file_size,
     print(line)
 
 
-def test():
-    global ring_files_list
+def test_load():
+    global ring
     for i in range(10):
         year = random.randint(2000, 2020)
         month = random.randint(1, 12)
@@ -94,14 +96,17 @@ def test():
         file = RingFile('', '')
         file.set_date_modify(year, month, day, hour, minute, second)
         file.set_size(size)
-        ring_files_list.append(file)
-    prev_size = 0
-    for file in ring_files_list:
+        ring.append(file)
+
+def show():
+    global ring
+    prev_size = -1
+    for file in ring.files:
+        size = file.get_size()
         date = file.get_date_modify()
         time = date.time()
-        size = file.get_size()
 
-        if prev_size == 0:
+        if prev_size == -1:
             prev_size = size
         difference = size / prev_size
 
@@ -117,13 +122,11 @@ def test():
                    'filename', size, round(difference * 100),
                     color_difference = '\033[37m\033[41m')
         prev_size = size
-    config.write_file()
-    system('cat ./config_exp')
 
 
 def load_ring_files():
-    global ring_files_list
-    ring_files_list = []
+    ring.clear()
+    ring.load('')
 
 
 def print_help():
@@ -137,29 +140,13 @@ def ring_cut(cut_type: str):
     return ok
 
 
-def ring_cut_count(count: int):
-    ok = True
-    return ok
-
-
-def ring_cut_time(days: int):
-    ok = True
-    return ok
-
-
-def ring_cut_space(gigabytes: int):
-    ok = True
-    return ok
-
-
-def sort_ring_files_list():
-    global ring_files_list
-    new_list = sorted(ring_files_list, key=lambda file: file.get_date_modify())
-    ring_files_list = new_list
+def sort_ring_files():
+    global ring
+    ring.sort()
 
 
 def main():
-    console = Console()
+    global console
     args = console.get_args()
 
     if '--help' in args:
@@ -182,8 +169,12 @@ def main():
     # Load ring files (objects)
     load_ring_files()
 
+    # ТЕСТОВАЯ ЗАЛИВКА ФАЙЛОВ УБРАТЬ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    test_load()
+
     # Sort ring files (list)
-    sort_ring_files_list()
+    sort_ring_files()
 
     # Read args command line
     if '--settings' in args or '-s' in args:
@@ -191,8 +182,13 @@ def main():
         print_settings()
         print()
     if '--test' in args or '-t' in args:
-        test()
-
-
+        pass
+    if 'show' in args:
+        message = ['Текущие архивированные объекты']
+        console.print_title(message, '~')
+        show()
+        print('удаляю до 5...')
+        ring.cut_count(5)
+        show()
 
 main()
