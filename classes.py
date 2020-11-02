@@ -42,13 +42,23 @@ class RingFile:
 class Ring:
     def __init__(self):
         self.files = []
+        self.__total_files = 0
+        self.__total_space = 0
 
     def sort(self):
         new_list = sorted(self.files, key=lambda file: file.get_date_modify())
         self.files= new_list
 
+    def __calculate(self):
+        self.__total_files = 0
+        self.__total_space = 0
+        for file in self.files:
+            self.__total_files += 1
+            self.__total_space += file.get_size()
+
     def append(self, file_object: object):
         self.files.append(file_object)
+        self.__calculate()
 
     def clear(self):
         self.files = []
@@ -61,6 +71,7 @@ class Ring:
         while len(self.files) > count:
             self.files[0].delete_from_disk()
             self.files.pop(0)
+        self.__calculate()
         return ok
 
     def cut_time(self, days: int) -> bool:
@@ -70,3 +81,11 @@ class Ring:
     def cut_space(self, gigabytes: int) -> bool:
         ok = True
         return ok
+
+    def get_total_space(self):
+        self.__calculate()
+        return self.__total_space
+
+    def get_total_files(self):
+        self.__calculate()
+        return self.__total_files

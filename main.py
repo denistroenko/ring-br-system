@@ -121,6 +121,8 @@ def show():
                    'filename', size, round(difference * 100),
                     color_difference = '\033[37m\033[41m')
         prev_size = size
+    print('Всего файлов: ', ring.get_total_files(), '\tЗанято места: ',
+          ring.get_total_space(), sep = '')
 
 
 def load_ring_files():
@@ -185,9 +187,6 @@ def main():
     if 'show' in args:
         message = ['Текущие архивированные объекты']
         console.print_title(message, '~')
-        show()
-        print('удаляю до 5...')
-        ring.cut_count(5)
         show()
 
 main()
