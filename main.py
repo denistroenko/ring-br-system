@@ -36,6 +36,15 @@ def set_config_defaults():
     # user email
     config.set('email', 'user_email', '')
 
+    # Солько показывать файлов в кольце (0 - все)
+    config.set('show', 'show_last', '7')
+
+    # Проценты отклонения от и до, в зеленой зоне и в красной,
+    config.set('show', 'green_min', '95')
+    config.set('show', 'green_max', '105')
+    config.set('show', 'red_min', '70')
+    config.set('show', 'red_max', '130')
+
 
 def print_settings():
     global config
@@ -49,7 +58,7 @@ def print_file_line(year, month, day, time, file_name, file_size,
                color_day = '\033[30m\033[47m',
                color_time = '\033[37m\033[40m',
                color_file_name = '\033[34m\033[40m',
-               color_file_size = '\033[37m\033[40m',
+               color_file_size = '\033[537m\033[40m',
                color_difference = '\033[32m\033[40m',
                color_default = '\033[37m\033[40m',
                date_separator = '-'):
@@ -92,34 +101,49 @@ def test_load():
         if i ==7: size = 900
         if i ==8: size = 1000
         if i ==9: size = 200
-        file = RingFile('', '')
-        file.set_date_modify(year, month, day, hour, minute, second)
-        file.set_size(size)
+        date_modify = datetime.datetime(year, month, day, hour, minute, second)
+        file = RingFile('', '', size, date_modify)
         ring.append(file)
 
-def show():
+
+def show(short: bool):
     global ring
+    global config
+    files = ring.get_files()
+    if short:
+        start = int(config.get('show', 'show_last'))
+        short_list = files[-start:]
+        if len (short_list) < len (files):
+            short_count = len(files) - len(short_list)
+            files = short_list
+            print('...', ' (не показаны предыдущие ', short_count, ')',
+                  sep = '')
+    green_min = int(config.get('show', 'green_min'))
+    green_max = int(config.get('show', 'green_max'))
+    red_min = int(config.get('show', 'red_min'))
+    red_max = int(config.get('show', 'red_max'))
     prev_size = -1
-    for file in ring.files:
+    for file in files:
+        file_name = file.get_file_name()
         size = file.get_size()
         date = file.get_date_modify()
         time = date.time()
 
         if prev_size == -1:
             prev_size = size
-        difference = size / prev_size
+        difference = round(size / prev_size * 100)
 
-        if difference > 0.9 and difference < 1.1:
+        if difference >= green_min and difference <= green_max:
             print_file_line(date.year, date.month, date.day, time,
-                   'filename', size, round(difference * 100))
-        elif difference > 0.8 and difference < 1.2:
+                            file_name, size, difference)
+        elif difference >= red_min and difference <= red_max:
             print_file_line(date.year, date.month, date.day, time,
-                   'filename', size, round(difference * 100),
-                    color_difference = '\033[31m')
+                            file_name, size, difference,
+                            color_difference = '\033[31m')
         else:
             print_file_line(date.year, date.month, date.day, time,
-                   'filename', size, round(difference * 100),
-                    color_difference = '\033[37m\033[41m')
+                            file_name, size, difference,
+                            color_difference = '\033[37m\033[41m')
         prev_size = size
     print('Всего файлов: ', ring.get_total_files(), '\tЗанято места: ',
           ring.get_total_space(), sep = '')
@@ -187,6 +211,9 @@ def main():
     if 'show' in args:
         message = ['Текущие архивированные объекты']
         console.print_title(message, '~')
-        show()
+        if int(config.get('show', 'show_last')) > 0:
+            show(True)
+        else:
+            show(False)
 
 main()

@@ -1,5 +1,5 @@
 
-# version 0.0.12
+# version 0.0.15
 
 # imports
 import random
@@ -194,7 +194,7 @@ class Config:
         out_str = ''
         for key_section in self.settings:
             for key_setting in self.settings[key_section]:
-                out_str += '[{}] [{}] = {}\n'.format\
+                out_str += '[{}] {} = {}\n'.format\
                     (key_section, key_setting,
                     self.settings[key_section][key_setting])
         return out_str
