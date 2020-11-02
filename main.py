@@ -2,7 +2,6 @@ from classes import *
 from baseapplib import *
 import random
 import sys
-import globalvars
 
 # GLOBAL objects
 console = Console()
