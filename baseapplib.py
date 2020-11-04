@@ -237,24 +237,19 @@ class Config:
                 # проходим по списку,
                 # если встречаем разделитель, делим элемент на 2,
                 # и загружаем key:value в словарь
-                settings = {}  # Временный словарь для параметров секции
                 section = "main"  # Секция по-умолчанию
                 for line in lines:
                     if section_start in line and section_end in line:
                         section = line[1:-1]
-                        settings = {}
                     if separator in line:
                         settings_pair = line.split(separator)
                         # Работать только в том случае, если
                         # separator один на строку
                         if len(settings_pair) == 2:
-                            settings[settings_pair[0]] = settings_pair[1]
-                            self.settings[section] = settings
-
+                            self.set(section, settings_pair[0], settings_pair[1])
         except FileNotFoundError:
             print('ОШИБКА! Файл', file_name, 'не найден!')
             ok = False
-
         return ok
 
     def write_file(self,

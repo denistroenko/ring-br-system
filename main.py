@@ -37,13 +37,14 @@ def set_config_defaults():
     config.set('email', 'user_email', '')
 
     # Солько показывать файлов в кольце (0 - все)
-    config.set('show', 'show_last', '7')
-
+    config.set('show', 'show_last', '10')
     # Проценты отклонения от и до, в зеленой зоне и в красной,
-    config.set('show', 'green_min', '95')
-    config.set('show', 'green_max', '105')
-    config.set('show', 'red_min', '70')
-    config.set('show', 'red_max', '130')
+    config.set('show', 'green_min', '-5')
+    config.set('show', 'green_max', '5')
+    config.set('show', 'red_min', '-20')
+    config.set('show', 'red_max', '20')
+    # Показывать исключенные из ring_dir файлы
+    config.set('show', 'show_excluded', 'yes')
 
 
 def print_settings():
@@ -51,11 +52,15 @@ def print_settings():
     print(config)
 
 
+def print_error(error: str, stop_program: bool = False):
+    print('\033[31m{}'.format(error), '\033[37m\033[40m')
+    if stop_program:
+        exit()
+
+
 def print_file_line(year, month, day, time, file_name, file_size,
-               difference,
-               color_year= '\033[30m\033[47m',
-               color_month = '\033[30m\033[47m',
-               color_day = '\033[30m\033[47m',
+                    difference, show_plus_space: bool,
+               color_date = '\033[30m\033[47m',
                color_time = '\033[37m\033[40m',
                color_file_name = '\033[34m\033[40m',
                color_file_size = '\033[537m\033[40m',
@@ -67,49 +72,45 @@ def print_file_line(year, month, day, time, file_name, file_size,
     year = "{:04d}".format(year)
     month = "{:02d}".format(month)
     day = "{:02d}".format(day)
-    # file_size = "{: 10d}".format(file_size)
 
-    line = f'{color_year}{year}{date_separator}'
-    line += f'{color_month}{month}{date_separator}'
-    line += f'{color_day}{day}'
+    file_size = human_space(file_size)
+
+    line = f'{color_date}{year}{date_separator}{month}{date_separator}{day}'
     line += f'{color_default} {color_time}{time}'
     line += f'{color_default} {color_file_name}{file_name}'
     line += f'{color_default} {color_file_size}{file_size}'
-    line += f'{color_default} {color_difference}{difference}%'
-    if difference > 100:
-        line += f'{color_default} {color_difference}(+{difference-100}%)'
-    else:
-        line += f'{color_default} {color_difference}({difference-100}%)'
+    if difference > 0:
+        line += f'{color_default} {color_difference}+{difference}%'
+    elif difference < 0:
+        line += f'{color_default} {color_difference}{difference}%'
+
+    if show_plus_space:
+        line += f'{color_default} {color_difference}+{file_size}'
+
 
     line += f'{color_default} '
 
     print(line)
 
 
-def test_load():
-    global ring
-    for i in range(10):
-        year = random.randint(2000, 2020)
-        month = random.randint(1, 12)
-        day = random.randint(1, 28)
-        hour = random.randint(1, 23)
-        minute = random.randint(1, 59)
-        second = random.randint(1, 59)
-        size = random.randint(1000, 1000)
-        if i == 4: size = 970
-        if i == 5: size = 950
-        if i ==7: size = 900
-        if i ==8: size = 1000
-        if i ==9: size = 200
-        date_modify = datetime.datetime(year, month, day, hour, minute, second)
-        file = RingFile('', '', size, date_modify)
-        ring.append(file)
+def human_space(bytes: int) -> str:
+    if bytes >= 1024 ** 3:
+        result = str('{} Gb'.format(round(bytes/1024**3, 1)))
+    elif bytes >= 1024 ** 2:
+        result = str('{} Mb'.format(round(bytes/1024**2, 1)))
+    elif bytes >= 1024:
+        result = str('{} Kb'.format(round(bytes/1024), 1))
+    else:
+        result = str('{} bytes'.format(bytes))
+    return result
 
 
 def show(short: bool):
     global ring
     global config
     files = ring.get_files()
+    if len(files) == 0:
+        print_error('В ring-каталоге нет ни одного ring-файла.', show)
     if short:
         start = int(config.get('show', 'show_last'))
         short_list = files[-start:]
@@ -118,10 +119,18 @@ def show(short: bool):
             files = short_list
             print('...', ' (не показаны предыдущие ', short_count, ')',
                   sep = '')
-    green_min = int(config.get('show', 'green_min'))
-    green_max = int(config.get('show', 'green_max'))
-    red_min = int(config.get('show', 'red_min'))
-    red_max = int(config.get('show', 'red_max'))
+    green_min = round(float(config.get('show', 'green_min')), 2)
+    green_max = round(float(config.get('show', 'green_max')), 2)
+    red_min = round(float(config.get('show', 'red_min')), 2)
+    red_max = round(float(config.get('show', 'red_max')),2 )
+
+    last_file_date = files[-1].get_date_modify()
+    today_date = datetime.datetime.now()
+    if last_file_date == today_date:
+        last_file_date_is_today = True
+    else:
+        last_file_date_is_today = False
+
     prev_size = -1
     for file in files:
         file_name = file.get_file_name()
@@ -131,27 +140,57 @@ def show(short: bool):
 
         if prev_size == -1:
             prev_size = size
-        difference = round(size / prev_size * 100)
 
-        if difference >= green_min and difference <= green_max:
+        if prev_size == 0:
+            ratio = 0
+            show_plus_space = True
+            color_difference = '\033[37m\033[41m'
+
+        else:
+            ratio = round(size / prev_size * 100 - 100, 2)
+            show_plus_space = False
+            color_difference = '\033[32m\033[40m'
+
+        if files[-1] == file and not last_file_date_is_today:
+            color_date = '\033[37m\033[41m'
+        elif files[-1] == file and last_file_date_is_today:
+            color_date = '\033[37m\033[42m'
+        else:
+            color_date = '\033[37m\033[40m'
+
+        if ratio >= green_min and ratio <= green_max:
             print_file_line(date.year, date.month, date.day, time,
-                            file_name, size, difference)
-        elif difference >= red_min and difference <= red_max:
+                            file_name, size, ratio, show_plus_space,
+                            color_difference = color_difference,
+                            color_date = color_date)
+        elif ratio >= red_min and ratio <= red_max:
             print_file_line(date.year, date.month, date.day, time,
-                            file_name, size, difference,
-                            color_difference = '\033[31m')
+                            file_name, size, ratio, show_plus_space,
+                            color_difference = '\033[31m',
+                            color_date = color_date)
         else:
             print_file_line(date.year, date.month, date.day, time,
-                            file_name, size, difference,
-                            color_difference = '\033[37m\033[41m')
+                            file_name, size, ratio, show_plus_space,
+                            color_difference = '\033[37m\033[41m',
+                            color_date = color_date)
         prev_size = size
+        total_space = ring.get_total_space()
     print('Всего файлов: ', ring.get_total_files(), '\tЗанято места: ',
-          ring.get_total_space(), sep = '')
+         human_space(total_space), sep = '')
 
 
 def load_ring_files():
+    path = config.get('main', 'ring_dir')
+    prefix = config.get('ring', 'prefix')
+    if config.get('show', 'show_excluded').lower == 'yes':
+        show_excluded = True
+    else:
+        show_excluded = False
     ring.clear()
-    ring.load('')
+    try:
+        ring.load(path, prefix, show_excluded)
+    except FileNotFoundError:
+        print_error('Не найден ring-каталог: {}'.format(path), True)
 
 
 def print_help():
@@ -168,6 +207,20 @@ def ring_cut(cut_type: str):
 def sort_ring_files():
     global ring
     ring.sort()
+
+
+def fix_config():
+    # Фиксим: последний символ в пути к папке должен быть '/'
+    ring_dir = config.get('main', 'ring_dir')
+    if ring_dir[-1] != '/':
+        ring_dir = ring_dir + '/'
+        config.set('main', 'ring_dir', ring_dir)
+
+    # Фиксим: последний символ в пути к папке должен быть '/'
+    remote_dir = config.get('main', 'remote_dir')
+    if remote_dir[-1] != '/':
+        remote_dir = remote_dir + '/'
+        config.set('main', 'remote_dir', remote_dir)
 
 
 def main():
@@ -188,15 +241,12 @@ def main():
     print()
 
     # Read config file
-    print('Чтение файла настроек...')
     config.read_file()
+
+    fix_config()
 
     # Load ring files (objects)
     load_ring_files()
-
-    # ТЕСТОВАЯ ЗАЛИВКА ФАЙЛОВ УБРАТЬ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    test_load()
 
     # Sort ring files (list)
     sort_ring_files()
