@@ -322,8 +322,8 @@ class Console:
                 result.append(arg)
         return result
 
-    def print_title(self, title: list, border_simbol: str = "#"):
-        width = 50
+    def print_title(self, title: list, border_simbol: str = "#",
+                    width: int = 40):
         if len(border_simbol) * (width // len(border_simbol)) != width:
             width = len(border_simbol) * (width // len(border_simbol))
         print(border_simbol * (width // len(border_simbol)))

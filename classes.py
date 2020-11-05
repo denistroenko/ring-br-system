@@ -2,6 +2,7 @@ import datetime
 import os
 import time
 
+
 class RingFile:
 
     def __init__(self, file_name: str, full_path: str, size: int,
@@ -92,7 +93,7 @@ class Ring:
 
     def cut_by_space(self, gigabytes: int) -> bool:
         ok = True
-        while self.__total_space  > gigabytes * 1024**3:
+        while self.__total_space > gigabytes * 1024**3:
             self.__files[0].delete_from_disk()
             self.__files.pop(0)
             self.__calculate()

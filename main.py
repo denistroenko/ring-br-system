@@ -126,7 +126,7 @@ def show(short: bool):
 
     last_file_date = files[-1].get_date_modify()
     today_date = datetime.datetime.now()
-    if last_file_date == today_date:
+    if last_file_date.date() == today_date.date():
         last_file_date_is_today = True
     else:
         last_file_date_is_today = False
@@ -258,7 +258,7 @@ def main():
     # Print message and print all settings in global config
     message = ['Algorithm Computers', 'a-computers.ru', 'dev@a-computers.ru',
                 '', '"Ring"', 'Утилита управления архивными файлами']
-    console.print_title(message, '*')
+    console.print_title(message, '*', 50)
     print()
 
     # Read config file
@@ -283,7 +283,7 @@ def main():
         ring_cut()
     if 'show' in args:
         message = ['Текущие архивированные объекты']
-        console.print_title(message, '~')
+        console.print_title(message, '~', 50)
         if int(config.get('show', 'show_last')) > 0:
             show(True)
         else:
