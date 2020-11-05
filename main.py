@@ -1,7 +1,5 @@
 from classes import *
 from baseapplib import *
-import random
-import sys
 
 # GLOBAL objects
 console = Console()
@@ -55,7 +53,7 @@ def print_settings():
 def print_error(error: str, stop_program: bool = False):
     print('\033[31m{}'.format(error), '\033[37m\033[40m')
     if stop_program:
-        exit()
+        sys.exit()
 
 
 def print_file_line(year, month, day, time, file_name, file_size,
@@ -258,7 +256,7 @@ def main():
 
     if '--help' in args:
         print_help()
-        exit()
+        sys.exit()
 
     # Set default settings in global config
     set_config_defaults()

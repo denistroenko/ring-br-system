@@ -5,8 +5,19 @@
 import random
 import smtplib
 from email.mime.text import MIMEText
-from os import system
-from sys import argv
+import os
+import inspect
+import sys
+
+
+def get_script_dir(follow_symlinks=True):
+    if getattr(sys, 'frozen', False): # py2exe, PyInstaller, cx_Freeze
+        path = os.path.abspath(sys.executable)
+    else:
+        path = inspect.getabsfile(get_script_dir)
+    if follow_symlinks:
+        path = os.path.realpath(path)
+    return '{}/'.format(os.path.dirname(path))
 
 
 class PasswordGenerator:
@@ -200,7 +211,7 @@ class Config:
         return out_str
 
     def read_file(self,
-                  file_name: str = 'config',
+                  full_path: str = get_script_dir() + 'config',
                   separator: str = '=',
                   comment: str = '#',
                   section_start: str = '[',
@@ -208,7 +219,7 @@ class Config:
         ok = True
 
         try:
-            with open(file_name, 'r') as file:
+            with open(full_path, 'r') as file:
                 # считать все строки файла в список
                 lines = file.readlines()  # грязный список
 
@@ -246,14 +257,16 @@ class Config:
                         # Работать только в том случае, если
                         # separator один на строку
                         if len(settings_pair) == 2:
-                            self.set(section, settings_pair[0], settings_pair[1])
+                            self.set(section,
+                                     settings_pair[0], settings_pair[1])
         except FileNotFoundError:
-            print('ОШИБКА! Файл', file_name, 'не найден!')
+            print('ОШИБКА! Файл', full_path, 'не найден!')
             ok = False
+
         return ok
 
     def write_file(self,
-                   file_name: str = 'config_exp',
+                   full_path: str = get_script_dir() + 'config_exp',
                    separator: str = '=',
                    comment: str = '#',
                    section_start: str = '[',
@@ -262,7 +275,7 @@ class Config:
         ok = True
 
         try:
-            with open(file_name, 'w') as file:
+            with open(full_path, 'w') as file:
                 for section in self.settings:
                     tab = 25 - len(section)
                     if tab < 2:
@@ -287,7 +300,7 @@ class Config:
                     file.write('\n\n')
 
         except FileNotFoundError:
-            print('ОШИБКА! Файл', file_name, 'не найден!')
+            print('ОШИБКА! Файл', full_path, 'не найден!')
             ok = False
 
         return ok
@@ -308,7 +321,7 @@ class Console:
 
     def __init__(self):
         self.__args_list = []
-        self.__args_list = argv[1:]
+        self.__args_list = sys.argv[1:]
 
     def get_args(self) -> list:
         result = []
@@ -340,4 +353,4 @@ class Console:
         print(border_simbol * (width // len(border_simbol)))
 
     def clear_screen(self):
-        system('clear')
+        os.system('clear')
