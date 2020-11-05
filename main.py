@@ -108,6 +108,10 @@ def human_space(bytes: int) -> str:
 def show(short: bool):
     global ring
     global config
+
+    message = ['SHOW RING MODE']
+    console.print_title(message, '~', 50)
+
     files = ring.get_files()
     if len(files) == 0:
         print_error('В ring-каталоге нет ни одного ring-файла.', show)
@@ -201,7 +205,11 @@ def print_help():
 
 def ring_cut():
     global ring
+    global console
     ok = True
+
+    message = 'CUT MODE'
+    console.print_title(message, '~', 50)
 
     cut_type = config.get('ring', 'type')
     if cut_type == 'count':
@@ -282,8 +290,6 @@ def main():
     if 'cut' in args:
         ring_cut()
     if 'show' in args:
-        message = ['Текущие архивированные объекты']
-        console.print_title(message, '~', 50)
         if int(config.get('show', 'show_last')) > 0:
             show(True)
         else:
