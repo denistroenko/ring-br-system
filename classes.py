@@ -27,7 +27,8 @@ class RingFile:
         return self.__size
 
     def delete_from_disk(self):
-        print('Файл типа удален:', self.__name)
+        os.remove(self.__full_path)
+        print('Файл удален:', self.__name)
 
 
 class Ring:
@@ -91,8 +92,10 @@ class Ring:
 
     def cut_by_space(self, gigabytes: int) -> bool:
         ok = True
-
-        self.__calculate()
+        while self.__total_space  > gigabytes * 1024**3:
+            self.__files[0].delete_from_disk()
+            self.__files.pop(0)
+            self.__calculate()
         return ok
 
     def get_files(self) -> list:

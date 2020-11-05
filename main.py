@@ -156,7 +156,7 @@ def show(short: bool):
         elif files[-1] == file and last_file_date_is_today:
             color_date = '\033[37m\033[42m'
         else:
-            color_date = '\033[37m\033[40m'
+            color_date = '\033[30m\033[47m'
 
         if ratio >= green_min and ratio <= green_max:
             print_file_line(date.year, date.month, date.day, time,
@@ -199,8 +199,29 @@ def print_help():
     print('--test -t\t\t- ???')
 
 
-def ring_cut(cut_type: str):
+def ring_cut():
+    global ring
     ok = True
+
+    cut_type = config.get('ring', 'type')
+    if cut_type == 'count':
+        try:
+            count = int(config.get('ring', 'count'))
+            ring.cut_by_count(count)
+        except:
+            print_error('Неверная настройка [ring] count в файле config.')
+    elif cut_type == 'time':
+        ring.cut_by_time
+    elif cut_type == 'space':
+        try:
+            gigabytes = round(float(config.get('ring', 'space')), 2)
+            ring.cut_by_space(gigabytes)
+        except:
+            print_error('Неверная настройка [ring] space в файле config.')
+    else:
+        print_error('Неизвестный режим работы кольца: {}.'.format(
+                    cut_type), True)
+
     return ok
 
 
@@ -258,6 +279,8 @@ def main():
         print()
     if '--test' in args or '-t' in args:
         pass
+    if 'cut' in args:
+        ring_cut()
     if 'show' in args:
         message = ['Текущие архивированные объекты']
         console.print_title(message, '~')
