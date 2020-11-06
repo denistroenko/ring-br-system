@@ -15,12 +15,12 @@ def set_config_defaults():
     config.set('main', 'remote_dir', '/mnt/remote/')  # Критический
 
     # Префикс имен файлов
-    config.set('ring', 'prefix', 'ring_archive_')
-    # Количество объекток архивов для хранения
+    config.set('ring', 'prefix', 'archive')
+    # Количество объектов архивов для хранения
     config.set('ring', 'count', '30')
     # Срок хранения архивов в днях
-    config.set('ring', 'time', '30')
-    # Макс. занимаемое пространство для папки с архивами
+    config.set('ring', 'time', '180')
+    # Макс. занимаемое пространство для папки с архивами в гигабайтах
     config.set('ring', 'space', '200')
     # Тип кольца архивов: (count|time|space)
     config.set('ring', 'type', 'count')
@@ -36,13 +36,15 @@ def set_config_defaults():
 
     # Солько показывать файлов в кольце (0 - все)
     config.set('show', 'show_last', '10')
-    # Проценты отклонения от и до, в зеленой зоне и в красной,
+    # Показывать исключенные из ring_dir файлы
+    config.set('show', 'show_excluded', 'yes')
+    # Проценты отклонения от и до, в зеленой зоне и в красной
     config.set('show', 'green_min', '-5')
     config.set('show', 'green_max', '5')
     config.set('show', 'red_min', '-20')
     config.set('show', 'red_max', '20')
-    # Показывать исключенные из ring_dir файлы
-    config.set('show', 'show_excluded', 'yes')
+    # "Зеленый" срок хранения последнего архивного файла в ring-каталоге
+    config.set('show', 'green_shelf_life', '7')
 
 
 def print_settings():
@@ -56,10 +58,11 @@ def print_error(error: str, stop_program: bool = False):
         sys.exit()
 
 
-def print_file_line(year, month, day, time, file_name, file_size,
+def print_file_line(year, month, day, time, shelf_life, file_name, file_size,
                     difference, show_plus_space: bool,
                color_date = '\033[30m\033[47m',
                color_time = '\033[37m\033[40m',
+               color_shelf_life = '\033[30m\033[47m',
                color_file_name = '\033[34m\033[40m',
                color_file_size = '\033[537m\033[40m',
                color_difference = '\033[32m\033[40m',
@@ -70,11 +73,13 @@ def print_file_line(year, month, day, time, file_name, file_size,
     year = "{:04d}".format(year)
     month = "{:02d}".format(month)
     day = "{:02d}".format(day)
+    shelf_life = "{:3d}d".format(shelf_life)
 
     file_size = human_space(file_size)
 
     line = f'{color_date}{year}{date_separator}{month}{date_separator}{day}'
     line += f'{color_default} {color_time}{time}'
+    line += f'{color_default} {color_shelf_life}{shelf_life}'
     line += f'{color_default} {color_file_name}{file_name}'
     line += f'{color_default} {color_file_size}{file_size}'
     if difference > 0:
@@ -126,12 +131,7 @@ def show(short: bool):
     red_min = round(float(config.get('show', 'red_min')), 2)
     red_max = round(float(config.get('show', 'red_max')),2 )
 
-    last_file_date = files[-1].get_date_modify()
-    today_date = datetime.datetime.now()
-    if last_file_date.date() == today_date.date():
-        last_file_date_is_today = True
-    else:
-        last_file_date_is_today = False
+    green_shelf_life = int(config.get('show', 'green_shelf_life'))
 
     prev_size = -1
     for file in files:
@@ -139,6 +139,12 @@ def show(short: bool):
         size = file.get_size()
         date = file.get_date_modify()
         time = date.time()
+        shelf_life = file.get_shelf_life()
+
+        if len(file_name) > 25:
+            word_left = file_name[0:17]
+            word_right = file_name[-4:]
+            file_name = f'{word_left}[..]{word_right}'
 
         if prev_size == -1:
             prev_size = size
@@ -153,27 +159,35 @@ def show(short: bool):
             show_plus_space = False
             color_difference = '\033[32m\033[40m'
 
-        if files[-1] == file and not last_file_date_is_today:
+        if files[-1] == file and \
+                shelf_life > green_shelf_life:
             color_date = '\033[37m\033[41m'
-        elif files[-1] == file and last_file_date_is_today:
-            color_date = '\033[37m\033[42m'
+            color_shelf_life = '\033[37m\033[41m'
+        elif files[-1] == file and \
+                shelf_life < green_shelf_life:
+            color_date = '\033[30m\033[42m'
+            color_shelf_life = '\033[30m\033[42m'
         else:
             color_date = '\033[30m\033[47m'
+            color_shelf_life = '\033[30m\033[47m'
 
         if ratio >= green_min and ratio <= green_max:
-            print_file_line(date.year, date.month, date.day, time,
+            print_file_line(date.year, date.month, date.day, time, shelf_life,
                             file_name, size, ratio, show_plus_space,
                             color_difference = color_difference,
+                            color_shelf_life = color_shelf_life,
                             color_date = color_date)
         elif ratio >= red_min and ratio <= red_max:
-            print_file_line(date.year, date.month, date.day, time,
+            print_file_line(date.year, date.month, date.day, time, shelf_life,
                             file_name, size, ratio, show_plus_space,
                             color_difference = '\033[31m',
+                            color_shelf_life = color_shelf_life,
                             color_date = color_date)
         else:
-            print_file_line(date.year, date.month, date.day, time,
+            print_file_line(date.year, date.month, date.day, time, shelf_life,
                             file_name, size, ratio, show_plus_space,
                             color_difference = '\033[37m\033[41m',
+                            color_shelf_life = color_shelf_life,
                             color_date = color_date)
         prev_size = size
         total_space = ring.get_total_space()
@@ -217,7 +231,11 @@ def ring_cut():
         except:
             print_error('Неверная настройка [ring] count в файле config.')
     elif cut_type == 'time':
-        ring.cut_by_time
+        try:
+            max_shelf_life = int(config.get('ring', 'time'))
+            ring.cut_by_time(max_shelf_life)
+        except:
+            print_error('Неверная настройка [ring] time в файле config.')
     elif cut_type == 'space':
         try:
             gigabytes = round(float(config.get('ring', 'space')), 2)

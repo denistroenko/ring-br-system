@@ -27,6 +27,13 @@ class RingFile:
     def get_size(self) -> int:
         return self.__size
 
+    def get_shelf_life(self):
+        date_now = datetime.datetime.now()
+        date_modify = self.__date_modify
+        shelf_life = (date_now - date_modify).total_seconds()
+        shelf_life = round(shelf_life / 60 / 60 / 24)
+        return shelf_life
+
     def delete_from_disk(self):
         os.remove(self.__full_path)
         print('Файл удален:', self.__name)
@@ -85,9 +92,13 @@ class Ring:
         self.__calculate()
         return ok
 
-    def cut_by_time(self, days: int) -> bool:
+    def cut_by_time(self, max_shelf_life: int) -> bool:
         ok = True
 
+        while len(self.__files) > 0 and \
+                self.__files[0].get_shelf_life() > max_shelf_life:
+            self.__files[0].delete_from_disk()
+            self.__files.pop(0)
         self.__calculate()
         return ok
 
@@ -96,7 +107,7 @@ class Ring:
         while self.__total_space > gigabytes * 1024**3:
             self.__files[0].delete_from_disk()
             self.__files.pop(0)
-            self.__calculate()
+        self.__calculate()
         return ok
 
     def get_files(self) -> list:
