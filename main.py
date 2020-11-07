@@ -2,6 +2,7 @@ from classes import *
 from baseapplib import *
 
 # GLOBAL objects
+VERSION = '0.0.1'
 console = Console()
 config = Config()
 ring = Ring()
@@ -96,7 +97,7 @@ def print_file_line(year, month, day, time, shelf_life, file_name, file_size,
     print(line)
 
 
-def show(short: bool) -> bool:
+def show_mode(short: bool) -> bool:
     ok = True
     global ring
     global config
@@ -186,6 +187,35 @@ def show(short: bool) -> bool:
          human_space(total_space), sep = '')
 
 
+def content_mode(file_index: int = -1):
+    global ring
+    files_list = ring.get_files()
+    file = files_list[file_index]
+    full_path = file.get_full_path()
+    print('Читаю файл {} ...'.format(full_path))
+    content = file.get_zip_content()
+    print(content)
+
+
+def test_mode(file_index: int = -1):
+    global ring
+
+    message = 'TEST MODE'
+    console.print_title(message, '~', 50)
+
+    files_list = ring.get_files()
+    file = files_list[file_index]
+
+    full_path = file.get_full_path()
+
+    print('Тестирую файл {} ...'.format(full_path))
+    test_ok, test_result = file.test()
+    if test_ok:
+        print(test_result)
+    else:
+        print_error(test_result, False)
+
+
 def load_ring_files():
     path = config.get('main', 'ring_dir')
     prefix = config.get('ring', 'prefix')
@@ -210,7 +240,7 @@ def print_help():
     print('--test -t\t\t- ???')
 
 
-def ring_cut():
+def cut_mode():
     global ring
     global console
     ok = True
@@ -271,7 +301,13 @@ def fix_config():
 
 def main():
     global console
+    # Read args command line
     args = console.get_args()
+
+    if '--version' in args:
+        message = ['Version', 'Ring v.{}'.format(VERSION)]
+        console.print_title(message, '*', 50)
+        sys.exit()
 
     if '--help' in args:
         print_help()
@@ -281,7 +317,7 @@ def main():
     set_config_defaults()
 
     # Print message and print all settings in global config
-    message = ['Algorithm Computers', 'a-computers.ru', 'dev@a-computers.ru',
+    message = ['Algorithm Computers', 'dev@a-computers.ru',
                 '', '"Ring"', 'Утилита управления архивными файлами']
     console.print_title(message, '*', 50)
     print()
@@ -296,29 +332,28 @@ def main():
     # Sort ring files (list)
     sort_ring_files()
 
-    # Read args command line
     if '--settings' in args or '-s' in args:
         print('Текущие настройки программы:')
         print_settings()
         print()
         sys.exit()
-
-    if 'test' in args:
+    if 'info' in args:
+        pass
+    if 'content' in args:
+        content_mode()
         sys.exit()
-
     if 'work' in args:
-        sys.exit()
-
+        pass
     if 'archive' in args:
-        sys.exit()
-
+        pass
+    if 'test' in args:
+        test_mode()
     if 'cut' in args:
-        ring_cut()
-
+        cut_mode()
     if 'show' in args:
         if int(config.get('show', 'show_last')) > 0:
-            show(True)
+            show_mode(True)
         else:
-            show(False)
+            show_mode(False)
 
-    main()
+main()

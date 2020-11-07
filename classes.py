@@ -2,6 +2,8 @@ import datetime
 import os
 import time
 from baseapplib import human_space
+import zipfile
+
 
 class RingFile:
 
@@ -33,6 +35,28 @@ class RingFile:
         shelf_life = (date_now - date_modify).total_seconds()
         shelf_life = round(shelf_life / 60 / 60 / 24)
         return shelf_life
+
+    def get_zip_info(self):
+        pass
+
+    def get_zip_content(self):
+        zip_file = zipfile.ZipFile(self.__full_path, 'r')
+        names = zip_file.namelist()
+        result = ''
+        for name in names:
+            result += name + '\n'
+        return result
+
+    def test(self):
+        try:
+            zip_file = zipfile.ZipFile(self.__full_path, 'r')
+        except zipfile.BadZipfile:
+            return False, 'Это не zip-файл!'
+        result = zip_file.testzip()
+        if result == None:
+            return True, 'Тест успешно пройден.'
+        else:
+            return False, result
 
     def delete_from_disk(self):
         os.remove(self.__full_path)
