@@ -15,7 +15,7 @@ def set_config_defaults():
     config.set('main', 'remote_dir', '/mnt/remote/')  # Критический
 
     # Префикс имен файлов
-    config.set('ring', 'prefix', 'archive')
+    config.set('ring', 'prefix', '')
     # Количество объектов архивов для хранения
     config.set('ring', 'count', '30')
     # Срок хранения архивов в днях
@@ -37,7 +37,7 @@ def set_config_defaults():
     # Солько показывать файлов в кольце (0 - все)
     config.set('show', 'show_last', '10')
     # Показывать исключенные из ring_dir файлы
-    config.set('show', 'show_excluded', 'yes')
+    config.set('show', 'show_excluded', 'no')
     # Проценты отклонения от и до, в зеленой зоне и в красной
     config.set('show', 'green_min', '-5')
     config.set('show', 'green_max', '5')
@@ -96,19 +96,8 @@ def print_file_line(year, month, day, time, shelf_life, file_name, file_size,
     print(line)
 
 
-def human_space(bytes: int) -> str:
-    if bytes >= 1024 ** 3:
-        result = str('{} Gb'.format(round(bytes/1024**3, 1)))
-    elif bytes >= 1024 ** 2:
-        result = str('{} Mb'.format(round(bytes/1024**2, 1)))
-    elif bytes >= 1024:
-        result = str('{} Kb'.format(round(bytes/1024), 1))
-    else:
-        result = str('{} bytes'.format(bytes))
-    return result
-
-
-def show(short: bool):
+def show(short: bool) -> bool:
+    ok = True
     global ring
     global config
 
@@ -117,7 +106,9 @@ def show(short: bool):
 
     files = ring.get_files()
     if len(files) == 0:
-        print_error('В ring-каталоге нет ни одного ring-файла.', show)
+        print_error('В ring-каталоге нет ни одного ring-файла.', False)
+        ok = False
+        return ok
     if short:
         start = int(config.get('show', 'show_last'))
         short_list = files[-start:]
@@ -198,11 +189,15 @@ def show(short: bool):
 def load_ring_files():
     path = config.get('main', 'ring_dir')
     prefix = config.get('ring', 'prefix')
-    if config.get('show', 'show_excluded').lower == 'yes':
+    show_excluded = config.get('show', 'show_excluded').lower()
+
+    if show_excluded == 'yes':
         show_excluded = True
     else:
         show_excluded = False
+
     ring.clear()
+
     try:
         ring.load(path, prefix, show_excluded)
     except FileNotFoundError:
@@ -267,6 +262,12 @@ def fix_config():
         remote_dir = remote_dir + '/'
         config.set('main', 'remote_dir', remote_dir)
 
+    # Фиксим "показывать последние ... файлов": число должно быть положительным
+    show_last = int(config.get('show', 'show_last'))
+    if show_last < 0:
+        show_last = 10
+        config.set('show', 'show_last', show_last)
+
 
 def main():
     global console
@@ -292,7 +293,6 @@ def main():
 
     # Load ring files (objects)
     load_ring_files()
-
     # Sort ring files (list)
     sort_ring_files()
 
@@ -301,14 +301,24 @@ def main():
         print('Текущие настройки программы:')
         print_settings()
         print()
-    if '--test' in args or '-t' in args:
-        pass
+        sys.exit()
+
+    if 'test' in args:
+        sys.exit()
+
+    if 'work' in args:
+        sys.exit()
+
+    if 'archive' in args:
+        sys.exit()
+
     if 'cut' in args:
         ring_cut()
+
     if 'show' in args:
         if int(config.get('show', 'show_last')) > 0:
             show(True)
         else:
             show(False)
 
-main()
+    main()

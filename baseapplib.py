@@ -20,6 +20,18 @@ def get_script_dir(follow_symlinks=True):
     return '{}/'.format(os.path.dirname(path))
 
 
+def human_space(bytes: int) -> str:
+    if bytes >= 1024 ** 3:
+        result = str('{}G'.format(round(bytes/1024**3, 1)))
+    elif bytes >= 1024 ** 2:
+        result = str('{}M'.format(round(bytes/1024**2, 1)))
+    elif bytes >= 1024:
+        result = str('{}K'.format(round(bytes/1024), 1))
+    else:
+        result = str('{}b'.format(bytes))
+    return result
+
+
 class PasswordGenerator:
 
     def __init__(self):

@@ -1,7 +1,7 @@
 import datetime
 import os
 import time
-
+from baseapplib import human_space
 
 class RingFile:
 
@@ -67,10 +67,13 @@ class Ring:
 
     def load(self, path: str, prefix: str, show_excluded: bool = True):
         all_files_list = os.listdir(path)
+        excluded_files_count = 0
+        excluded_files_size = 0
         for file_name in all_files_list:
+            # Получаем объем файла средствами ОС
+            full_path = path + file_name
+            size = os.path.getsize(full_path)
             if file_name[0:len(prefix)] == prefix:
-                full_path = path + file_name
-                size = os.path.getsize(full_path)
                 # Получаем дату изм. файла средствами ОС
                 date_modify = os.path.getmtime(full_path)
                 # Преобразуем в локальное время (будет строка)
@@ -83,6 +86,14 @@ class Ring:
             else:
                 if show_excluded:
                     print('Исключен файл:', file_name)
+                excluded_files_count += 1
+                excluded_files_size += size
+        if excluded_files_count > 0:
+            excluded_files_size = human_space(excluded_files_size)
+            print('Файлы существуют в папке, но не соответствуют префиксу:')
+            print('Количество:', excluded_files_count)
+            print('Общий объем:', excluded_files_size)
+            print('Они исключены из работы.')
 
     def cut_by_count(self, count: int) -> bool:
         ok = True
