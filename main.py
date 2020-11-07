@@ -337,17 +337,19 @@ def main():
         print_settings()
         print()
         sys.exit()
-    if 'info' in args:
+    if '--info' in args:
         pass
-    if 'content' in args:
+    if '--content' in args or '-c' in args:
         content_mode()
         sys.exit()
+    if '--test' in args or '-t' in args:
+        test_mode()
+        sys.exit()
+
     if 'work' in args:
         pass
     if 'archive' in args:
         pass
-    if 'test' in args:
-        test_mode()
     if 'cut' in args:
         cut_mode()
     if 'show' in args:
