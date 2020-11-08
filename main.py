@@ -47,15 +47,27 @@ def set_config_defaults():
     # "Зеленый" срок хранения последнего архивного файла в ring-каталоге
     config.set('show', 'green_age', '7')
 
-    # Тип remote-подключения (ftp/smb)
-    config.set('remote', 'type', '')  # Критический
+    # Тип remote-подключения к source (ftp/smb/none)
+    config.set('remote_source', 'type', 'none')
+    config.set('remote_source', 'mount', '')
+    config.set('remote_source', 'host', '')
+    config.set('remote_source', 'user', '')
+    config.set('remote_source', 'password', '')
+
+    # Тип remote-подключения к ring (ftp/smb/none)
+    config.set('remote_ring', 'type', 'none')
+    config.set('remote_ring', 'mount', '')
+    config.set('remote_ring', 'host', '')
+    config.set('remote_ring', 'user', '')
+    config.set('remote_ring', 'password', '')
 
     # Удаленные объекты (брать по маске). Беруться все элементы {take-files}
-    # config.set('take-files', 'files', '*')  # Критический
-    # Режим получения файлов для архивирования (copy/move)
+    # config.set('take-files', 'files', '*')  # Критический по усл.
+    # Режим получения файлов для архивирования (copy/move/none)
     config.set('take', 'mode', 'copy')  # Критический по условию
     # Брать только сегодняшние файлы
     config.set('take', 'only_today', 'no')
+
 
 
 def print_settings():
