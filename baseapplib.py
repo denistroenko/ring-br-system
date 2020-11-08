@@ -223,7 +223,7 @@ class Config:
         return out_str
 
     def read_file(self,
-                  full_path: str = get_script_dir() + 'config',
+                  full_path: str = '{}config'.format(get_script_dir()),
                   separator: str = '=',
                   comment: str = '#',
                   section_start: str = '[',

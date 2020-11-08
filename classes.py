@@ -114,8 +114,8 @@ class Ring:
                 excluded_files_size += size
         if excluded_files_count > 0:
             excluded_files_size = human_space(excluded_files_size)
-            print('Файлы существуют в папке, но не соответствуют префиксу:')
-            print('Количество:', excluded_files_count)
+            print('Файлы в папке, но не соответствуют префиксу:')
+            print('Количество:', excluded_files_count, end='; ')
             print('Общий объем:', excluded_files_size)
             print('Они исключены из работы.')
 
@@ -152,5 +152,4 @@ class Ring:
         return self.__total_space
 
     def get_total_files(self):
-        self.__calculate()
         return self.__total_files

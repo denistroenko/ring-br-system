@@ -1,20 +1,20 @@
 from classes import *
 from baseapplib import *
 
-# GLOBAL objects
+# GLOBAL
 VERSION = '0.0.1'
 console = Console()
 config = Config()
 ring = Ring()
+APP_DIR = get_script_dir()
+CONFIG_FILE = '{}config'.format(APP_DIR)
 
 def set_config_defaults():
     global config
 
-    # Папка с архивами (куда складывать, чем управлять)
-    config.set('main', 'ring_dir', '/mnt/ring/')  # Критический
-    # Удаленная папка (Откуда брать)
-    config.set('main', 'remote_dir', '/mnt/remote/')  # Критический
 
+    # Папка с архивами (куда складывать, чем управлять)
+    config.set('ring', 'dir', '/mnt/ring/')  # Критический
     # Префикс имен файлов
     config.set('ring', 'prefix', '')
     # Количество объектов архивов для хранения
@@ -46,6 +46,16 @@ def set_config_defaults():
     config.set('show', 'red_max', '20')
     # "Зеленый" срок хранения последнего архивного файла в ring-каталоге
     config.set('show', 'green_age', '7')
+
+    # Тип remote-подключения (ftp/smb)
+    config.set('remote', 'type', '')  # Критический
+
+    # Удаленные объекты (брать по маске). Беруться все элементы {take-files}
+    # config.set('take-files', 'files', '*')  # Критический
+    # Режим получения файлов для архивирования (copy/move)
+    config.set('take', 'mode', 'copy')  # Критический по условию
+    # Брать только сегодняшние файлы
+    config.set('take', 'only_today', 'no')
 
 
 def print_settings():
@@ -101,10 +111,15 @@ def print_file_line(number,
     print(line)
 
 
-def show_mode(short: bool) -> bool:
+def show_mode():
     ok = True
     global ring
     global config
+
+    if int(config.get('show', 'show_last')) > 0:
+        short = True
+    else:
+        short = False
 
     message = ['SHOW RING MODE']
     console.print_title(message, '~', 55)
@@ -194,7 +209,7 @@ def show_mode(short: bool) -> bool:
                             color_date = color_date)
         prev_size = size
         total_space = ring.get_total_space()
-    print('Всего файлов: ', ring.get_total_files(), '\tЗанято места: ',
+    print('Всего файлов: ', ring.get_total_files(), '; Занято места: ',
          human_space(total_space), sep = '')
 
 
@@ -227,11 +242,11 @@ def test_mode(file_index: int = -1):
         print_error(test_result, False)
 
 
-def cut_zero_mode():
+def cut_bad_mode():
     global ring
     total_deleted_files = 0
 
-    message = 'CUT-ZERO MODE'
+    message = 'CUT-BAD MODE'
     console.print_title(message, '~', 55)
 
     files_list = ring.get_files()
@@ -250,7 +265,7 @@ def cut_zero_mode():
 
 
 def load_ring_files():
-    path = config.get('main', 'ring_dir')
+    path = config.get('ring', 'dir')
     prefix = config.get('ring', 'prefix')
     show_excluded = config.get('show', 'show_excluded').lower()
 
@@ -314,16 +329,10 @@ def sort_ring_files():
 
 def fix_config():
     # Фиксим: последний символ в пути к папке должен быть '/'
-    ring_dir = config.get('main', 'ring_dir')
+    ring_dir = config.get('ring', 'dir')
     if ring_dir[-1] != '/':
         ring_dir = ring_dir + '/'
-        config.set('main', 'ring_dir', ring_dir)
-
-    # Фиксим: последний символ в пути к папке должен быть '/'
-    remote_dir = config.get('main', 'remote_dir')
-    if remote_dir[-1] != '/':
-        remote_dir = remote_dir + '/'
-        config.set('main', 'remote_dir', remote_dir)
+        config.set('ring', 'dir', ring_dir)
 
     # Фиксим "показывать последние ... файлов": число должно быть положительным
     show_last = int(config.get('show', 'show_last'))
@@ -334,6 +343,7 @@ def fix_config():
 
 def main():
     global console
+    global CONFIG_FILE
     # Read args command line
     args = console.get_args()
 
@@ -355,8 +365,20 @@ def main():
     console.print_title(message, '*', 55)
     print()
 
+    if '--config' in args:
+        index = args.index('--config')
+        next_index = index + 1
+        CONFIG_FILE = '{}{}'.format(
+            get_script_dir(), args[next_index])
+        try:
+            test_file = open(CONFIG_FILE, 'r')
+            test_file.close()
+        except FileNotFoundError:
+            print_error(
+                "Не найден файл, указанный в параметре --config: {}".format(
+                    CONFIG_FILE), True)
     # Read config file
-    config.read_file()
+    config.read_file(CONFIG_FILE)
 
     fix_config()
 
@@ -370,8 +392,8 @@ def main():
         print_settings()
         print()
         sys.exit()
-    if '--cut-zero' in args:
-        cut_zero_mode()
+    if '--cut-bad' in args:
+        cut_bad_mode()
     if '--info' in args:
         pass
     if '--content' in args or '-c' in args:
@@ -388,9 +410,5 @@ def main():
     if 'cut' in args:
         cut_mode()
     if 'show' in args:
-        if int(config.get('show', 'show_last')) > 0:
-            show_mode(True)
-        else:
-            show_mode(False)
-
+        show_mode()
 main()
