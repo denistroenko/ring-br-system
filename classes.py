@@ -29,12 +29,12 @@ class RingFile:
     def get_size(self) -> int:
         return self.__size
 
-    def get_shelf_life(self):
+    def get_age(self):
         date_now = datetime.datetime.now()
         date_modify = self.__date_modify
-        shelf_life = (date_now - date_modify).total_seconds()
-        shelf_life = round(shelf_life / 60 / 60 / 24)
-        return shelf_life
+        age = (date_now - date_modify).total_seconds()
+        age = round(age / 60 / 60 / 24)
+        return age
 
     def get_zip_info(self):
         pass
@@ -127,11 +127,11 @@ class Ring:
         self.__calculate()
         return ok
 
-    def cut_by_time(self, max_shelf_life: int) -> bool:
+    def cut_by_time(self, max_age: int) -> bool:
         ok = True
 
         while len(self.__files) > 0 and \
-                self.__files[0].get_shelf_life() > max_shelf_life:
+                self.__files[0].get_age() > max_age:
             self.__files[0].delete_from_disk()
             self.__files.pop(0)
         self.__calculate()
