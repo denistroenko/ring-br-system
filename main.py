@@ -25,6 +25,8 @@ def set_config_defaults():
     config.set('ring', 'space', '200')
     # Тип кольца архивов: (count|time|space)
     config.set('ring', 'type', 'count')
+    # Показывать исключенные из ring_dir файлы
+    config.set('ring', 'show_excluded', 'no')
 
     # Слать ли отчет администратору (yes|no)
     config.set('email', 'send_admin_email', 'no')
@@ -37,8 +39,6 @@ def set_config_defaults():
 
     # Солько показывать файлов в кольце (0 - все)
     config.set('show', 'show_last', '15')
-    # Показывать исключенные из ring_dir файлы
-    config.set('show', 'show_excluded', 'no')
     # Проценты отклонения от и до, в зеленой зоне и в красной
     config.set('show', 'green_min', '-5')
     config.set('show', 'green_max', '5')
@@ -69,6 +69,7 @@ def set_config_defaults():
     config.set('take', 'only_today', 'no')
 
     config.set('archive', 'deflated', 'yes')
+    config.set('archive', 'date_format', 'YYYY-MM-DD_WW_hh:mm:ss')
 
 
 def print_settings():
@@ -128,6 +129,7 @@ def show_mode():
     ok = True
     global ring
     global config
+
 
     if int(config.get('show', 'show_last')) > 0:
         short = True
@@ -282,9 +284,8 @@ def cut_bad_mode():
 def load_ring_files():
     path = config.get('ring', 'dir')
     prefix = config.get('ring', 'prefix')
-    show_excluded = config.get('show', 'show_excluded').lower()
-
-    if show_excluded == 'yes':
+    # Read show_excluded parameter
+    if config.get('ring', 'show_excluded') == 'yes':
         show_excluded = True
     else:
         show_excluded = False
@@ -295,6 +296,44 @@ def load_ring_files():
         ring.load(path, prefix, show_excluded)
     except FileNotFoundError:
         print_error('Не найден ring-каталог: {}'.format(path), True)
+
+
+def create_new_archive(file_name):
+    global config
+    global ring
+
+    prefix = config.get('ring', 'prefix')
+
+    # String - format string
+    date_format = config.get('archive', 'date_format')
+    date_format = date_format.replace('YYYY', '{YYYY}')
+    date_format = date_format.replace('MM', '{MM}')
+    date_format = date_format.replace('DD', '{DD}')
+    date_format = date_format.replace('WW', '{WW}')
+    date_format = date_format.replace('hh', '{hh}')
+    date_format = date_format.replace('mm', '{mm}')
+    date_format = date_format.replace('ss', '{ss}')
+
+    # Take now date, take date properties
+    date_now = datetime.datetime.now()
+    YYYY = date_now.year
+    MM = date_now.month
+    DD = date_now.day
+    WW = date_now.isoweekday()
+    hh = date_now.hour
+    mm = date_now.minute
+    ss = date_now.second
+
+    # Create file name
+    file_name = f'{prefix}'
+    file_name += date_format.format(YYYY = YYYY, MM = MM, DD = DD, WW = WW,
+                                    hh = hh, mm = mm, ss = ss)
+    file_name += '.zip'
+    if file_name == '.zip':
+        file_name = 'ring_file.zip'
+
+    ok, result = ring.new_archive(file_name)
+    print(ok, result)
 
 
 def print_help():
@@ -355,12 +394,17 @@ def fix_config():
         show_last = 10
         config.set('show', 'show_last', show_last)
 
+    # делаем нижний регистр принудительно
+    config.set('ring', 'show_excluded',
+               config.get('ring', 'show_excluded').lower())
+
 
 def main():
     global console
     global CONFIG_FILE
     # Read args command line
     args = console.get_args()
+
 
     if '--version' in args:
         message = ['Version', 'Ring v.{}'.format(VERSION)]
@@ -421,9 +465,11 @@ def main():
     if 'work' in args:
         pass
     if 'archive' in args:
-        pass
+        create_new_archive('test_file.zip')
     if 'cut' in args:
         cut_mode()
     if 'show' in args:
         show_mode()
+
+
 main()

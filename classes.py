@@ -71,10 +71,14 @@ class RingFile:
 
 class Ring:
 
-    def __init__(self):
-        self.__files: list = []
-        self.__total_files: int = 0
-        self.__total_space: int = 0
+    def __init__(self, path: str = '', prefix: str = '',
+                 show_excluded: bool = True):
+        self.__path = path
+        self.__files_prefix = prefix
+        self.__show_excluded = show_excluded
+        self.__files = []
+        self.__total_files = 0
+        self.__total_space = 0
 
     def __calculate(self):
         self.__total_files = int(len(self.__files))
@@ -96,14 +100,18 @@ class Ring:
         self.__calculate()
 
     def load(self, path: str, prefix: str, show_excluded: bool = True):
-        all_files_list = os.listdir(path)
+        self.__path = path
+        self.__files_prefix = prefix
+        self.__show_excluded = show_excluded
+
+        all_files_list = os.listdir(self.__path)
         excluded_files_count = 0
         excluded_files_size = 0
         for file_name in all_files_list:
             # Получаем объем файла средствами ОС
-            full_path = path + file_name
+            full_path = self.__path + file_name
             size = os.path.getsize(full_path)
-            if file_name[0:len(prefix)] == prefix:
+            if file_name[0:len(self.__files_prefix)] == self.__files_prefix:
                 # Получаем дату изм. файла средствами ОС
                 date_modify = os.path.getmtime(full_path)
                 # Преобразуем в локальное время (будет строка)
@@ -159,3 +167,8 @@ class Ring:
 
     def get_total_files(self):
         return self.__total_files
+
+    def new_archive(self, file_name: str):
+        ok = True
+        full_path = '{}{}'.format(self.__path, file_name)
+        return ok, full_path
