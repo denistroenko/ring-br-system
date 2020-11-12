@@ -232,7 +232,10 @@ def show_content_zip_file(file_index: int = -1):
     global ring
 
     files_list = ring.get_files()
-    file = files_list[file_index]
+    try:
+        file = files_list[file_index]
+    except IndexError:
+        print_error('Нет файла с таким номером!', True)
     full_path = file.get_full_path()
 
     print('Читаю файл {} ...'.format(full_path))
