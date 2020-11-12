@@ -405,6 +405,12 @@ def fix_config():
                config.get('ring', 'show_excluded').lower())
 
 
+def export_config():
+    global config
+    full_path = '{}config_exp'.format(APP_DIR)
+    config.write_file(full_path)
+
+
 def main():
     global console
     global CONFIG_FILE
@@ -442,6 +448,10 @@ def main():
             print_error(
                 "Не найден файл, указанный в параметре --config: {}".format(
                     CONFIG_FILE), True)
+
+    if '--config-export' in args:
+        export_config()
+
     # Read config file
     config.read_file(CONFIG_FILE)
 
@@ -476,6 +486,8 @@ def main():
         cut_mode()
     if 'show' in args:
         show_mode()
+
+
 
 
 main()
