@@ -9,9 +9,9 @@ ring = Ring()
 APP_DIR = get_script_dir()
 CONFIG_FILE = '{}config'.format(APP_DIR)
 
+
 def set_config_defaults():
     global config
-
 
     # Папка с архивами (куда складывать, чем управлять)
     config.set('ring', 'dir', '/mnt/ring/')  # Критический
@@ -68,6 +68,7 @@ def set_config_defaults():
     # Брать только сегодняшние файлы
     config.set('take', 'only_today', 'no')
 
+    config.set('archive', 'deflated', 'yes')
 
 
 def print_settings():
@@ -225,21 +226,23 @@ def show_mode():
          human_space(total_space), sep = '')
 
 
-def content_mode(file_index: int = -1):
+def show_content_zip_file(file_index: int = -1):
     global ring
+
     files_list = ring.get_files()
     file = files_list[file_index]
     full_path = file.get_full_path()
+
     print('Читаю файл {} ...'.format(full_path))
-    content = file.get_zip_content()
-    print(content)
+    ok, content = file.zip_content()
+    if ok:
+        print(content)
+    else:
+        print_error(content, False)
 
 
-def test_mode(file_index: int = -1):
+def test_zip_file(file_index: int = -1):
     global ring
-
-    message = 'TEST MODE'
-    console.print_title(message, '~', 55)
 
     files_list = ring.get_files()
     file = files_list[file_index]
@@ -247,8 +250,8 @@ def test_mode(file_index: int = -1):
     full_path = file.get_full_path()
 
     print('Тестирую файл {} ...'.format(full_path))
-    test_ok, test_result = file.test()
-    if test_ok:
+    ok, test_result = file.zip_test()
+    if ok:
         print(test_result)
     else:
         print_error(test_result, False)
@@ -409,10 +412,10 @@ def main():
     if '--info' in args:
         pass
     if '--content' in args or '-c' in args:
-        content_mode()
+        show_content_zip_file()
         sys.exit()
     if '--test' in args or '-t' in args:
-        test_mode()
+        test_zip_file()
         sys.exit()
 
     if 'work' in args:

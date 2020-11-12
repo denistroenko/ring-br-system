@@ -39,15 +39,21 @@ class RingFile:
     def get_zip_info(self):
         pass
 
-    def get_zip_content(self):
-        zip_file = zipfile.ZipFile(self.__full_path, 'r')
+    def zip_content(self):
+        try:
+            zip_file = zipfile.ZipFile(self.__full_path, 'r')
+        except zipfile.BadZipfile:
+            return False, 'Ошибка чтения содержимого файла!'
         names = zip_file.namelist()
         result = ''
-        for name in names:
-            result += name + '\n'
-        return result
+        if names != None:
+            for name in names:
+                result += name + '\n'
+            return True, result
+        else:
+            return False, result
 
-    def test(self):
+    def zip_test(self):
         try:
             zip_file = zipfile.ZipFile(self.__full_path, 'r')
         except zipfile.BadZipfile:
