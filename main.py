@@ -277,7 +277,7 @@ def cut_bad_mode():
         full_path = file.get_full_path()
 
         print('Тестирую файл {} ...'.format(full_path))
-        test_ok, test_result = file.test()
+        test_ok, test_result = file.zip_test()
         if test_ok:
             print(test_result)
         else:
@@ -486,8 +486,6 @@ def main():
         cut_mode()
     if 'show' in args:
         show_mode()
-
-
 
 
 main()
