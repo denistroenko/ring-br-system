@@ -20,10 +20,10 @@ def set_config_defaults():
     # Количество объектов архивов для хранения
     config.set('ring', 'count', '30')
     # Срок хранения архивов в днях
-    config.set('ring', 'time', '180')
+    config.set('ring', 'age', '180')
     # Макс. занимаемое пространство для папки с архивами в гигабайтах
     config.set('ring', 'space', '200')
-    # Тип кольца архивов: (count|time|space)
+    # Тип кольца архивов: (count|age|space)
     config.set('ring', 'type', 'count')
     # Показывать исключенные из ring_dir файлы
     config.set('ring', 'show_excluded', 'no')
@@ -203,7 +203,7 @@ def show_mode():
 
         if ratio >= green_min and ratio <= green_max:
             print_file_line(file_no,
-                            date.year, date.month, date.day, time, age,
+                            date.year, date.month, date.day, age, age,
                             file_name, size, ratio, show_plus_space,
                             color_difference = color_difference,
                             color_age = color_age,
@@ -363,12 +363,12 @@ def cut_mode():
             ring.cut_by_count(count)
         except:
             print_error('Неверная настройка [ring] count в файле config.')
-    elif cut_type == 'time':
+    elif cut_type == 'age':
         try:
-            max_age = int(config.get('ring', 'time'))
-            ring.cut_by_time(max_age)
+            max_age = int(config.get('ring', 'age'))
+            ring.cut_by_age(max_age)
         except:
-            print_error('Неверная настройка [ring] time в файле config.')
+            print_error('Неверная настройка [ring] age в файле config.')
     elif cut_type == 'space':
         try:
             gigabytes = round(float(config.get('ring', 'space')), 2)

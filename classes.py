@@ -141,7 +141,7 @@ class Ring:
         self.__calculate()
         return ok
 
-    def cut_by_time(self, max_age: int) -> bool:
+    def cut_by_age(self, max_age: int) -> bool:
         ok = True
 
         while len(self.__files) > 0 and \
