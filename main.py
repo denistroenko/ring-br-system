@@ -194,7 +194,7 @@ def show_mode():
             color_date = '\033[37m\033[41m'
             color_age = '\033[37m\033[41m'
         elif files[-1] == file and \
-                age < green_age:
+                age <= green_age:
             color_date = '\033[30m\033[42m'
             color_age = '\033[30m\033[42m'
         else:
