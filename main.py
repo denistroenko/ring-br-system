@@ -322,13 +322,13 @@ def create_new_archive(file_name):
 
     # Take now date, take date properties
     date_now = datetime.datetime.now()
-    YYYY = date_now.year
-    MM = date_now.month
-    DD = date_now.day
+    YYYY = '{:04d}'.format(date_now.year)
+    MM = '{:02d}'.format(date_now.month)
+    DD = '{:02d}'.format(date_now.day)
     WW = date_now.isoweekday()
-    hh = date_now.hour
-    mm = date_now.minute
-    ss = date_now.second
+    hh = '{:02d}'.format(date_now.hour)
+    mm = '{:02d}'.format(date_now.minute)
+    ss = '{:02d}'.format(date_now.second)
 
     # Create file name
     file_name = f'{prefix}'
