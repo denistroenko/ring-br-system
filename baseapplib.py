@@ -323,6 +323,9 @@ class Config:
     def get(self, section: str, setting: str) -> str:
         return str(self.settings[section][setting])
 
+    def get_section_dict(self, section) -> dict:
+        return self.settings[section]
+
     def set(self, section: str, setting: str, value: str):
         if section not in self.settings.keys():
             self.settings[section] = {}
@@ -348,11 +351,16 @@ class Console:
         return result
 
     def print_title(self, title: list, border_simbol: str = "#",
-                    width: int = 40):
+                    width: int = 40, space_before: bool = True,
+                    space_after: bool = True):
         if type(title) != list:
             title = [str(title), ]
         if len(border_simbol) * (width // len(border_simbol)) != width:
             width = len(border_simbol) * (width // len(border_simbol))
+
+        if space_before:
+            print()
+
         print(border_simbol * (width // len(border_simbol)))
         for string in title:
             half1 = width // 2 - len(string) // 2 - len(border_simbol)
@@ -363,6 +371,9 @@ class Console:
                 ' ' * half2 +
                 border_simbol)
         print(border_simbol * (width // len(border_simbol)))
+
+        if space_after:
+            print()
 
     def clear_screen(self):
         os.system('clear')

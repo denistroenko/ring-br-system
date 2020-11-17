@@ -168,7 +168,51 @@ class Ring:
     def get_total_files(self):
         return self.__total_files
 
-    def new_archive(self, file_name: str):
+    def new_archive(self, file_name: str, objects_dict: dict,
+                    stored: bool = True, only_today_files: bool = False):
         ok = True
+
+        compression = zipfile.ZIP_STORED
+        if stored == False:
+            compression = zipfile.ZIP_DEFLATED
+
         full_path = '{}{}'.format(self.__path, file_name)
-        return ok, full_path
+        with zipfile.ZipFile(full_path, mode='w', \
+                compression = compression) as zf:
+            total_file_sizes = 0
+            total_file_compress_sizes = 0
+
+            print(full_path)
+
+            for folder in objects_dict:
+                for file in objects_dict[folder]:
+                    print('\33[35mДобавляется\33[37m ', file, '...',
+                          sep='')
+                    zf.write(file)
+                    compress_size = (
+                        zf.infolist()[-1].compress_size)
+                    total_file_compress_sizes += compress_size
+                    file_size = (
+                        zf.infolist()[-1].file_size)
+                    total_file_sizes += file_size
+                    if file_size > 0:
+                        file_compression = ' ({}%) '.format(
+                            int(compress_size / file_size * 100))
+                    else:
+                        file_compression = ' '
+
+                    print(human_space(file_size), ' >>> ',
+                          human_space(compress_size),
+                          file_compression, sep = '', end = '')
+                    print('\33[32mok!\33[37m')
+
+        if total_file_sizes > 0:
+            total_file_compression = '({}%) '.format(
+                int(total_file_compress_sizes / total_file_sizes * 100))
+        else:
+            total_file_compression = ' '
+        print('--- --- --- --- --- --- ---')
+        print('\33[35mTOTAL\33[37m:', human_space(total_file_sizes), '>>>',
+              human_space(total_file_compress_sizes), total_file_compression, end = '')
+        print('\33[32mOK!\33[37m')
+        return ok

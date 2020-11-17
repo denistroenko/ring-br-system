@@ -1,5 +1,6 @@
 from classes import *
 from baseapplib import *
+import glob
 
 # GLOBAL
 VERSION = '0.0.1'
@@ -68,7 +69,9 @@ def set_config_defaults():
     # Брать только сегодняшние файлы
     config.set('take', 'only_today', 'no')
 
-    config.set('archive', 'deflated', 'yes')
+    # config.set('take-dirs', '', '')  # Критический по условию
+
+    config.set('archive', 'stored', 'yes')
     config.set('archive', 'date_format', 'YYYY-MM-DD_WW_hh:mm:ss')
 
 
@@ -307,8 +310,40 @@ def load_ring_files():
 def create_new_archive(file_name):
     global config
     global ring
+    global console
+
+    console.print_title('ARCHIVE MODE', '~', 55)
 
     prefix = config.get('ring', 'prefix')
+    stored = False
+    if config.get('archive', 'stored') == 'yes':
+        stored = True
+
+    # CREATE OBJ DICT FOR ARCHIVE
+    # Get dirs dict
+    try:
+        take_dirs_dict = config.get_section_dict('take_dirs')
+    except KeyError:
+        print_error('Не указана хотя бы одна папка для архивирования ' +
+                    '(параметры в секции [take_dirs])', True)
+    zip_dict = {}
+    for dir in take_dirs_dict:
+        # Folder and objects inside zip
+        folder = take_dirs_dict[dir]
+        # adding '/**' to end path
+        if folder[-1] != '/':
+            folder += '/'
+        folder += '**'
+
+        if '/*/**' in folder or '/**/**' in folder \
+                or '?' in folder:
+            print_error('Нельзя указывать маски файлов в пути take_dirs!\n' +
+                        'указано в ' + dir + ':' + take_dirs_dict[dir],
+                        True)
+
+        recursive_objects = sorted(glob.glob(folder, recursive = True))
+        zip_dict[folder] = recursive_objects
+
 
     # String - format string
     date_format = config.get('archive', 'date_format')
@@ -338,8 +373,11 @@ def create_new_archive(file_name):
     if file_name == '.zip':
         file_name = 'ring_file.zip'
 
-    ok, result = ring.new_archive(file_name)
-    print(ok, result)
+    try:
+        ring.new_archive(file_name, zip_dict, False)
+    except NotADirectoryError:
+        print_error('Среди списка папок [take-dirs] найден элемент, ' +
+                    'не относящийся к папке!', True)
 
 
 def print_help():
@@ -433,8 +471,7 @@ def main():
     # Print message and print all settings in global config
     message = ['Algorithm Computers', 'dev@a-computers.ru',
                 '', '"Ring"', 'Утилита управления архивными файлами']
-    console.print_title(message, '*', 55)
-    print()
+    console.print_title(message, '*', 55, False, False)
 
     if '--config' in args:
         index = args.index('--config')
