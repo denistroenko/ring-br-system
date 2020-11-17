@@ -138,7 +138,7 @@ class Ring:
         while len(self.__files) > count:
             self.__files[0].delete_from_disk()
             self.__files.pop(0)
-        self.__calculate()
+            self.__calculate()
         return ok
 
     def cut_by_age(self, max_age: int) -> bool:
@@ -148,7 +148,7 @@ class Ring:
                 self.__files[0].get_age() > max_age:
             self.__files[0].delete_from_disk()
             self.__files.pop(0)
-        self.__calculate()
+            self.__calculate()
         return ok
 
     def cut_by_space(self, gigabytes: int) -> bool:
@@ -215,4 +215,5 @@ class Ring:
         print('\33[35mTOTAL\33[37m:', human_space(total_file_sizes), '>>>',
               human_space(total_file_compress_sizes), total_file_compression, end = '')
         print('\33[32mOK!\33[37m')
+
         return ok

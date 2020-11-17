@@ -379,6 +379,8 @@ def create_new_archive(file_name):
         print_error('Среди списка папок [take-dirs] найден элемент, ' +
                     'не относящийся к папке!', True)
 
+    load_ring_files()
+    sort_ring_files()
 
 def print_help():
     print('--help\t\t\t- выдает это сообщение помощи по командам')
