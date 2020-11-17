@@ -184,8 +184,9 @@ class Ring:
             print(full_path)
 
             for folder in objects_dict:
+                print('\33[35m', folder[:-1], '\33[37m', sep = '')
                 for file in objects_dict[folder]:
-                    print('\33[35mДобавляется\33[37m ', file, '...',
+                    print('\33[37mДобавляется\33[37m ', '\33[37m', file, '\33[37m', '...',
                           sep='')
                     zf.write(file)
                     compress_size = (
@@ -203,7 +204,7 @@ class Ring:
                     print(human_space(file_size), ' >>> ',
                           human_space(compress_size),
                           file_compression, sep = '', end = '')
-                    print('\33[32mok!\33[37m')
+                    print('\33[32m\33[37m')
 
         if total_file_sizes > 0:
             total_file_compression = '({}%) '.format(
