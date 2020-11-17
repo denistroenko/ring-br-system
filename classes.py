@@ -169,16 +169,15 @@ class Ring:
         return self.__total_files
 
     def new_archive(self, file_name: str, objects_dict: dict,
-                    stored: bool = True, only_today_files: bool = False):
+                    deflated: bool = True, only_today_files: bool = False):
         ok = True
-
-        compression = zipfile.ZIP_STORED
-        if stored == False:
-            compression = zipfile.ZIP_DEFLATED
+        zip_compression = zipfile.ZIP_STORED
+        if deflated:
+            zip_compression = zipfile.ZIP_DEFLATED
 
         full_path = '{}{}'.format(self.__path, file_name)
         with zipfile.ZipFile(full_path, mode='w', \
-                compression = compression) as zf:
+                compression=zip_compression) as zf:
             total_file_sizes = 0
             total_file_compress_sizes = 0
 

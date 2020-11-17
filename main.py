@@ -71,7 +71,7 @@ def set_config_defaults():
 
     # config.set('take-dirs', '', '')  # Критический по условию
 
-    config.set('archive', 'stored', 'yes')
+    config.set('archive', 'deflated', 'yes')
     config.set('archive', 'date_format', 'YYYY-MM-DD_WW_hh:mm:ss')
 
 
@@ -315,9 +315,9 @@ def create_new_archive(file_name):
     console.print_title('ARCHIVE MODE', '~', 55)
 
     prefix = config.get('ring', 'prefix')
-    stored = False
-    if config.get('archive', 'stored') == 'yes':
-        stored = True
+    deflated = False
+    if config.get('archive', 'deflated') == 'yes':
+        deflated = True
 
     # CREATE OBJ DICT FOR ARCHIVE
     # Get dirs dict
@@ -374,7 +374,7 @@ def create_new_archive(file_name):
         file_name = 'ring_file.zip'
 
     try:
-        ring.new_archive(file_name, zip_dict, False)
+        ring.new_archive(file_name, zip_dict, deflated)
     except NotADirectoryError:
         print_error('Среди списка папок [take-dirs] найден элемент, ' +
                     'не относящийся к папке!', True)
