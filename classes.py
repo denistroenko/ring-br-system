@@ -156,7 +156,7 @@ class Ring:
         while self.__total_space > gigabytes * 1024**3:
             self.__files[0].delete_from_disk()
             self.__files.pop(0)
-        self.__calculate()
+            self.__calculate()
         return ok
 
     def get_files(self) -> list:
