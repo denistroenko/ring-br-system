@@ -206,7 +206,7 @@ def show_mode():
 
         if ratio >= green_min and ratio <= green_max:
             print_file_line(file_no,
-                            date.year, date.month, date.day, age, age,
+                            date.year, date.month, date.day, time, age,
                             file_name, size, ratio, show_plus_space,
                             color_difference = color_difference,
                             color_age = color_age,
