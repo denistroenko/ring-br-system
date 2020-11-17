@@ -58,9 +58,11 @@ class RingFile:
             zip_file = zipfile.ZipFile(self.__full_path, 'r')
         except zipfile.BadZipfile:
             return False, 'Это не zip-файл!'
+
         result = zip_file.testzip()
+
         if result == None:
-            return True, 'Тест успешно пройден.'
+            return True, '\33[32mок!\33[37mТест успешно пройден.'
         else:
             return False, result
 
@@ -177,7 +179,7 @@ class Ring:
 
         full_path = '{}{}'.format(self.__path, file_name)
         with zipfile.ZipFile(full_path, mode='w', \
-                compression=zip_compression) as zf:
+                compression=zip_compression) as zip_file:
             total_file_sizes = 0
             total_file_compress_sizes = 0
 
@@ -186,34 +188,44 @@ class Ring:
             for folder in objects_dict:
                 print('\33[35m', folder[:-1], '\33[37m', sep = '')
                 for file in objects_dict[folder]:
-                    print('\33[37mДобавляется\33[37m ', '\33[37m', file, '\33[37m', '...',
-                          sep='')
-                    zf.write(file)
+                    file_print = file[-50:]
+                    if file_print != file:
+                        file_print = '[..]{}'.format(file_print)
+                    else:
+                        file_print += f'{" " * (54 - len(file_print))}'
+                    print('\33[37m{}\33[37m'.format('+'),
+                          '\33[37m{}\33[37m'.format(file_print), end = ' ',
+                          flush=True)
+                    zip_file.write(file)
                     compress_size = (
-                        zf.infolist()[-1].compress_size)
+                        zip_file.infolist()[-1].compress_size)
                     total_file_compress_sizes += compress_size
                     file_size = (
-                        zf.infolist()[-1].file_size)
+                        zip_file.infolist()[-1].file_size)
                     total_file_sizes += file_size
                     if file_size > 0:
-                        file_compression = ' ({}%) '.format(
+                        file_compression = '\33[32m{:3d}%\33[37m '.format(
                             int(compress_size / file_size * 100))
                     else:
-                        file_compression = ' '
+                        file_compression = '       '
 
-                    print(human_space(file_size), ' >>> ',
-                          human_space(compress_size),
-                          file_compression, sep = '', end = '')
-                    print('\33[32m\33[37m')
+                    if file_size != 0:
+                        print(file_compression, human_space(file_size),
+                              ' >>> ', human_space(compress_size),
+                              sep = '')
+                    else:
+                        print('\33[32m   =\33[37m')
 
         if total_file_sizes > 0:
-            total_file_compression = '({}%) '.format(
+            total_file_compression = '\33[32m{}%\33[37m'.format(
                 int(total_file_compress_sizes / total_file_sizes * 100))
         else:
             total_file_compression = ' '
-        print('--- --- --- --- --- --- ---')
-        print('\33[35mTOTAL\33[37m:', human_space(total_file_sizes), '>>>',
-              human_space(total_file_compress_sizes), total_file_compression, end = '')
+        print('-' * 56)
+        print('\33[35mTOTAL\33[37m:',
+              total_file_compression,
+              human_space(total_file_sizes), '>>>',
+              human_space(total_file_compress_sizes), end = ' ')
         print('\33[32mOK!\33[37m')
 
         return ok

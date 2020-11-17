@@ -62,14 +62,14 @@ def set_config_defaults():
     config.set('remote_ring', 'user', '')
     config.set('remote_ring', 'password', '')
 
-    # Удаленные объекты (брать по маске). Беруться все элементы {take-files}
-    # config.set('take-files', 'files', '*')  # Критический по усл.
+    # Удаленные объекты (брать по маске). Беруться все элементы {source-files}
+    # config.set('source-files', 'files', '*')  # Критический по усл.
     # Режим получения файлов для архивирования (copy/move/none)
-    config.set('take', 'mode', 'copy')  # Критический по условию
+    config.set('source', 'mode', 'copy')  # Критический по условию
     # Брать только сегодняшние файлы
-    config.set('take', 'only_today', 'no')
+    config.set('source', 'only_today', 'no')
 
-    # config.set('take-dirs', '', '')  # Критический по условию
+    # config.set('source-dirs', '', '')  # Критический по условию
 
     config.set('archive', 'deflated', 'yes')
     config.set('archive', 'date_format', 'YYYY-MM-DD_WW_hh:mm:ss')
@@ -322,14 +322,14 @@ def create_new_archive(file_name):
     # CREATE OBJ DICT FOR ARCHIVE
     # Get dirs dict
     try:
-        take_dirs_dict = config.get_section_dict('take_dirs')
+        source_dirs_dict = config.get_section_dict('source_dirs')
     except KeyError:
         print_error('Не указана хотя бы одна папка для архивирования ' +
-                    '(параметры в секции [take_dirs])', True)
+                    '(параметры в секции [source_dirs])', True)
     zip_dict = {}
-    for dir in take_dirs_dict:
+    for dir in source_dirs_dict:
         # Folder and objects inside zip
-        folder = take_dirs_dict[dir]
+        folder = source_dirs_dict[dir]
         # adding '/**' to end path
         if folder[-1] != '/':
             folder += '/'
@@ -337,8 +337,8 @@ def create_new_archive(file_name):
 
         if '/*/**' in folder or '/**/**' in folder \
                 or '?' in folder:
-            print_error('Нельзя указывать маски файлов в пути take_dirs!\n' +
-                        'указано в ' + dir + ':' + take_dirs_dict[dir],
+            print_error('Нельзя указывать маски файлов в пути source_dirs!\n' +
+                        'указано в ' + dir + ':' + source_dirs_dict[dir],
                         True)
 
         recursive_objects = sorted(glob.glob(folder, recursive = True))
@@ -376,11 +376,12 @@ def create_new_archive(file_name):
     try:
         ring.new_archive(file_name, zip_dict, deflated)
     except NotADirectoryError:
-        print_error('Среди списка папок [take-dirs] найден элемент, ' +
+        print_error('Среди списка папок [source_dirs] найден элемент, ' +
                     'не относящийся к папке!', True)
 
     load_ring_files()
     sort_ring_files()
+
 
 def print_help():
     print('--help\t\t\t- выдает это сообщение помощи по командам')
