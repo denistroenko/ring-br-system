@@ -353,8 +353,8 @@ def send_emails(subject: str = ''):
                                 subject, letter.get_letter(), True)
             print(' Отправлено!')
         except:
-            print_error('\nОшибка отправки отчета на email. Проверьте ' +\
-                        'настройки секции smtp_server в файле конфигурации.',
+            print_error('Ошибка! Проверьте ' +\
+                        'секцию smtp_server в файле конфигурации.',
                         False)
 
 
@@ -434,7 +434,7 @@ def load_ring_files():
         print_error('Не найден ring-каталог: {}'.format(path), True)
 
 
-def create_new_archive(file_name):
+def create_new_archive():
     global config
     global ring
     global console
@@ -607,12 +607,11 @@ def main():
     # Read args command line
     args = console.get_args()
 
-
+    # ИСКЛЮЧАЮЩИЕ РЕЖИМЫ (И СРАЗУ ВЫХОД)
     if '--version' in args:
         message = ['Version', 'Ring v.{}'.format(VERSION)]
         console.print_title(message, '*', 55)
         sys.exit()
-
     if '--help' in args:
         print_help()
         sys.exit()
@@ -625,6 +624,7 @@ def main():
                 '', '"Ring"', 'Утилита управления архивными файлами']
     console.print_title(message, '*', 55, False, False)
 
+    # СМЕНА НАСТРОЕК
     if '--config' in args:
         index = args.index('--config')
         next_index = index + 1
@@ -637,9 +637,6 @@ def main():
             print_error(
                 "Не найден файл, указанный в параметре --config: {}".format(
                     CONFIG_FILE), True)
-
-    if '--config-export' in args:
-        export_config()
 
     # Read config file
     config.read_file(CONFIG_FILE)
@@ -655,30 +652,36 @@ def main():
     # Sort ring files (list)
     sort_ring_files()
 
-    if '--settings' in args or '-s' in args:
+    # ФЛАГИ
+    if '-s' in args:
         print('Текущие настройки программы:')
         print_settings()
         print()
-        sys.exit()
-    if '--cut-bad' in args:
+    for i in '0123456789':
+        if f'-{i}' in args:
+            config.set('archive', 'compression_level', i)
+            config.set('archive', 'deflated', 'yes')
+
+    # ТЕХНИЧЕСКИЕ РЕЖИМЫ РАБОТЫ
+    if 'cut-bad' in args:
         cut_bad_mode()
-    if '--info' in args:
-        pass
-    if '--content' in args or '-c' in args:
+    if 'content' in args:
         show_content_zip_file()
         sys.exit()
-    if '--test' in args or '-t' in args:
+    if 'test' in args:
         test_zip_file()
-        sys.exit()
+    if 'config-export' in args:
+        export_config()
 
+    # ОСНОВНЫЕ РЕЖИМЫ РАБОТЫ
     if 'period' in args:
         config.set('run', 'period', 'yes')
-        create_new_archive('test_file.zip')
+        create_new_archive()
         cut_mode()
         show_mode()
         sys.exit()
     if 'archive' in args:
-        create_new_archive('test_file.zip')
+        create_new_archive()
     if 'cut' in args:
         cut_mode()
     if 'show' in args:
