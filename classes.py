@@ -170,44 +170,48 @@ class Ring:
     def get_total_files(self):
         return self.__total_files
 
-    def new_archive(self, file_name: str, objects_dict: dict,
-                    deflated: bool = True, only_today_files: bool = False):
+    def new_archive(self, zip_file_name: str, objects: dict,
+                    deflated: bool = True, compression_level: int = None,
+                    only_today_files: bool = False):
         ok = True
         zip_compression = zipfile.ZIP_STORED
         if deflated:
             zip_compression = zipfile.ZIP_DEFLATED
+        full_path = '{}{}'.format(self.__path, zip_file_name)
 
-        full_path = '{}{}'.format(self.__path, file_name)
-        with zipfile.ZipFile(full_path, mode='w', \
-                compression=zip_compression) as zip_file:
+        with zipfile.ZipFile(
+                full_path, mode='w',
+                compression = zip_compression, 
+                allowZip64=True,
+                compresslevel = compression_level) as zip_file:
             total_file_sizes = 0
             total_file_compress_sizes = 0
+            total_files = 0
 
             print(full_path)
-
-            for folder in objects_dict:
-                print('\33[35m', folder[:-1], '\33[37m', sep = '')
-                for file in objects_dict[folder]:
+            for folder in objects:
+                print('\33[35m', folder, '\33[37m', sep = '')
+                for file in objects[folder]:
                     file_print = file[-50:]
                     if file_print != file:
                         file_print = '[..]{}'.format(file_print)
                     else:
                         file_print += f'{" " * (54 - len(file_print))}'
-                    print('\33[37m{}\33[37m'.format('+'),
-                          '\33[37m{}\33[37m'.format(file_print), end = ' ',
+                    print('+ {}'.format(file_print), end = ' ',
                           flush=True)
-                    zip_file.write(file)
+                    
+                    arcname = folder + file[len(self.__path)-2:]
+                    zip_file.write(file, arcname)
                     compress_size = (
                         zip_file.infolist()[-1].compress_size)
                     total_file_compress_sizes += compress_size
                     file_size = (
                         zip_file.infolist()[-1].file_size)
                     total_file_sizes += file_size
+                    
                     if file_size > 0:
                         file_compression = '\33[32m{:3d}%\33[37m '.format(
                             int(compress_size / file_size * 100))
-                    else:
-                        file_compression = '       '
 
                     if file_size != 0:
                         print(file_compression, human_space(file_size),
@@ -215,6 +219,7 @@ class Ring:
                               sep = '')
                     else:
                         print('\33[32m   =\33[37m')
+                    total_files += 1
 
         if total_file_sizes > 0:
             total_file_compression = '\33[32m{}%\33[37m'.format(
@@ -222,10 +227,17 @@ class Ring:
         else:
             total_file_compression = ' '
         print('-' * 56)
-        print('\33[35mTOTAL\33[37m:',
+        print('\33[35mИТОГО\33[37m:',
               total_file_compression,
               human_space(total_file_sizes), '>>>',
-              human_space(total_file_compress_sizes), end = ' ')
-        print('\33[32mOK!\33[37m')
+              human_space(total_file_compress_sizes),
+              f'\33[37m({total_files} файлов)\33[37m', sep=' ', end = '\n')
+        # print('\33[32mOK!\33[37m')
 
-        return ok
+        result = f'Добавлен:\n{zip_file_name}\n' +\
+            f'{int(total_file_compress_sizes / total_file_sizes * 100)}%, ' +\
+            f'{human_space(total_file_sizes)} >>> ' +\
+            f'{human_space(total_file_compress_sizes)}, ' +\
+            f'{total_files} файлов\n'
+
+        return ok, result

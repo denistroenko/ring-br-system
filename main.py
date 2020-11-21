@@ -1,18 +1,27 @@
 from classes import *
 from baseapplib import *
 import glob
+import socket
 
 # GLOBAL
 VERSION = '0.0.1'
+
 console = Console()
 config = Config()
 ring = Ring()
+letter = HtmlLetter()
+email_sender = EmailSender()
+
 APP_DIR = get_script_dir()
+
 CONFIG_FILE = '{}config'.format(APP_DIR)
 
 
 def set_config_defaults():
     global config
+
+    # Запуск был выполнен с параметром 'period'
+    config.set('run', 'period', 'no')
 
     # Папка с архивами (куда складывать, чем управлять)
     config.set('ring', 'dir', '/mnt/ring/')  # Критический
@@ -29,14 +38,19 @@ def set_config_defaults():
     # Показывать исключенные из ring_dir файлы
     config.set('ring', 'show_excluded', 'no')
 
-    # Слать ли отчет администратору (yes|no)
-    config.set('email', 'send_admin_email', 'no')
-    # admin email
-    config.set('email', 'admin_email', '')
-    # Слать ли отчет конечному пользователю
-    config.set('email', 'send_user_email', 'no')
-    # user email
-    config.set('email', 'user_email', '')
+    config.set('report', 'send_to_admin', 'no')
+    config.set('report', 'admin_email', '')
+    config.set('report', 'send_to_user', 'no')
+    config.set('report', 'user_email', '')
+    config.set('report', 'logging', 'no')
+    config.set('report', 'log-file', 'ring.log')
+
+    config.set('smtp_server', 'hostname', '')
+    config.set('smtp_server', 'port', '465')
+    config.set('smtp_server', 'use_ssl', 'yes')
+    config.set('smtp_server', 'login', '')
+    config.set('smtp_server', 'password', '')
+    config.set('smtp_server', 'from_address', '')
 
     # Солько показывать файлов в кольце (0 - все)
     config.set('show', 'show_last', '15')
@@ -67,11 +81,10 @@ def set_config_defaults():
     # Режим получения файлов для архивирования (copy/move/none)
     config.set('source', 'mode', 'copy')  # Критический по условию
     # Брать только сегодняшние файлы
-    config.set('source', 'only_today', 'no')
-
+    config.set('source', 'only_today_files', 'no')
     # config.set('source-dirs', '', '')  # Критический по условию
-
     config.set('archive', 'deflated', 'yes')
+    config.set('archive', 'compression_level', '9')
     config.set('archive', 'date_format', 'YYYY-MM-DD_WW_hh:mm:ss')
 
 
@@ -80,10 +93,62 @@ def print_settings():
     print(config)
 
 
+def configure_sender():
+    global config
+    global email_sender
+
+    host = config.get('smtp_server', 'hostname')
+    port = int(config.get('smtp_server', 'port'))
+    login = config.get('smtp_server', 'login')
+    password = config.get('smtp_server', 'password')
+    from_addr = config.get('smtp_server', 'from_address')
+    use_ssl = False
+    if config.get('smtp_server', 'use_ssl') == 'yes':
+        use_ssl = True
+
+    email_sender.configure(host, login, password, from_addr,
+                               use_ssl, port)
+
+
+def configure_letter_head():
+    global VERSION
+    global letter
+    uname = os.uname()
+    hostname = socket.gethostname()
+
+    letter.append('System', 'h3', color = 'gray')
+    letter.append(str(uname), color='gray')
+    letter.append('hostname: ' + hostname, color='gray')
+    letter.append()
+    letter.append('Ring tool', 'h3', color = 'gray')
+    letter.append('Version: ' + VERSION, color='gray')
+    letter.append('Folder: ' + APP_DIR, color = 'gray')
+    letter.append('Config file: ' + CONFIG_FILE, color='gray')
+    letter.append()
+    letter.append('Report', 'h3')
+
+
 def print_error(error: str, stop_program: bool = False):
-    print('\033[31m{}'.format(error), '\033[37m\033[40m')
+    global letter
+    global email_sender
+    global config
+
+    send_to_admin = False
+    if config.get('report', 'send_to_admin') == 'yes':
+        send_to_admin = True
+    admin_email = config.get('report', 'admin_email')
+
     if stop_program:
+        print('\033[31m{}\033[37m\033[40m'.format(error))
+        letter.append('Ring tool остановлена с ошибкой: ' + error,
+                      color = 'red', weight = 600)
+        send_emails('FATAL ERROR report from "Ring tool"')
         sys.exit()
+    else:
+        letter.append()
+        letter.append('В Ring tool произошла ошибка: ' + error,
+                      color = 'orange', weight = 600)
+        print('\033[33m{}\033[37m\033[40m'.format(error))
 
 
 def print_file_line(number,
@@ -132,7 +197,10 @@ def show_mode():
     ok = True
     global ring
     global config
+    global letter
+    global email_sender
 
+    letter.append('Show mode', 'h4')
 
     if int(config.get('show', 'show_last')) > 0:
         short = True
@@ -204,6 +272,15 @@ def show_mode():
             color_date = '\033[30m\033[47m'
             color_age = '\033[30m\033[47m'
 
+        letter.append('{:03d}'.format(file_no), 'span')
+        letter.append('{:4d}-{:2d}-{:2d}'.format(
+            date.year, date.month, date.day), 'span', border = True)
+        letter.append(str(date.time), 'span')
+        letter.append('{:03d}d'.format(age), 'span', border = True)
+        letter.append(file_name, 'span')
+        letter.append(f'{human_space(size)} {ratio}', 'span')
+        letter.append('<br>', 'span')
+
         if ratio >= green_min and ratio <= green_max:
             print_file_line(file_no,
                             date.year, date.month, date.day, time, age,
@@ -229,6 +306,56 @@ def show_mode():
         total_space = ring.get_total_space()
     print('Всего файлов: ', ring.get_total_files(), '; Занято места: ',
          human_space(total_space), sep = '')
+    letter.append(f'Всего файлов: {ring.get_total_files()}, Занято места: ' +
+         f'{human_space(total_space)}')
+
+    send_emails()
+
+
+def send_emails(subject: str = ''):
+    global config
+    global letter
+
+    # Флаг режим 'period'
+    is_period_mode = False
+    if config.get('run', 'period') == 'yes':
+        is_period_mode = True
+
+    # Флаг "Отправлять админу"
+    is_send_email_to_admin = False
+    # Ставим флаг "Отправлять админу", если это в настройках
+    # ИЛИ если не пустая переданная "тема письма"
+    if config.get('report', 'send_to_admin') == 'yes':
+        is_send_email_to_admin = True
+    if subject != '':
+        is_send_email_to_admin = True
+        is_period_mode = True  # Здесь ставим принудительно True, чтобы
+                               # логика отработала тоже принудительно в 
+                               # части отправления письма админу (строка 347) 
+    
+    # Флаг "Отправлять пользователю"
+    is_send_email_to_user = False
+    if config.get('report', 'send_to_user') == 'yes':
+        is_send_email_to_user = True
+
+    # Если тема не передана, т.е. == "", то заменить на стандартную
+    if subject =='':
+        subject = 'Normal report from "Ring tool"'
+
+    admin_email_address = config.get('report', 'admin_email')
+
+    if is_period_mode and is_send_email_to_admin:
+        try:
+            print()
+            print('Отправляю письмо администратору ({})...'.format(
+                admin_email_address), end = '', flush=True)
+            email_sender.send_email(admin_email_address,
+                                subject, letter.get_letter(), True)
+            print(' Отправлено!')
+        except:
+            print_error('\nОшибка отправки отчета на email. Проверьте ' +\
+                        'настройки секции smtp_server в файле конфигурации.',
+                        False)
 
 
 def show_content_zip_file(file_index: int = -1):
@@ -326,6 +453,7 @@ def create_new_archive(file_name):
     except KeyError:
         print_error('Не указана хотя бы одна папка для архивирования ' +
                     '(параметры в секции [source_dirs])', True)
+    # init
     zip_dict = {}
     for dir in source_dirs_dict:
         # Folder and objects inside zip
@@ -342,7 +470,9 @@ def create_new_archive(file_name):
                         True)
 
         recursive_objects = sorted(glob.glob(folder, recursive = True))
-        zip_dict[folder] = recursive_objects
+        # Создаем ключ словаря и значение. Значение - это то, что вернула функция glob,
+        # а ключ - ключ текущий словаря source_dirs_dict
+        zip_dict[dir] = recursive_objects
 
 
     # String - format string
@@ -373,17 +503,36 @@ def create_new_archive(file_name):
     if file_name == '.zip':
         file_name = 'ring_file.zip'
 
+    compression_level = int(config.get('archive', 'compression_level'))
+    
+    only_today_files = False
+    if config.get('source', 'only_today_files') == 'yes':
+        only_today_files = True
+
     try:
-        ring.new_archive(file_name, zip_dict, deflated)
+        ok, new_archive_info = \
+            ring.new_archive(
+                             file_name, zip_dict, deflated,
+                             compression_level, only_today_files)
+        new_archive_info = new_archive_info.replace('\n', '<br>')
     except NotADirectoryError:
         print_error('Среди списка папок [source_dirs] найден элемент, ' +
                     'не относящийся к папке!', True)
+
+    global letter
+    letter.append('Arhive mode', 'h4')
+    letter.append(new_archive_info)
+    letter.append('Источники:')
+    for key in source_dirs_dict:
+        letter.append(source_dirs_dict[key])
 
     load_ring_files()
     sort_ring_files()
 
 
 def print_help():
+    print('usage: ring archive|cut|show \n[--cut-bad] [--config file] ' +
+          '[--settings] [--test] [--content] [--config-export]')
     print('--help\t\t\t- выдает это сообщение помощи по командам')
     print('--settings -s\t\t- вывод текущих настроек программы')
     print('--test -t\t\t- ???')
@@ -403,19 +552,19 @@ def cut_mode():
             count = int(config.get('ring', 'count'))
             ring.cut_by_count(count)
         except:
-            print_error('Неверная настройка [ring] count в файле config.')
+            print_error('Неверная настройка [ring] count в файле config.', True)
     elif cut_type == 'age':
         try:
             max_age = int(config.get('ring', 'age'))
             ring.cut_by_age(max_age)
         except:
-            print_error('Неверная настройка [ring] age в файле config.')
+            print_error('Неверная настройка [ring] age в файле config.', True)
     elif cut_type == 'space':
         try:
             gigabytes = round(float(config.get('ring', 'space')), 2)
             ring.cut_by_space(gigabytes)
         except:
-            print_error('Неверная настройка [ring] space в файле config.')
+            print_error('Неверная настройка [ring] space в файле config.', True)
     else:
         print_error('Неизвестный режим работы кольца: {}.'.format(
                     cut_type), True)
@@ -497,6 +646,10 @@ def main():
 
     fix_config()
 
+    configure_sender()
+
+    configure_letter_head()
+
     # Load ring files (objects)
     load_ring_files()
     # Sort ring files (list)
@@ -518,8 +671,12 @@ def main():
         test_zip_file()
         sys.exit()
 
-    if 'work' in args:
-        pass
+    if 'period' in args:
+        config.set('run', 'period', 'yes')
+        create_new_archive('test_file.zip')
+        cut_mode()
+        show_mode()
+        sys.exit()
     if 'archive' in args:
         create_new_archive('test_file.zip')
     if 'cut' in args:

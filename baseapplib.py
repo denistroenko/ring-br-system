@@ -118,15 +118,22 @@ class PasswordGenerator:
 
 class EmailSender:
 
-    def __init__(self, smtp_hostname: str, login: str, password: str,
-                 from_address: str, use_SSL: bool = True, SSL_port: int = 465):
+    def __init__(self):
+        self.__host = ''
+        self.__login = ''
+        self.__password = ''
+        self.__from = ''
+        self.__use_ssl = None
+        self.__port = 0
 
+    def configure(self, smtp_hostname: str, login: str, password: str,
+                 from_address: str, use_ssl: bool = True, port: int = 465):
         self.__host = smtp_hostname
         self.__login = login
         self.__password = password
         self.__from = from_address
-        self.__use_SSL = use_SSL
-        self.__SSL_port = SSL_port
+        self.__use_ssl = use_ssl
+        self.__port = port
 
     def send_email(self, to_address: str, subject: str, message: str,
                    use_html_format: bool = False):
@@ -140,8 +147,8 @@ class EmailSender:
         msg['From'] = self.__from
         msg['To'] = to_address
 
-        if self.__use_SSL:
-            server = smtplib.SMTP_SSL(self.__host, self.__SSL_port)
+        if self.__use_ssl:
+            server = smtplib.SMTP_SSL(self.__host, self.__port)
         else:
             server = smtplib.SMTP(self.__host)
 
@@ -165,7 +172,7 @@ class HtmlLetter:
             '">\n{}\n' + '\t</body>\n</html>'
         self.__body = ''
 
-    def get(self):
+    def get_letter(self):
 
         html_letter = \
             self.__html_letter.format(self.__background_color,
@@ -174,7 +181,7 @@ class HtmlLetter:
                                       self.__body)
         return html_letter
 
-    def add(self,
+    def append(self,
             text: str = '',
             tag_type: str = 'div',
             weight: int = 0,
