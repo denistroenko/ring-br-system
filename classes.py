@@ -200,7 +200,8 @@ class Ring:
                     print('+ {}'.format(file_print), end = ' ',
                           flush=True)
                     
-                    arcname = folder + file[len(self.__path)-2:]
+                    arcname = folder + '/' + file[len(self.__path)-1:]
+                    
                     zip_file.write(file, arcname)
                     compress_size = (
                         zip_file.infolist()[-1].compress_size)

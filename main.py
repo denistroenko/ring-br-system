@@ -2,6 +2,7 @@ from classes import *
 from baseapplib import *
 import glob
 import socket
+import sh
 
 # GLOBAL
 VERSION = '0.0.1'
@@ -64,15 +65,15 @@ def set_config_defaults():
 
     # Тип remote-подключения к source (ftp/smb/none)
     config.set('remote_source', 'type', 'none')
-    config.set('remote_source', 'mount', '')
-    config.set('remote_source', 'host', '')
+    config.set('remote_source', 'target', '')
+    config.set('remote_source', 'path', '')
     config.set('remote_source', 'user', '')
     config.set('remote_source', 'password', '')
 
     # Тип remote-подключения к ring (ftp/smb/none)
     config.set('remote_ring', 'type', 'none')
-    config.set('remote_ring', 'mount', '')
-    config.set('remote_ring', 'host', '')
+    config.set('remote_ring', 'target', '')
+    config.set('remote_ring', 'path', '')
     config.set('remote_ring', 'user', '')
     config.set('remote_ring', 'password', '')
 
@@ -330,9 +331,9 @@ def send_emails(subject: str = ''):
     if subject != '':
         is_send_email_to_admin = True
         is_period_mode = True  # Здесь ставим принудительно True, чтобы
-                               # логика отработала тоже принудительно в 
-                               # части отправления письма админу (строка 347) 
-    
+                               # логика отработала тоже принудительно в
+                               # части отправления письма админу (строка 347)
+
     # Флаг "Отправлять пользователю"
     is_send_email_to_user = False
     if config.get('report', 'send_to_user') == 'yes':
@@ -471,7 +472,7 @@ def create_new_archive():
 
         recursive_objects = sorted(glob.glob(folder, recursive = True))
         # Создаем ключ словаря и значение. Значение - это то, что вернула функция glob,
-        # а ключ - ключ текущий словаря source_dirs_dict
+        # (она вернула список), а ключ - ключ текущий словаря source_dirs_dict
         zip_dict[dir] = recursive_objects
 
 
@@ -504,7 +505,7 @@ def create_new_archive():
         file_name = 'ring_file.zip'
 
     compression_level = int(config.get('archive', 'compression_level'))
-    
+
     only_today_files = False
     if config.get('source', 'only_today_files') == 'yes':
         only_today_files = True
@@ -601,6 +602,24 @@ def export_config():
     config.write_file(full_path)
 
 
+def mount_remote_source():
+    global config
+    global Ring
+
+    type_remote_source = config.get('remote_source', 'type')
+
+    if type_remote_source == 'smb':
+        target = config.get('remote_source', 'target')
+        path = config.get('remote_source', 'path')
+        user = configet('remote_source', 'user')
+        password = config.get('remote_source', 'password')
+
+        print('Монтирую удаленный источник ', path, '...', sep = '')
+        sh.mount('-t', 'cifs', path, target, '-o',
+                 'username=' + user + ',password=' + password +
+                 'iocharset=utf8' + ',file_mode=0777,dir_mode=0777')
+
+
 def main():
     global console
     global CONFIG_FILE
@@ -646,6 +665,8 @@ def main():
     configure_sender()
 
     configure_letter_head()
+
+    mount_remote_source()
 
     # Load ring files (objects)
     load_ring_files()
