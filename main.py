@@ -72,7 +72,8 @@ def set_config_defaults():
 
     # Тип remote-подключения к ring (ftp/smb/none)
     config.set('remote_ring', 'type', 'none')
-    config.set('remote_ring', 'path', '') config.set('remote_ring', 'user', '')
+    config.set('remote_ring', 'path', '')
+    config.set('remote_ring', 'user', '')
     config.set('remote_ring', 'password', '')
 
     # Удаленные объекты (брать по маске). Беруться все элементы {source-files}
@@ -520,7 +521,10 @@ def create_new_archive():
 
     global letter
     letter.append('Arhive mode', 'h4')
-    letter.append(new_archive_info)
+    if ok:
+        letter.append(new_archive_info)
+    else:
+        letter.append(new_archive_info, color = 'red', weight = 600)
     letter.append('Источники:')
     for key in source_dirs_dict:
         letter.append(source_dirs_dict[key])
@@ -528,6 +532,7 @@ def create_new_archive():
     load_ring_files()
     sort_ring_files()
 
+    return ok
 
 def print_help():
     print('usage: ring archive|cut|show \n[--cut-bad] [--config file] ' +
@@ -718,8 +723,11 @@ def main():
     # ОСНОВНЫЕ РЕЖИМЫ РАБОТЫ
     if 'period' in args:
         config.set('run', 'period', 'yes')
-        create_new_archive()
-        cut_mode()
+
+        ok = create_new_archive()
+
+        if ok: cut_mode()
+
         show_mode()
         sys.exit()
     if 'archive' in args:

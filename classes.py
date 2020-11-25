@@ -181,7 +181,7 @@ class Ring:
 
         with zipfile.ZipFile(
                 full_path, mode='w',
-                compression = zip_compression, 
+                compression = zip_compression,
                 allowZip64=True,
                 compresslevel = compression_level) as zip_file:
             total_file_sizes = 0
@@ -199,17 +199,39 @@ class Ring:
                         file_print += f'{" " * (54 - len(file_print))}'
                     print('+ {}'.format(file_print), end = ' ',
                           flush=True)
-                    
+
                     arcname = folder + '/' + file[len(self.__path)-1:]
-                    
-                    zip_file.write(file, arcname)
+
+                    # Если только сегодняшние, то проверить дату. Если все
+                    # подряд - просто добавть файл, не проверяя дату
+                    if only_today_files:
+                        date_now = '{}-{}-{}'.format(
+                            datetime.datetime.now().year,
+                            datetime.datetime.now().month,
+                            datetime.datetime.now().day)
+                        # Получаем дату изм. файла средствами ОС
+                        date_modify = os.path.getmtime(file)
+                        # Преобразуем в локальное время (будет строка)
+                        date_modify = time.ctime(date_modify)
+                        # Преобразуем в datetime.datetime
+                        date_modify = datetime.datetime.strptime(
+                                date_modify, "%a %b %d %H:%M:%S %Y")
+                        date_modify = str(date_modify)[:10]
+                        if date_now == date_modify:
+                            zip_file.write(file, arcname)
+                        else:
+                            print('ПРОПУЩЕН!')
+                            continue
+                    else:
+                        zip_file.write(file, arcname)
+
                     compress_size = (
-                        zip_file.infolist()[-1].compress_size)
+                            zip_file.infolist()[-1].compress_size)
                     total_file_compress_sizes += compress_size
                     file_size = (
                         zip_file.infolist()[-1].file_size)
                     total_file_sizes += file_size
-                    
+
                     if file_size > 0:
                         file_compression = '\33[32m{:3d}%\33[37m '.format(
                             int(compress_size / file_size * 100))
@@ -220,7 +242,9 @@ class Ring:
                               sep = '')
                     else:
                         print('\33[32m   =\33[37m')
-                    total_files += 1
+                    # Прибавить к счетчику файлов, если это файл, а не папка
+                    if os.path.isfile(file):
+                        total_files += 1
 
         if total_file_sizes > 0:
             total_file_compression = '\33[32m{}%\33[37m'.format(
@@ -234,9 +258,16 @@ class Ring:
               human_space(total_file_compress_sizes),
               f'\33[37m({total_files} файлов)\33[37m', sep=' ', end = '\n')
         # print('\33[32mOK!\33[37m')
+        if total_file_sizes > 0:
+            total_file_compression_result = \
+                str(int(total_file_compress_sizes /
+                        total_file_sizes * 100)) + '%, '
+        else:
+            total_file_compression_result = ''
+            ok = False
 
         result = f'Добавлен:\n{zip_file_name}\n' +\
-            f'{int(total_file_compress_sizes / total_file_sizes * 100)}%, ' +\
+            total_file_compression_result +\
             f'{human_space(total_file_sizes)} >>> ' +\
             f'{human_space(total_file_compress_sizes)}, ' +\
             f'{total_files} файлов\n'
