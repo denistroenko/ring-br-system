@@ -615,9 +615,10 @@ def mount_remote_source():
         password = config.get('remote_source', 'password')
 
         print('Монтирую удаленный источник ', path, '...', sep = '')
+        sh.umount(target)
         sh.mount('-t', 'cifs', path, target, '-o',
                  'username=' + user + ',password=' + password +
-                 'iocharset=utf8' + ',file_mode=0777,dir_mode=0777')
+                 ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777')
 
 
 def main():
