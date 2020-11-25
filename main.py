@@ -611,7 +611,7 @@ def mount_remote_source():
     if type_remote_source == 'smb':
         target = config.get('remote_source', 'target')
         path = config.get('remote_source', 'path')
-        user = configet('remote_source', 'user')
+        user = config.get('remote_source', 'user')
         password = config.get('remote_source', 'password')
 
         print('Монтирую удаленный источник ', path, '...', sep = '')
