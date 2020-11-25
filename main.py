@@ -72,9 +72,7 @@ def set_config_defaults():
 
     # Тип remote-подключения к ring (ftp/smb/none)
     config.set('remote_ring', 'type', 'none')
-    config.set('remote_ring', 'target', '')
-    config.set('remote_ring', 'path', '')
-    config.set('remote_ring', 'user', '')
+    config.set('remote_ring', 'path', '') config.set('remote_ring', 'user', '')
     config.set('remote_ring', 'password', '')
 
     # Удаленные объекты (брать по маске). Беруться все элементы {source-files}
@@ -579,11 +577,17 @@ def sort_ring_files():
 
 
 def fix_config():
-    # Фиксим: последний символ в пути к папке должен быть '/'
+    # Фиксим: последний символ в пути к папке, должен быть '/'
     ring_dir = config.get('ring', 'dir')
     if ring_dir[-1] != '/':
         ring_dir = ring_dir + '/'
         config.set('ring', 'dir', ring_dir)
+
+    # Фиксим: последний символ в пути к папке, должен быть '/'
+    target_dir = config.get('remote_source', 'target')
+    if ring_dir[-1] != '/':
+        ring_dir = ring_dir + '/'
+        config.set('remote_source', 'target', target_dir)
 
     # Фиксим "показывать последние ... файлов": число должно быть положительным
     show_last = int(config.get('show', 'show_last'))
@@ -626,7 +630,7 @@ def mount_remote_ring():
     type_remote_ring = config.get('remote_ring', 'type')
 
     if type_remote_ring == 'smb':
-        target = config.get('remote_ring', 'target')
+        target = config.get('ring', 'dir')
         path = config.get('remote_ring', 'path')
         user = config.get('remote_ring', 'user')
         password = config.get('remote_ring', 'password')
