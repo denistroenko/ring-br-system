@@ -604,7 +604,6 @@ def export_config():
 
 def mount_remote_source():
     global config
-    global Ring
 
     type_remote_source = config.get('remote_source', 'type')
 
@@ -620,6 +619,23 @@ def mount_remote_source():
                  'username=' + user + ',password=' + password +
                  ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777')
 
+
+def mount_remote_ring():
+    global config
+
+    type_remote_ring = config.get('remote_ring', 'type')
+
+    if type_remote_ring == 'smb':
+        target = config.get('remote_ring', 'target')
+        path = config.get('remote_ring', 'path')
+        user = config.get('remote_ring', 'user')
+        password = config.get('remote_ring', 'password')
+
+        print('Монтирую удаленный rin', path, '...', sep = '')
+        sh.umount(target)
+        sh.mount('-t', 'cifs', path, target, '-o',
+                 'username=' + user + ',password=' + password +
+                 ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777')
 
 def main():
     global console
