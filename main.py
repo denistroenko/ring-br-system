@@ -623,10 +623,15 @@ def mount_remote_source():
         password = config.get('remote_source', 'password')
 
         print('Монтирую удаленный источник ', path, '...', sep = '')
-        sh.umount(target)
-        sh.mount('-t', 'cifs', path, target, '-o',
+        try:
+            sh.umount(target)
+            sh.mount('-t', 'cifs', path, target, '-o',
                  'username=' + user + ',password=' + password +
                  ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777')
+        except sh.ErrorReturnCode_32:
+            print_error('Ошибка монтирования remote_source! Устройство занято!', True)
+        except:
+            print_error('Ошибка монтирования remote_source!', True)
 
 
 def mount_remote_ring():
@@ -640,11 +645,17 @@ def mount_remote_ring():
         user = config.get('remote_ring', 'user')
         password = config.get('remote_ring', 'password')
 
-        print('Монтирую удаленный rin', path, '...', sep = '')
-        sh.umount(target)
-        sh.mount('-t', 'cifs', path, target, '-o',
+        print('Монтирую удаленный ring', path, '...', sep = '')
+        try:
+            sh.umount(target)
+            sh.mount('-t', 'cifs', path, target, '-o',
                  'username=' + user + ',password=' + password +
                  ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777')
+        except sh.ErrorReturnCode_32:
+            print_error('Ошибка монтирования remote_ring! Устройство занято!', True)
+        except:
+            print_error('Ошибка монтирования remote_ring!', True)
+
 
 def main():
     global console
@@ -693,6 +704,7 @@ def main():
     configure_letter_head()
 
     mount_remote_source()
+    mount_remote_ring()
 
     # Load ring files (objects)
     load_ring_files()

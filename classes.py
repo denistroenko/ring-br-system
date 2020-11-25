@@ -218,12 +218,20 @@ class Ring:
                                 date_modify, "%a %b %d %H:%M:%S %Y")
                         date_modify = str(date_modify)[:10]
                         if date_now == date_modify:
-                            zip_file.write(file, arcname)
+                            if os.path.isfile(file):
+                                zip_file.write(file, arcname)
+                            else:
+                                print(' (папка)')
+                                continue
                         else:
-                            print('ПРОПУЩЕН!')
+                            print(' ПРОПУЩЕН!')
                             continue
                     else:
-                        zip_file.write(file, arcname)
+                        if os.path.isfile(file):
+                            zip_file.write(file, arcname)
+                        else:
+                            print(' (папка)')
+                            continue
 
                     compress_size = (
                             zip_file.infolist()[-1].compress_size)
