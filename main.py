@@ -83,6 +83,7 @@ def set_config_defaults():
     # Брать только сегодняшние файлы
     config.set('source', 'only_today_files', 'no')
     # config.set('source-dirs', '', '')  # Критический по условию
+    config.set('archive', 'exclude_file_names', '')
     config.set('archive', 'deflated', 'yes')
     config.set('archive', 'compression_level', '9')
     config.set('archive', 'date_format', 'YYYY-MM-DD_WW_hh:mm:ss')
@@ -504,6 +505,8 @@ def create_new_archive():
         file_name = 'ring_file.zip'
 
     compression_level = int(config.get('archive', 'compression_level'))
+    exclude_file_names =\
+        config.get('archive', 'exclude_file_names').split(',')
 
     only_today_files = False
     if config.get('source', 'only_today_files') == 'yes':
@@ -513,7 +516,8 @@ def create_new_archive():
         ok, new_archive_info = \
             ring.new_archive(
                              file_name, zip_dict, deflated,
-                             compression_level, only_today_files)
+                             compression_level, only_today_files,
+                             exclude_file_names)
         new_archive_info = new_archive_info.replace('\n', '<br>')
     except NotADirectoryError:
         print_error('Среди списка папок [source_dirs] найден элемент, ' +
@@ -533,6 +537,7 @@ def create_new_archive():
     sort_ring_files()
 
     return ok
+
 
 def print_help():
     print('usage: ring archive|cut|show \n[--cut-bad] [--config file] ' +

@@ -172,7 +172,8 @@ class Ring:
 
     def new_archive(self, zip_file_name: str, objects: dict,
                     deflated: bool = True, compression_level: int = None,
-                    only_today_files: bool = False):
+                    only_today_files: bool = False,
+                    exclude_file_names: list = []):
         ok = True
         zip_compression = zipfile.ZIP_STORED
         if deflated:
@@ -192,6 +193,8 @@ class Ring:
             for folder in objects:
                 print('\33[35m', folder, '\33[37m', sep = '')
                 for file in objects[folder]:
+                    file_name = str(file.split('/')[-1])
+
                     file_print = file[-50:]
                     if file_print != file:
                         file_print = '[..]{}'.format(file_print)
@@ -201,6 +204,7 @@ class Ring:
                           flush=True)
 
                     arcname = file
+
 
                     # Если только сегодняшние, то проверить дату. Если все
                     # подряд - просто добавть файл, не проверяя дату
@@ -218,12 +222,20 @@ class Ring:
                                 date_modify, "%a %b %d %H:%M:%S %Y")
                         date_modify = str(date_modify)[:10]
                         if date_now == date_modify:
-                            zip_file.write(file, arcname)
+                            if file_name not in exclude_file_names:
+                                zip_file.write(file, arcname)
+                            else:
+                                print(' EXCLUDED!')
+                                continue
                         else:
                             print(' ПРОПУЩЕН!')
                             continue
                     else:
-                        zip_file.write(file, arcname)
+                        if file_name not in exclude_file_names:
+                            zip_file.write(file, arcname)
+                        else:
+                            print(' EXCLUDED!')
+                            continue
 
                     compress_size = (
                             zip_file.infolist()[-1].compress_size)
