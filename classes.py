@@ -200,7 +200,7 @@ class Ring:
                     print('+ {}'.format(file_print), end = ' ',
                           flush=True)
 
-                    arcname = folder + '/' + file[len(self.__path)-1:]
+                    arcname = file
 
                     # Если только сегодняшние, то проверить дату. Если все
                     # подряд - просто добавть файл, не проверяя дату
@@ -218,20 +218,12 @@ class Ring:
                                 date_modify, "%a %b %d %H:%M:%S %Y")
                         date_modify = str(date_modify)[:10]
                         if date_now == date_modify:
-                            if os.path.isfile(file):
-                                zip_file.write(file, arcname)
-                            else:
-                                print(' (папка)')
-                                continue
+                            zip_file.write(file, arcname)
                         else:
                             print(' ПРОПУЩЕН!')
                             continue
                     else:
-                        if os.path.isfile(file):
-                            zip_file.write(file, arcname)
-                        else:
-                            print(' (папка)')
-                            continue
+                        zip_file.write(file, arcname)
 
                     compress_size = (
                             zip_file.infolist()[-1].compress_size)
