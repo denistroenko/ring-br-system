@@ -631,6 +631,10 @@ def mount_remote_source():
         print('Монтирую удаленный источник ', path, '...', sep = '')
         try:
             sh.umount(target)
+        except:
+            pass
+
+        try:
             sh.mount('-t', 'cifs', path, target, '-o',
                  'username=' + user + ',password=' + password +
                  ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777')
@@ -654,6 +658,10 @@ def mount_remote_ring():
         print('Монтирую удаленный ring', path, '...', sep = '')
         try:
             sh.umount(target)
+        except:
+            pass
+
+        try:
             sh.mount('-t', 'cifs', path, target, '-o',
                  'username=' + user + ',password=' + password +
                  ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777')
