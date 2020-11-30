@@ -65,17 +65,18 @@ def set_config_defaults():
 
     # Тип remote-подключения к source (ftp/smb/none)
     config.set('remote_source', 'type', 'none')
-    config.set('remote_source', 'target', '')
-    config.set('remote_source', 'path', '')
+    config.set('remote_source', 'net_path', '')
     config.set('remote_source', 'user', '')
     config.set('remote_source', 'password', '')
 
     # Тип remote-подключения к ring (ftp/smb/none)
     config.set('remote_ring', 'type', 'none')
-    config.set('remote_ring', 'path', '')
+    config.set('remote_ring', 'net_path', '')
     config.set('remote_ring', 'user', '')
     config.set('remote_ring', 'password', '')
 
+
+    config.set('source', 'dir', '')  # Критический
     # Удаленные объекты (брать по маске). Беруться все элементы {source-files}
     # config.set('source-files', 'files', '*')  # Критический по усл.
     # Режим получения файлов для архивирования (copy/move/none)
@@ -594,10 +595,10 @@ def fix_config():
         config.set('ring', 'dir', ring_dir)
 
     # Фиксим: последний символ в пути к папке, должен быть '/'
-    target_dir = config.get('remote_source', 'target')
+    target_dir = config.get('source', 'dir')
     if ring_dir[-1] != '/':
         ring_dir = ring_dir + '/'
-        config.set('remote_source', 'target', target_dir)
+        config.set('source', 'dir', target_dir)
 
     # Фиксим "показывать последние ... файлов": число должно быть положительным
     show_last = int(config.get('show', 'show_last'))
@@ -622,8 +623,8 @@ def mount_remote_source():
     type_remote_source = config.get('remote_source', 'type')
 
     if type_remote_source == 'smb':
-        target = config.get('remote_source', 'target')
-        path = config.get('remote_source', 'path')
+        target = config.get('source', 'dir')
+        path = config.get('remote_source', 'net_path')
         user = config.get('remote_source', 'user')
         password = config.get('remote_source', 'password')
 
@@ -646,7 +647,7 @@ def mount_remote_ring():
 
     if type_remote_ring == 'smb':
         target = config.get('ring', 'dir')
-        path = config.get('remote_ring', 'path')
+        path = config.get('remote_ring', 'net_path')
         user = config.get('remote_ring', 'user')
         password = config.get('remote_ring', 'password')
 
