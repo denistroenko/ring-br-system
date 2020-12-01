@@ -195,6 +195,9 @@ class Ring:
                 for file in objects[folder]:
                     file_name = str(file.split('/')[-1])
 
+                    if file_name == '':
+                        continue
+
                     file_print = file[-50:]
                     if file_print != file:
                         file_print = '[..]{}'.format(file_print)
@@ -209,7 +212,7 @@ class Ring:
                     # Если только сегодняшние, то проверить дату. Если все
                     # подряд - просто добавть файл, не проверяя дату
                     if only_today_files:
-                        date_now = '{}-{}-{}'.format(
+                        date_now = '{:04d}-{:02d}-{:02d}'.format(
                             datetime.datetime.now().year,
                             datetime.datetime.now().month,
                             datetime.datetime.now().day)
