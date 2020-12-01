@@ -222,20 +222,20 @@ class Ring:
                                 date_modify, "%a %b %d %H:%M:%S %Y")
                         date_modify = str(date_modify)[:10]
                         if date_now == date_modify:
-                            if file_name not in exclude_file_names:
-                                zip_file.write(file, arcname)
-                            else:
+                            if file_name in exclude_file_names:
                                 print(' EXCLUDED!')
                                 continue
+                            else:
+                                zip_file.write(file, arcname)
                         else:
                             print(' ПРОПУЩЕН!')
                             continue
                     else:
-                        if file_name not in exclude_file_names:
-                            zip_file.write(file, arcname)
-                        else:
+                        if file_name in exclude_file_names:
                             print(' EXCLUDED!')
                             continue
+                        else:
+                            zip_file.write(file, arcname)
 
                     compress_size = (
                             zip_file.infolist()[-1].compress_size)
