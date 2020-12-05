@@ -277,14 +277,20 @@ class Ring:
             total_file_compression_result = \
                 str(int(total_file_compress_sizes /
                         total_file_sizes * 100)) + '%, '
+
+            result = f'Добавлен:\n{zip_file_name}\n' +\
+                total_file_compression_result +\
+                f'{human_space(total_file_sizes)} >>> ' +\
+                f'{human_space(total_file_compress_sizes)}, ' +\
+                f'{total_files} файлов\n'
         else:
             total_file_compression_result = ''
             ok = False
 
-        result = f'Добавлен:\n{zip_file_name}\n' +\
-            total_file_compression_result +\
-            f'{human_space(total_file_sizes)} >>> ' +\
-            f'{human_space(total_file_compress_sizes)}, ' +\
-            f'{total_files} файлов\n'
+            os.remove(full_path)
+            print('Пустой архив. Удален!')
+
+            result = ''
+
 
         return ok, result

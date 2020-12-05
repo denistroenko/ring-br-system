@@ -534,6 +534,9 @@ def create_new_archive():
     for key in source_dirs_dict:
         letter.append(source_dirs_dict[key])
 
+    if new_archive_info == '':
+        print_error('Архив удален, поскольку не содержал файлов.', False)
+
     load_ring_files()
     sort_ring_files()
 
