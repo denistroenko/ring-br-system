@@ -678,7 +678,8 @@ def calculate_index_from_number(number: int):
 
 
 def kill_archive(file_index: int):
-    print('Удаляю файл с индексом ', file_index, sep = '')
+    global ring
+    ring.kill(file_index)
 
 
 def main():

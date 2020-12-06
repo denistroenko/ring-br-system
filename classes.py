@@ -161,6 +161,13 @@ class Ring:
             self.__calculate()
         return ok
 
+    def kill(self, file_index: int):
+        killing_file = self.__files[file_index]
+        print('Удаляется', killing_file.get_full_path())
+        killing_file.delete_from_disk()
+        self.__files.pop(file_index)
+        self.__calculate()
+
     def get_files(self) -> list:
         return self.__files
 
