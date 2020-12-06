@@ -294,3 +294,35 @@ class Ring:
 
 
         return ok, result
+
+    def get_content(self, file_index: int = -1):
+        ok = True
+
+        try:
+            file = self.__files[file_index]
+        except IndexError:
+           ok = False
+           result = 'Нет файла с номером {}!'.format(file_index)
+           return ok, result
+
+        full_path = file.get_full_path()
+
+        print('Читаю файл {} ...'.format(full_path))
+        result = file.zip_content()[1]
+        return ok, result
+
+    def test_archive(self, file_index: int = -1):
+        ok = True
+
+        try:
+            file = self.__files[file_index]
+        except IndexError:
+            ok = False
+            result = 'Нет файла с номером {}!'.format(file_index)
+            return ok, result
+
+        full_path = file.get_full_path()
+
+        print('Тестирую файл {} ...'.format(full_path))
+        ok, result = file.zip_test()
+        return ok, result

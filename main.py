@@ -363,15 +363,8 @@ def send_emails(subject: str = ''):
 def show_content_zip_file(file_index: int = -1):
     global ring
 
-    files_list = ring.get_files()
-    try:
-        file = files_list[file_index]
-    except IndexError:
-        print_error('Нет файла с таким номером!', True)
-    full_path = file.get_full_path()
+    ok, content = ring.get_content(file_index)
 
-    print('Читаю файл {} ...'.format(full_path))
-    ok, content = file.zip_content()
     if ok:
         print(content)
     else:
@@ -381,16 +374,8 @@ def show_content_zip_file(file_index: int = -1):
 def test_zip_file(file_index: int = -1):
     global ring
 
-    files_list = ring.get_files()
-    try:
-        file = files_list[file_index]
-    except IndexError:
-        print_error('Нет файла с таким номером!', True)
+    ok, test_result = ring.test_archive(file_index)
 
-    full_path = file.get_full_path()
-
-    print('Тестирую файл {} ...'.format(full_path))
-    ok, test_result = file.zip_test()
     if ok:
         print(test_result)
     else:
@@ -674,6 +659,28 @@ def mount_remote_ring():
             print_error('Ошибка монтирования remote_ring!', True)
 
 
+def calculate_index_from_number(number: int):
+    global ring
+    files_count = ring.get_total_files()
+
+    numbers_list = []
+
+    for n in range(files_count):
+        numbers_list.append(n + 1)
+
+    try:
+        file_index = numbers_list.index(number)
+    except ValueError:
+        print_error('Такого номера файла нет!')
+        sys.exit()
+
+    return file_index
+
+
+def kill_archive(file_index: int):
+    print('Удаляю файл с индексом ', file_index, sep = '')
+
+
 def main():
     global console
     global CONFIG_FILE
@@ -742,12 +749,65 @@ def main():
     if 'cut-bad' in args:
         cut_bad_mode()
     if 'content' in args:
-        show_content_zip_file()
+        file_number = 0
+        curent_arg_index = args.index('content')
+        next_arg_index = curent_arg_index + 1
+
+        try:
+            next_arg = args[next_arg_index]
+            file_number = int(next_arg)
+        except IndexError:
+            pass
+        except ValueError:
+            pass
+
+        if file_number != 0:
+            file_index = calculate_index_from_number(file_number)
+        else:
+            file_index = -1
+
+        show_content_zip_file(file_index)
         sys.exit()
     if 'test' in args:
-        test_zip_file()
+        file_number = 0
+        curent_arg_index = args.index('test')
+        next_arg_index = curent_arg_index + 1
+
+        try:
+            next_arg = args[next_arg_index]
+            file_number = int(next_arg)
+        except IndexError:
+            pass
+        except ValueError:
+            pass
+
+        if file_number != 0:
+            file_index = calculate_index_from_number(file_number)
+        else:
+            file_index = -1
+
+        test_zip_file(file_index)
     if 'config-export' in args:
         export_config()
+    if 'kill' in args:
+        file_number = 0
+        curent_arg_index = args.index('kill')
+        next_arg_index = curent_arg_index + 1
+
+        try:
+            next_arg = args[next_arg_index]
+            file_number = int(next_arg)
+        except IndexError:
+            pass
+        except ValueError:
+            pass
+
+        if file_number != 0:
+            file_index = calculate_index_from_number(file_number)
+        else:
+            file_index = -1
+
+        kill_archive(file_index)
 
     # ОСНОВНЫЕ РЕЖИМЫ РАБОТЫ
     if 'period' in args:
