@@ -113,7 +113,8 @@ class Ring:
             # Получаем объем файла средствами ОС
             full_path = self.__path + file_name
             size = os.path.getsize(full_path)
-            if file_name[0:len(self.__files_prefix)] == self.__files_prefix:
+            if file_name[0:len(self.__files_prefix)] == self.__files_prefix \
+                    and os.path.isfile(full_path):
                 # Получаем дату изм. файла средствами ОС
                 date_modify = os.path.getmtime(full_path)
                 # Преобразуем в локальное время (будет строка)
