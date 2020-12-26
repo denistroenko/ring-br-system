@@ -68,12 +68,14 @@ def set_config_defaults():
     config.set('remote_source', 'net_path', '')
     config.set('remote_source', 'user', '')
     config.set('remote_source', 'password', '')
+    config.set('remote_source', 'smb_version', '2.0')
 
     # Тип remote-подключения к ring (ftp/smb/none)
     config.set('remote_ring', 'type', 'none')
     config.set('remote_ring', 'net_path', '')
     config.set('remote_ring', 'user', '')
     config.set('remote_ring', 'password', '')
+    config.set('remote_ring', 'smb_version', '2.0')
 
 
     config.set('source', 'dir', '')  # Критический
@@ -615,6 +617,7 @@ def mount_remote_source():
         path = config.get('remote_source', 'net_path')
         user = config.get('remote_source', 'user')
         password = config.get('remote_source', 'password')
+        smb_version = config.get('remote_source', 'smb_version')
 
         print('Монтирую удаленный источник ', path, '...', sep = '')
         try:
@@ -624,8 +627,9 @@ def mount_remote_source():
 
         try:
             sh.mount('-t', 'cifs', path, target, '-o',
-                 'username=' + user + ',password=' + password +
-                 ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777')
+                     'username=' + user + ',password=' + password +
+                     ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777,' +
+                     'ver=' + smb_version)
         except sh.ErrorReturnCode_32:
             print_error('Ошибка монтирования remote_source! Устройство занято!', True)
         except:
@@ -642,6 +646,7 @@ def mount_remote_ring():
         path = config.get('remote_ring', 'net_path')
         user = config.get('remote_ring', 'user')
         password = config.get('remote_ring', 'password')
+        smb_version = config.get('remote_ring', 'smb_version')
 
         print('Монтирую удаленный ring', path, '...', sep = '')
         try:
@@ -651,8 +656,9 @@ def mount_remote_ring():
 
         try:
             sh.mount('-t', 'cifs', path, target, '-o',
-                 'username=' + user + ',password=' + password +
-                 ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777')
+                     'username=' + user + ',password=' + password +
+                     ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777,' +
+                     'ver=' + smb_version)
         except sh.ErrorReturnCode_32:
             print_error('Ошибка монтирования remote_ring! Устройство занято!', True)
         except:

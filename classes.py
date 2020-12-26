@@ -213,10 +213,7 @@ class Ring:
                         file_print += f'{" " * (54 - len(file_print))}'
                     print('+ {}'.format(file_print), end = ' ',
                           flush=True)
-
                     arcname = file
-
-
                     # Если только сегодняшние, то проверить дату. Если все
                     # подряд - просто добавть файл, не проверяя дату
                     if only_today_files:
@@ -299,8 +296,6 @@ class Ring:
             print('Пустой архив. Удален!')
 
             result = ''
-
-
         return ok, result
 
     def get_content(self, file_index: int = -1):
