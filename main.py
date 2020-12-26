@@ -629,7 +629,7 @@ def mount_remote_source():
             sh.mount('-t', 'cifs', path, target, '-o',
                      'username=' + user + ',password=' + password +
                      ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777,' +
-                     'ver=' + smb_version)
+                     'vers=' + smb_version)
         except sh.ErrorReturnCode_32:
             print_error('Ошибка монтирования remote_source! Устройство занято!', True)
         except:
@@ -658,7 +658,7 @@ def mount_remote_ring():
             sh.mount('-t', 'cifs', path, target, '-o',
                      'username=' + user + ',password=' + password +
                      ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777,' +
-                     'ver=' + smb_version)
+                     'vers=' + smb_version)
         except sh.ErrorReturnCode_32:
             print_error('Ошибка монтирования remote_ring! Устройство занято!', True)
         except:
