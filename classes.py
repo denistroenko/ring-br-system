@@ -218,19 +218,9 @@ class Ring:
                     if file[:len(source_dir)] == source_dir:
                         arcname = folder + file[len(source_dir)-1:]
                     else:
-                        arcname = folder + '/full_path/'+ file
-
+                        arcname = folder + '/absolute_path/'+ file
                     # Исключение двойной косой //
                     arcname = arcname.replace('//', '/')
-
-                    #debug
-                    # print()
-                    # print()
-                    # print('source-dir:', source_dir)
-                    # print('folder:', folder)
-                    # print('file:', file)
-                    # print('arcname:', arcname)
-                    #exit()
 
                     # Если только сегодняшние, то проверить дату. Если все
                     # подряд - просто добавть файл, не проверяя дату

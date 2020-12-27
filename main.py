@@ -448,6 +448,8 @@ def create_new_archive():
     for dir in source_dirs_dict:
         # Folder and objects inside zip
         folder = source_dirs_dict[dir]
+        if folder[:2] == './':
+            folder = source_dir + folder[2:]
         # adding '/**' to end path
         if folder[-1] != '/':
             folder += '/'
