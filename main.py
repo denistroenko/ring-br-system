@@ -685,6 +685,10 @@ def calculate_index_from_number(number: int):
 
 def kill_archive(file_index: int):
     global ring
+    files_count = ring.get_total_files()
+    if files_count == 0:
+        print_error('В ring-папке нет ни одного файла! Нечего удалять!')
+        sys.exit()
     ring.kill(file_index)
 
 
