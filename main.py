@@ -430,6 +430,7 @@ def create_new_archive():
 
     console.print_title('ARCHIVE MODE', '~', 55)
 
+    source_dir = config.get('source', 'dir')
     prefix = config.get('ring', 'prefix')
     deflated = False
     if config.get('archive', 'deflated') == 'yes':
@@ -503,7 +504,7 @@ def create_new_archive():
     try:
         ok, new_archive_info = \
             ring.new_archive(
-                             file_name, zip_dict, deflated,
+                             file_name, source_dir, zip_dict, deflated,
                              compression_level, only_today_files,
                              exclude_file_names)
         new_archive_info = new_archive_info.replace('\n', '<br>')

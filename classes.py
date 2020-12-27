@@ -178,7 +178,7 @@ class Ring:
     def get_total_files(self):
         return self.__total_files
 
-    def new_archive(self, zip_file_name: str, objects: dict,
+    def new_archive(self, zip_file_name: str, source_dir: str, objects: dict,
                     deflated: bool = True, compression_level: int = None,
                     only_today_files: bool = False,
                     exclude_file_names: list = []):
@@ -213,7 +213,25 @@ class Ring:
                         file_print += f'{" " * (54 - len(file_print))}'
                     print('+ {}'.format(file_print), end = ' ',
                           flush=True)
-                    arcname = file
+
+                    # Имя файла внутри zip-архива такое:
+                    if file[:len(source_dir)] == source_dir:
+                        arcname = folder + file[len(source_dir)-1:]
+                    else:
+                        arcname = folder + '/full_path/'+ file
+
+                    # Исключение двойной косой //
+                    arcname = arcname.replace('//', '/')
+
+                    #debug
+                    # print()
+                    # print()
+                    # print('source-dir:', source_dir)
+                    # print('folder:', folder)
+                    # print('file:', file)
+                    # print('arcname:', arcname)
+                    #exit()
+
                     # Если только сегодняшние, то проверить дату. Если все
                     # подряд - просто добавть файл, не проверяя дату
                     if only_today_files:
