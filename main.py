@@ -461,6 +461,7 @@ def create_new_archive():
                         'указано в ' + dir + ':' + source_dirs_dict[dir],
                         True)
 
+        print('Сканирую {} ({})...'.format (dir, folder[:-2]))
         recursive_objects = sorted(glob.glob(folder, recursive = True))
         # Создаем ключ словаря и значение. Значение - это то, что вернула функция glob,
         # (она вернула список), а ключ - ключ текущий словаря source_dirs_dict
