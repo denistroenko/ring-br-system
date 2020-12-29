@@ -584,15 +584,15 @@ def sort_ring_files():
 def fix_config():
     # Фиксим: последний символ в пути к папке, должен быть '/'
     ring_dir = config.get('ring', 'dir')
-    if ring_dir[-1] != '/':
+    if ring_dir[-1] != '/' and ring_dir != '':
         ring_dir = ring_dir + '/'
         config.set('ring', 'dir', ring_dir)
 
     # Фиксим: последний символ в пути к папке, должен быть '/'
-    target_dir = config.get('source', 'dir')
-    if ring_dir[-1] != '/':
-        ring_dir = ring_dir + '/'
-        config.set('source', 'dir', target_dir)
+    source_dir = config.get('source', 'dir')
+    if source_dir[-1] != '/' and source_dir != '':
+        source_dir = source_dir + '/'
+        config.set('source', 'dir', source_dir)
 
     # Фиксим "показывать последние ... файлов": число должно быть положительным
     show_last = int(config.get('show', 'show_last'))
