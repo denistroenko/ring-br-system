@@ -604,6 +604,20 @@ def fix_config():
     config.set('ring', 'show_excluded',
                config.get('ring', 'show_excluded').lower())
 
+    # Если есть список source_dirs, но нет параметра [source] dir
+    try:
+        source_dirs_dict = {}
+        source_dirs_dict = config.get_section_dict('source_dirs')
+        source_dir = config.get('source', 'dir')
+        if source_dirs_dict != {} and \
+                source_dir == '':
+            print_error('Указан список source_dirs, но не указан параметр dir ' +
+                        'в секции source. Это может привести к неверным именам ' +
+                        'внутри архива. Продолжение работы невозможно!', True)
+    except:
+        # except может быть, если нет параметров в секции source_dirs
+        pass
+
 
 def export_config():
     global config
