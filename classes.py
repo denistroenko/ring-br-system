@@ -239,16 +239,16 @@ class Ring:
                         date_modify = str(date_modify)[:10]
                         if date_now == date_modify:
                             if file_name in exclude_file_names:
-                                print(' EXCLUDED!')
+                                print(' ИСКЛЮЧЕН!')
                                 continue
                             else:
                                 zip_file.write(file, arcname)
                         else:
-                            print(' ПРОПУЩЕН!')
+                            print(' НЕСВЕЖИЙ!')
                             continue
                     else:
                         if file_name in exclude_file_names:
-                            print(' EXCLUDED!')
+                            print(' ИСКЛЮЧЕН!')
                             continue
                         else:
                             zip_file.write(file, arcname)
