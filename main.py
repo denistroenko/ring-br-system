@@ -757,7 +757,6 @@ def main():
 
     configure_letter_head()
 
-    mount_remote_source()
     mount_remote_ring()
 
     # Load ring files (objects)
@@ -840,21 +839,23 @@ def main():
         kill_archive(file_index)
 
     # ОСНОВНЫЕ РЕЖИМЫ РАБОТЫ
-    if 'period' in args:
-        config.set('run', 'period', 'yes')
-
-        ok = create_new_archive()
-
-        if ok: cut_mode()
-
-        show_mode()
-        sys.exit()
-    if 'archive' in args:
-        create_new_archive()
-    if 'cut' in args:
-        cut_mode()
     if 'show' in args:
         show_mode()
+    if 'cut' in args:
+        cut_mode()
+
+    mount_remote_source()
+
+    if 'period' in args:
+        config.set('run', 'period', 'yes')
+        ok = create_new_archive()
+        if ok: cut_mode()
+        show_mode()
+        sys.exit()
+
+    if 'archive' in args:
+        create_new_archive()
+
 
 
 main()
