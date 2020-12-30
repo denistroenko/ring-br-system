@@ -590,9 +590,10 @@ def fix_config():
 
     # Фиксим: последний символ в пути к папке, должен быть '/'
     source_dir = config.get('source', 'dir')
-    if source_dir[-1] != '/' and source_dir != '':
-        source_dir = source_dir + '/'
-        config.set('source', 'dir', source_dir)
+    if source_dir != '':
+        if source_dir[-1] != '/':
+            source_dir = source_dir + '/'
+            config.set('source', 'dir', source_dir)
 
     # Фиксим "показывать последние ... файлов": число должно быть положительным
     show_last = int(config.get('show', 'show_last'))
