@@ -314,6 +314,7 @@ def show_mode():
          f'{human_space(total_space)}')
 
     send_emails()
+    sys.exit()
 
 
 def send_emails(subject: str = ''):
