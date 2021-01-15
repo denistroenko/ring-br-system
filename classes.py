@@ -44,7 +44,15 @@ class RingFile:
             zip_file = zipfile.ZipFile(self.__full_path, 'r')
         except zipfile.BadZipfile:
             return False, 'Ошибка чтения содержимого файла!'
-        names = zip_file.namelist()
+
+        name_list = zip_file.namelist()
+
+        # Create new list with out folders
+        names = []
+        for line in name_list:
+            if len(line) > 0 and line[-1] != '/':
+                names.append(line)
+
         result = ''
         if names != None:
             for name in names:
