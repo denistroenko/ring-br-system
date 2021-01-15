@@ -24,6 +24,8 @@ def set_config_defaults():
     # Запуск был выполнен с параметром 'period'
     config.set('run', 'period', 'no')
 
+    # ring name
+    config.set('ring', 'name', 'noname')
     # Папка с архивами (куда складывать, чем управлять)
     config.set('ring', 'dir', '/mnt/ring/')  # Критический
     # Префикс имен файлов
@@ -220,8 +222,13 @@ def show_mode():
         ring_type_value = config.get('ring', 'space')
 
 
-    message = ['SHOW RING MODE', 'ring type: ' + ring_type + ' (' + \
-               ring_type_value + ')']
+    ring_name = config.get('ring', 'name')
+
+    message = ['SHOW RING MODE']
+    if ring_name != 'noname':
+        message.append('>>> {} <<<'.format(ring_name))
+    message.append('ring type: ' + ring_type + ' (' + ring_type_value + ')')
+
     console.print_title(message, '~', 55)
 
     ring_dir = config.get('ring', 'dir')
