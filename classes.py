@@ -164,6 +164,7 @@ class Ring:
 
     def kill(self, file_index: int):
         killing_file = self.__files[file_index]
+
         print('Удаляется', killing_file.get_full_path())
         killing_file.delete_from_disk()
         self.__files.pop(file_index)
@@ -197,7 +198,7 @@ class Ring:
             total_file_compress_sizes = 0
             total_files = 0
 
-            print(full_path)
+            print('Создаю:', full_path)
             for folder in objects:
                 print('\33[35m', folder, '\33[37m', sep = '')
                 for file in objects[folder]:

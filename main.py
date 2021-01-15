@@ -211,8 +211,21 @@ def show_mode():
     else:
         short = False
 
-    message = ['SHOW RING MODE']
+    ring_type = config.get('ring', 'type')
+    if ring_type == 'count':
+        ring_type_value = config.get('ring', 'count')
+    elif ring_type == 'age':
+        ring_type_value = config.get('ring', 'age')
+    else:
+        ring_type_value = config.get('ring', 'space')
+
+
+    message = ['SHOW RING MODE', 'ring type: ' + ring_type + ' (' + \
+               ring_type_value + ')']
     console.print_title(message, '~', 55)
+
+    ring_dir = config.get('ring', 'dir')
+    print(ring_dir)
 
     files = ring.get_files()
     file_no = 0
