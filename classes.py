@@ -47,16 +47,36 @@ class RingFile:
 
         name_list = zip_file.namelist()
 
+        files_count = 0
+        files_size = 0
+        files_compress_size = 0
         # Create new list with out folders
         names = []
         for line in name_list:
             if len(line) > 0 and line[-1] != '/':
                 names.append(line)
+                files_count += 1
+                info = zip_file.getinfo(line)
+                files_size += info.file_size
+                files_compress_size += info.compress_size
 
         result = ''
         if names != None:
             for name in names:
                 result += name + '\n'
+            result += '-' * 55 + '\n'
+            result += '\33[35mИТОГО:\33[37m Файлов в архиве - '
+            result += str(files_count) + ' | '
+            result += human_space(files_size)
+            result += ' >>> '
+            result += human_space(files_compress_size) + ' '
+            if files_size > 0:
+                result += '\33[32m'
+                result += str(int(files_compress_size / files_size * 100))
+                result += '%' + '\33[37m'
+
+
+
             return True, result
         else:
             return False, result
@@ -294,7 +314,7 @@ class Ring:
               human_space(total_file_sizes), '>>>',
               human_space(total_file_compress_sizes),
               f'\33[37m({total_files} файлов)\33[37m', sep=' ', end = '\n')
-        # print('\33[32mOK!\33[37m')
+
         if total_file_sizes > 0:
             total_file_compression_result = \
                 str(int(total_file_compress_sizes /
