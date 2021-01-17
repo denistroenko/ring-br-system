@@ -225,9 +225,10 @@ def show_mode():
     ring_name = config.get('ring', 'name')
 
     message = ['SHOW RING MODE']
+    message.append('type: ' + ring_type + ' (' + ring_type_value + ')')
+    message.append('')
     if ring_name != 'noname':
         message.append('>>> {} <<<'.format(ring_name))
-    message.append('ring type: ' + ring_type + ' (' + ring_type_value + ')')
 
     console.print_title(message, '~', 55)
 
@@ -385,6 +386,15 @@ def send_emails(subject: str = ''):
 
 def show_content_zip_file(file_index: int = -1):
     global ring
+    global console
+
+    if file_index == -1:
+        file_number = 'last'
+    else:
+        file_number = file_index + 1
+
+    message = ['CONTENT SHOW MODE', 'file number: {}'.format(file_number)]
+    console.print_title(message, '~', 55)
 
     ok, content = ring.get_content(file_index)
 
@@ -740,8 +750,11 @@ def main():
 
     # ИСКЛЮЧАЮЩИЕ РЕЖИМЫ (И СРАЗУ ВЫХОД)
     if '--version' in args:
-        message = ['Version', 'Ring v.{}'.format(VERSION)]
-        console.print_title(message, '*', 55)
+        message = ['Algorithm Computers', 'dev@a-computers.ru',
+                   '', 'Ring v.{}'.format(VERSION),
+                   'Утилита управления архивными файлами']
+
+        console.print_title(message, '*', 55, False, False)
         sys.exit()
     if '--help' in args:
         print_help()
@@ -749,11 +762,6 @@ def main():
 
     # Set default settings in global config
     set_config_defaults()
-
-    # Print message and print all settings in global config
-    message = ['Algorithm Computers', 'dev@a-computers.ru',
-                '', '"Ring"', 'Утилита управления архивными файлами']
-    console.print_title(message, '*', 55, False, False)
 
     # СМЕНА НАСТРОЕК
     if '--config' in args:
