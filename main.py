@@ -5,7 +5,7 @@ import socket
 import sh
 
 # GLOBAL
-VERSION = '0.0.1'
+VERSION = '0.0.2'
 
 console = Console()
 config = Config()
@@ -79,7 +79,6 @@ def set_config_defaults():
     config.set('remote_ring', 'password', '')
     config.set('remote_ring', 'smb_version', '2.0')
 
-
     config.set('source', 'dir', '')  # Критический
     # Удаленные объекты (брать по маске). Беруться все элементы {source-files}
     # config.set('source-files', 'files', '*')  # Критический по усл.
@@ -109,11 +108,12 @@ def configure_sender():
     password = config.get('smtp_server', 'password')
     from_addr = config.get('smtp_server', 'from_address')
     use_ssl = False
+
     if config.get('smtp_server', 'use_ssl') == 'yes':
         use_ssl = True
 
     email_sender.configure(host, login, password, from_addr,
-                               use_ssl, port)
+                           use_ssl, port)
 
 
 def configure_letter_head():
@@ -123,13 +123,13 @@ def configure_letter_head():
     hostname = socket.gethostname()
 
     letter.append('System', 'h3', color = 'gray')
-    letter.append(str(uname), color='gray')
-    letter.append('hostname: ' + hostname, color='gray')
+    letter.append(str(uname), color = 'gray')
+    letter.append('hostname: ' + hostname, color = 'gray')
     letter.append()
     letter.append('Ring tool', 'h3', color = 'gray')
-    letter.append('Version: ' + VERSION, color='gray')
+    letter.append('Version: ' + VERSION, color = 'gray')
     letter.append('Folder: ' + APP_DIR, color = 'gray')
-    letter.append('Config file: ' + CONFIG_FILE, color='gray')
+    letter.append('Config file: ' + CONFIG_FILE, color = 'gray')
     letter.append()
     letter.append('Report', 'h3')
 
@@ -494,10 +494,10 @@ def create_new_archive():
 
         print('Сканирую {} ({})...'.format (dir, folder[:-2]))
         recursive_objects = sorted(glob.glob(folder, recursive = True))
-        # Создаем ключ словаря и значение. Значение - это то, что вернула функция glob,
-        # (она вернула список), а ключ - ключ текущий словаря source_dirs_dict
+        # Создаем ключ словаря и значение. Значение - это то,
+        # что вернула функция glob (она вернула список),
+        # а ключ - ключ текущий словаря source_dirs_dict
         zip_dict[dir] = recursive_objects
-
 
     # String - format string
     date_format = config.get('archive', 'date_format')
@@ -587,7 +587,8 @@ def cut_mode():
             count = int(config.get('ring', 'count'))
             ring.cut_by_count(count)
         except:
-            print_error('Неверная настройка [ring] count в файле config.', True)
+            print_error('Неверная настройка [ring] count в файле config.',
+                        True)
     elif cut_type == 'age':
         try:
             max_age = int(config.get('ring', 'age'))
@@ -599,7 +600,8 @@ def cut_mode():
             gigabytes = round(float(config.get('ring', 'space')), 2)
             ring.cut_by_space(gigabytes)
         except:
-            print_error('Неверная настройка [ring] space в файле config.', True)
+            print_error('Неверная настройка [ring] space в файле config.',
+                        True)
     else:
         print_error('Неизвестный режим работы кольца: {}.'.format(
                     cut_type), True)
@@ -643,9 +645,10 @@ def fix_config():
         source_dir = config.get('source', 'dir')
         if source_dirs_dict != {} and \
                 source_dir == '':
-            print_error('Указан список source_dirs, но не указан параметр dir ' +
-                        'в секции source. Это может привести к неверным именам ' +
-                        'внутри архива. Продолжение работы невозможно!', True)
+            msg = ('Указан список source_dirs, но не указан параметр dir ' +
+                   'в секции source. Это может привести к неверным именам ' +
+                   'внутри архива. Продолжение работы невозможно!')
+            print_error(msg, True)
     except:
         # except может быть, если нет параметров в секции source_dirs
         pass
@@ -681,7 +684,8 @@ def mount_remote_source():
                      ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777,' +
                      'vers=' + smb_version)
         except sh.ErrorReturnCode_32:
-            print_error('Ошибка монтирования remote_source! Устройство занято!', True)
+            print_error('Ошибка монтирования remote_source! ' + \
+                        'Устройство занято!', True)
         except:
             print_error('Ошибка монтирования remote_source!', True)
 
@@ -710,7 +714,8 @@ def mount_remote_ring():
                      ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777,' +
                      'vers=' + smb_version)
         except sh.ErrorReturnCode_32:
-            print_error('Ошибка монтирования remote_ring! Устройство занято!', True)
+            print_error('Ошибка монтирования remote_ring!' + \
+                        ' Устройство занято!', True)
         except:
             print_error('Ошибка монтирования remote_ring!', True)
 
@@ -878,13 +883,13 @@ def main():
     if 'period' in args:
         config.set('run', 'period', 'yes')
         ok = create_new_archive()
-        if ok: cut_mode()
+        if ok:
+            cut_mode()
         show_mode()
         sys.exit()
 
     if 'archive' in args:
         create_new_archive()
-
 
 
 main()

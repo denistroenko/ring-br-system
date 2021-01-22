@@ -75,8 +75,6 @@ class RingFile:
                 result += str(int(files_compress_size / files_size * 100))
                 result += '%' + '\33[37m'
 
-
-
             return True, result
         else:
             return False, result
