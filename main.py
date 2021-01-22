@@ -815,6 +815,7 @@ def main():
         file_number = 0
         curent_arg_index = args.index('content')
         next_arg_index = curent_arg_index + 1
+
         try:
             next_arg = args[next_arg_index]
             file_number = int(next_arg)
