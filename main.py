@@ -3,9 +3,13 @@ from baseapplib import *
 import glob
 import socket
 import sh
+import re
+from bitrix24 import Bitrix24
+from bitrix24 import BitrixError
+
 
 # GLOBAL
-VERSION = '0.0.2'
+VERSION = '0.0.3'
 
 console = Console()
 config = Config()
@@ -22,62 +26,63 @@ def set_config_defaults():
     global config
 
     # Запуск был выполнен с параметром 'period'
-    config.set('run', 'period', 'no')
 
-    # ring name
-    config.set('ring', 'name', 'noname')
-    # Папка с архивами (куда складывать, чем управлять)
-    config.set('ring', 'dir', '/mnt/ring/')  # Критический
-    # Префикс имен файлов
-    config.set('ring', 'prefix', '')
-    # Количество объектов архивов для хранения
-    config.set('ring', 'count', '30')
-    # Срок хранения архивов в днях
-    config.set('ring', 'age', '180')
-    # Макс. занимаемое пространство для папки с архивами в гигабайтах
-    config.set('ring', 'space', '200')
-    # Тип кольца архивов: (count|age|space)
-    config.set('ring', 'type', 'count')
-    # Показывать исключенные из ring_dir файлы
-    config.set('ring', 'show_excluded', 'no')
+    config_defaults = [
+        ('run', 'period', 'no'),
 
-    config.set('report', 'send_to_admin', 'no')
-    config.set('report', 'admin_email', '')
-    config.set('report', 'send_to_user', 'no')
-    config.set('report', 'user_email', '')
-    config.set('report', 'logging', 'no')
-    config.set('report', 'log-file', 'ring.log')
+        ('ring', 'name', 'noname'),
+        ('ring', 'dir', '/mnt/ring/'),
+        ('ring', 'prefix', ''),
+        ('ring', 'count', '30'),
+        ('ring', 'age', '180'),
+        ('ring', 'space', '200'),
+        ('ring', 'type', 'count'),
+        ('ring', 'show_excluded', 'no'),
 
-    config.set('smtp_server', 'hostname', '')
-    config.set('smtp_server', 'port', '465')
-    config.set('smtp_server', 'use_ssl', 'yes')
-    config.set('smtp_server', 'login', '')
-    config.set('smtp_server', 'password', '')
-    config.set('smtp_server', 'from_address', '')
+        ('report', 'send_to_admin', 'no'),
+        ('report', 'send_to_bitrix24', 'no'),
+        ('report', 'bitrix24_hook', ''),
+        ('report', 'admin_email', ''),
+        ('report', 'send_to_user', 'no'),
+        ('report', 'user_email', ''),
+        ('report', 'logging', 'no'),
+        ('report', 'log-file', 'ring.log'),
 
-    # Солько показывать файлов в кольце (0 - все)
-    config.set('show', 'show_last', '15')
-    # Проценты отклонения от и до, в зеленой зоне и в красной
-    config.set('show', 'green_min', '-5')
-    config.set('show', 'green_max', '5')
-    config.set('show', 'red_min', '-20')
-    config.set('show', 'red_max', '20')
-    # "Зеленый" срок хранения последнего архивного файла в ring-каталоге
-    config.set('show', 'green_age', '7')
+        ('smtp_server', 'hostname', ''),
+        ('smtp_server', 'port', '465'),
+        ('smtp_server', 'use_ssl', 'yes'),
+        ('smtp_server', 'login', ''),
+        ('smtp_server', 'password', ''),
+        ('smtp_server', 'from_address', ''),
 
-    # Тип remote-подключения к source (ftp/smb/none)
-    config.set('remote_source', 'type', 'none')
-    config.set('remote_source', 'net_path', '')
-    config.set('remote_source', 'user', '')
-    config.set('remote_source', 'password', '')
-    config.set('remote_source', 'smb_version', '2.0')
+        ('show', 'show_last', '15'),
+        ('show', 'green_min', '-5'),
+        ('show', 'green_max', '5'),
+        ('show', 'red_min', '-20'),
+        ('show', 'red_max', '20'),
+        ('show', 'green_age', '7'),
 
-    # Тип remote-подключения к ring (ftp/smb/none)
-    config.set('remote_ring', 'type', 'none')
-    config.set('remote_ring', 'net_path', '')
-    config.set('remote_ring', 'user', '')
-    config.set('remote_ring', 'password', '')
-    config.set('remote_ring', 'smb_version', '2.0')
+        ('remote_source', 'type', 'none'),
+        ('remote_source', 'net_path', ''),
+        ('remote_source', 'user', ''),
+        ('remote_source', 'password', ''),
+        ('remote_source', 'smb_version', '2.0'),
+
+        ('remote_ring', 'type', 'none'),
+        ('remote_ring', 'net_path', ''),
+        ('remote_ring', 'user', ''),
+        ('remote_ring', 'password', ''),
+        ('remote_ring', 'smb_version', '2.0'),
+
+        ('archive', 'exclude_file_names', ''),
+        ('archive', 'deflated', 'yes'),
+        ('archive', 'compression_level', '9'),
+        ('archive', 'date_format', 'YYYY-MM-DD_WW_hh:mm:ss'),
+    ]
+
+    for section, parameter, value in config_defaults:
+        config.set(section, parameter, value)
+
 
     config.set('source', 'dir', '')  # Критический
     # Удаленные объекты (брать по маске). Беруться все элементы {source-files}
@@ -87,10 +92,6 @@ def set_config_defaults():
     # Брать только сегодняшние файлы
     config.set('source', 'only_today_files', 'no')
     # config.set('source-dirs', '', '')  # Критический по условию
-    config.set('archive', 'exclude_file_names', '')
-    config.set('archive', 'deflated', 'yes')
-    config.set('archive', 'compression_level', '9')
-    config.set('archive', 'date_format', 'YYYY-MM-DD_WW_hh:mm:ss')
 
 
 def print_settings():
@@ -123,7 +124,7 @@ def configure_letter_head():
     hostname = socket.gethostname()
 
     letter.append('System', 'h3', color = 'gray')
-    letter.append(str(uname), color = 'gray')
+    letter.append(str(uname).replace('#', ''), color = 'gray')
     letter.append('hostname: ' + hostname, color = 'gray')
     letter.append()
     letter.append('Ring tool', 'h3', color = 'gray')
@@ -220,7 +221,6 @@ def show_mode():
         ring_type_value = config.get('ring', 'age')
     else:
         ring_type_value = config.get('ring', 'space')
-
 
     ring_name = config.get('ring', 'name')
 
@@ -371,6 +371,28 @@ def send_emails(subject: str = ''):
     admin_email_address = config.get('report', 'admin_email')
 
     if is_period_mode and is_send_email_to_admin:
+        # Отправляем в Битрикс24
+        if config.get('report', 'send_to_bitrix24').lower() == 'yes':
+            def cleanhtml(raw_html):
+                # cleanr = re.compile('<.*?>')
+                cleanr = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
+                cleantext = re.sub(cleanr, '', raw_html)
+                return cleantext
+
+            WEB_HOOK = config.get('report', 'bitrix24_hook')
+            bx24 = Bitrix24(WEB_HOOK)
+            descriprion_bx24 = letter.get_letter()
+            descriprion_bx24 = cleanhtml(descriprion_bx24)
+            try:
+                bx24.callMethod('tasks.task.add',
+                                fields={'TITLE': 'FATAL ERROR report from Ring tool', 'RESPONSIBLE_ID': 1,
+                                        'DESCRIPTION': descriprion_bx24})
+            except BitrixError as message:
+                print(message)
+                letter.append('')
+                letter.append('Ошибка постановки задачи в Битрикс24!',
+                              weight = 600, color = 'red')
+        # Отправляем email
         try:
             print()
             print('Отправляю письмо администратору ({})...'.format(
@@ -382,6 +404,7 @@ def send_emails(subject: str = ''):
             print_error('Ошибка! Проверьте ' +\
                         'секцию smtp_server в файле конфигурации.',
                         False)
+        # END TEST
 
 
 def show_content_zip_file(file_index: int = -1):
