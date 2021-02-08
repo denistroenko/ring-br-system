@@ -375,7 +375,7 @@ def send_emails(subject: str = ''):
         if config.get('report', 'send_to_bitrix24').lower() == 'yes':
             def cleanhtml(raw_html):
                 # cleanr = re.compile('<.*?>')
-                cleanr = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
+                cleanr = re.compile('<.*?>')
                 cleantext = re.sub(cleanr, '', raw_html)
                 return cleantext
 
@@ -385,7 +385,7 @@ def send_emails(subject: str = ''):
             descriprion_bx24 = cleanhtml(descriprion_bx24)
             try:
                 bx24.callMethod('tasks.task.add',
-                                fields={'TITLE': 'FATAL ERROR report from Ring tool', 'RESPONSIBLE_ID': 1,
+                                fields={'TITLE': subject, 'RESPONSIBLE_ID': 1,
                                         'DESCRIPTION': descriprion_bx24})
             except BitrixError as message:
                 print(message)
