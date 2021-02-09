@@ -384,6 +384,8 @@ def send_emails(subject: str = ''):
             descriprion_bx24 = letter.get_letter()
             descriprion_bx24 = cleanhtml(descriprion_bx24)
             try:
+                print()
+                print('Ставлю задачу администратору в Битрикс24...')
                 bx24 = Bitrix24(WEB_HOOK)
                 bx24.callMethod('tasks.task.add',
                                 fields={'TITLE': subject, 'RESPONSIBLE_ID': 1,

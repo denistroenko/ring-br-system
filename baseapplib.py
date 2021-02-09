@@ -384,3 +384,58 @@ class Console:
 
     def clear_screen(self):
         os.system('clear')
+
+    def print(
+        self,
+        msg: str = '',
+        color: str = 'white',
+        bg_color: str = 'black',
+        effect: str = '0',
+        flush: bool = False,
+    ):
+        colors = {
+            'black': '\033[30m',
+            'red': '\033[31m',
+            'green': '\033[32m',
+            'yellow': '\033[33m',
+            'blue': '\033[34m',
+            'purple': '\033[35m',
+            'turquoise': '\033[36m',
+            'white': '\033[37m',
+            '0': '\033[30m',
+            '1': '\033[31m',
+            '2': '\033[32m',
+            '3': '\033[33m',
+            '4': '\033[34m',
+            '5': '\033[35m',
+            '6': '\033[36m',
+            '7': '\033[37m',
+        }
+
+        effects = {
+            '0': '\033[0m',
+            '1': '\033[1m',
+            '2': '\033[2m',
+            '3': '\033[3m',
+            '4': '\033[4m',
+            '5': '\033[5m',
+            '6': '\033[6m',
+            '7': '\033[7m',
+        }
+
+        default_colors = '\033[0m\033[37m\033[40m'
+
+        if not color in colors:
+            color = 'white'
+        if not bg_color in colors:
+            bg_color = 'black'
+        if not effect in effects:
+            effect = '0'
+
+        print(
+            f'{effects[effect]}{colors[color]}{colors[bg_color]}msg{default_colors}',
+            flush = flush,
+        )
+
+
+
