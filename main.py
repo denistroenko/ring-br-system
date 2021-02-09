@@ -40,13 +40,14 @@ def set_config_defaults():
         ('ring', 'show_excluded', 'no'),
 
         ('report', 'send_to_admin', 'no'),
-        ('report', 'send_to_bitrix24', 'no'),
-        ('report', 'bitrix24_hook', ''),
+        ('report', 'create_bitrix24_task', 'no'),
         ('report', 'admin_email', ''),
         ('report', 'send_to_user', 'no'),
         ('report', 'user_email', ''),
         ('report', 'logging', 'no'),
         ('report', 'log-file', 'ring.log'),
+
+        ('bitrix24', 'web_hook', ''),
 
         ('smtp_server', 'hostname', ''),
         ('smtp_server', 'port', '465'),
@@ -372,23 +373,26 @@ def send_emails(subject: str = ''):
 
     if is_period_mode and is_send_email_to_admin:
         # Отправляем в Битрикс24
-        if config.get('report', 'send_to_bitrix24').lower() == 'yes':
+        if config.get('report', 'create_bitrix24_task').lower() == 'yes':
             def cleanhtml(raw_html):
                 # cleanr = re.compile('<.*?>')
                 cleanr = re.compile('<.*?>')
                 cleantext = re.sub(cleanr, '', raw_html)
                 return cleantext
 
-            WEB_HOOK = config.get('report', 'bitrix24_hook')
-            bx24 = Bitrix24(WEB_HOOK)
+            WEB_HOOK = config.get('bitrix24', 'web_hook')
             descriprion_bx24 = letter.get_letter()
             descriprion_bx24 = cleanhtml(descriprion_bx24)
             try:
+                bx24 = Bitrix24(WEB_HOOK)
                 bx24.callMethod('tasks.task.add',
                                 fields={'TITLE': subject, 'RESPONSIBLE_ID': 1,
                                         'DESCRIPTION': descriprion_bx24})
-            except BitrixError as message:
-                print(message)
+            except Exception as message:
+                print_error(
+                    'Ошибка при работе с Битрикс24: {}.'.format(message),
+                    False,
+                )
                 letter.append('')
                 letter.append('Ошибка постановки задачи в Битрикс24!',
                               weight = 600, color = 'red')
