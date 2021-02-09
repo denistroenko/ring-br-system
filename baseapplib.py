@@ -1,5 +1,5 @@
 
-# version 0.0.15
+# version 0.0.16
 
 # imports
 import random
@@ -391,6 +391,7 @@ class Console:
         color: str = 'white',
         bg_color: str = 'black',
         effect: str = '0',
+        end: str = '\n',
         flush: bool = False,
     ):
         colors = {
@@ -410,6 +411,24 @@ class Console:
             '5': '\033[35m',
             '6': '\033[36m',
             '7': '\033[37m',
+        }
+        bg_colors = {
+            'black': '\033[40m',
+            'red': '\033[41m',
+            'green': '\033[42m',
+            'yellow': '\033[43m',
+            'blue': '\033[44m',
+            'purple': '\033[45m',
+            'turquoise': '\033[46m',
+            'white': '\033[47m',
+            '0': '\033[40m',
+            '1': '\033[41m',
+            '2': '\033[42m',
+            '3': '\033[43m',
+            '4': '\033[44m',
+            '5': '\033[45m',
+            '6': '\033[46m',
+            '7': '\033[47m',
         }
 
         effects = {
@@ -433,9 +452,7 @@ class Console:
             effect = '0'
 
         print(
-            f'{effects[effect]}{colors[color]}{colors[bg_color]}msg{default_colors}',
+            f'{effects[effect]}{colors[color]}{bg_colors[bg_color]}{msg}{default_colors}',
             flush = flush,
+            end = end,
         )
-
-
-
