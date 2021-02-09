@@ -342,6 +342,7 @@ def show_mode():
 def send_emails(subject: str = ''):
     global config
     global letter
+    global console
 
     # Флаг режим 'period'
     is_period_mode = False
@@ -385,11 +386,20 @@ def send_emails(subject: str = ''):
             descriprion_bx24 = cleanhtml(descriprion_bx24)
             try:
                 print()
-                print('Ставлю задачу администратору в Битрикс24...')
+                console.print(
+                    'Ставлю задачу администратору в Битрикс24...',
+                    end =' ',
+                    effect = '6',
+                    flush = True,
+                )
                 bx24 = Bitrix24(WEB_HOOK)
                 bx24.callMethod('tasks.task.add',
                                 fields={'TITLE': subject, 'RESPONSIBLE_ID': 1,
                                         'DESCRIPTION': descriprion_bx24})
+                console.print(
+                    'ok',
+                    color = 'green'
+                )
             except Exception as message:
                 print_error(
                     'Ошибка при работе с Битрикс24: {}.'.format(message),
@@ -401,11 +411,15 @@ def send_emails(subject: str = ''):
         # Отправляем email
         try:
             print()
-            print('Отправляю письмо администратору ({})...'.format(
-                admin_email_address), end = '', flush=True)
+            console.print(
+                'Отправляю письмо администратору ({})...'.format(
+                admin_email_address),
+                end = ' ',
+                flush=True,
+            )
             email_sender.send_email(admin_email_address,
                                 subject, letter.get_letter(), True)
-            print(' Отправлено!')
+            console.print('ok', color = 'green')
         except:
             print_error('Ошибка! Проверьте ' +\
                         'секцию smtp_server в файле конфигурации.',
@@ -521,8 +535,14 @@ def create_new_archive():
                         'указано в ' + dir + ':' + source_dirs_dict[dir],
                         True)
 
-        print('Сканирую {} ({})...'.format (dir, folder[:-2]))
+        console.print(
+            'Сканирую {} ({})... '.format (dir, folder[:-2]),
+            end = '',
+            effect = '6',
+            flush = True,
+        )
         recursive_objects = sorted(glob.glob(folder, recursive = True))
+        console.print('ok', color = 'green')
         # Создаем ключ словаря и значение. Значение - это то,
         # что вернула функция glob (она вернула список),
         # а ключ - ключ текущий словаря source_dirs_dict
@@ -691,6 +711,7 @@ def export_config():
 
 def mount_remote_source():
     global config
+    global console
 
     type_remote_source = config.get('remote_source', 'type')
 
@@ -701,17 +722,30 @@ def mount_remote_source():
         password = config.get('remote_source', 'password')
         smb_version = config.get('remote_source', 'smb_version')
 
-        print('Монтирую удаленный источник ', path, '...', sep = '')
+        console.print(
+            'Демонтирую удаленный источник {}... '.format(path),
+            end = '',
+            effect = '6',
+            flush = True,
+        )
         try:
             sh.umount(target)
+            console.print('ok', color = 'green')
         except:
-            pass
+            console.print('ok', color = 'green')
 
+        console.print(
+            'Монтирую удаленный источник {}... '.format(path),
+            end = '',
+            effect = '6',
+            flush = True,
+        )
         try:
             sh.mount('-t', 'cifs', path, target, '-o',
                      'username=' + user + ',password=' + password +
                      ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777,' +
                      'vers=' + smb_version)
+            console.print('ok', color = 'green')
         except sh.ErrorReturnCode_32:
             print_error('Ошибка монтирования remote_source! ' + \
                         'Устройство занято!', True)
@@ -721,6 +755,7 @@ def mount_remote_source():
 
 def mount_remote_ring():
     global config
+    global console
 
     type_remote_ring = config.get('remote_ring', 'type')
 
@@ -731,17 +766,30 @@ def mount_remote_ring():
         password = config.get('remote_ring', 'password')
         smb_version = config.get('remote_ring', 'smb_version')
 
-        print('Монтирую удаленный ring', path, '...', sep = '')
+        console.print(
+            'Демонтирую удаленный ring {}... '.format(path),
+            end = '',
+            effect = '6',
+            flush = True,
+        )
         try:
             sh.umount(target)
+            console.print('ok', color = 'green')
         except:
-            pass
+            console.print('ok', color = 'green')
 
+        console.print(
+            'Монтирую удаленный ring {}... '.format(path),
+            flush = True,
+            effect = '6',
+            end = '',
+        )
         try:
             sh.mount('-t', 'cifs', path, target, '-o',
                      'username=' + user + ',password=' + password +
                      ',iocharset=utf8' + ',file_mode=0777,dir_mode=0777,' +
                      'vers=' + smb_version)
+            console.print('ok', color = 'green')
         except sh.ErrorReturnCode_32:
             print_error('Ошибка монтирования remote_ring!' + \
                         ' Устройство занято!', True)
