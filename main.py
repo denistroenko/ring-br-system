@@ -4,8 +4,8 @@ import glob
 import socket
 import sh
 import re
-from bitrix24 import Bitrix24
-from bitrix24 import BitrixError
+# from bitrix24 import Bitrix24
+# from bitrix24 import BitrixError
 
 
 # GLOBAL
@@ -385,6 +385,8 @@ def send_emails(subject: str = ''):
             descriprion_bx24 = letter.get_letter()
             descriprion_bx24 = cleanhtml(descriprion_bx24)
             try:
+                from bitrix24 import Bitrix24
+                from bitrix24 import BitrixError
                 print()
                 console.print(
                     'Ставлю задачу администратору в Битрикс24...',
