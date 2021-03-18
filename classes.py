@@ -1,10 +1,11 @@
 import datetime
-import os
 import time
-from baseapplib import human_space
+import os
 import zipfile
+from baseapplib import human_space
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 class RingFile:
 
     def __init__(self, file_name: str, full_path: str, size: int,
@@ -97,6 +98,7 @@ class RingFile:
         print('Файл удален:', self.__name)
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 class Ring:
 
     def __init__(self, path: str = '', prefix: str = '',

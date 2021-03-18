@@ -1,15 +1,17 @@
-from classes import *
-from baseapplib import *
 import glob
 import socket
-import sh
 import re
-# from bitrix24 import Bitrix24
-# from bitrix24 import BitrixError
+import sh
+from baseapplib import *
+from classes import *
 
 
 # GLOBAL
-VERSION = '0.0.3'
+
+__version__ = '0.0.3'
+
+APP_DIR = get_script_dir()
+CONFIG_FILE = '{}config'.format(APP_DIR)
 
 console = Console()
 config = Config()
@@ -17,11 +19,8 @@ ring = Ring()
 letter = HtmlLetter()
 email_sender = EmailSender()
 
-APP_DIR = get_script_dir()
 
-CONFIG_FILE = '{}config'.format(APP_DIR)
-
-
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def set_config_defaults():
     global config
 
@@ -96,31 +95,43 @@ def set_config_defaults():
 
 
 def print_settings():
-    global config
+    """
+    Вывод на экран __str__ объекта config, т.е. всей глобальной конфигурации
+    """
     print(config)
 
 
 def configure_sender():
-    global config
-    global email_sender
+    """
+    Эта функция начально конфигурирует объект email_sender из настроек
+    глобальной конфигурации
+    """
 
     host = config.get('smtp_server', 'hostname')
     port = int(config.get('smtp_server', 'port'))
     login = config.get('smtp_server', 'login')
     password = config.get('smtp_server', 'password')
     from_addr = config.get('smtp_server', 'from_address')
-    use_ssl = False
 
+    use_ssl = False
     if config.get('smtp_server', 'use_ssl') == 'yes':
         use_ssl = True
 
-    email_sender.configure(host, login, password, from_addr,
-                           use_ssl, port)
+    email_sender.configure(smtp_hostname=host,
+                           login=login,
+                           password=password,
+                           from_address=from_addr,
+                           use_ssl=use_ssl,
+                           port=port,
+                           )
 
 
 def configure_letter_head():
-    global VERSION
-    global letter
+    """
+    Изначальное заполнение шапки письма (объект letter). Добавляются в шапку
+    стандартные данные о системе, версии ring и имени файла конфигурации
+    """
+
     uname = os.uname()
     hostname = socket.gethostname()
 
@@ -129,13 +140,14 @@ def configure_letter_head():
     letter.append('hostname: ' + hostname, color = 'gray')
     letter.append()
     letter.append('Ring tool', 'h3', color = 'gray')
-    letter.append('Version: ' + VERSION, color = 'gray')
+    letter.append('Version: ' + __version__, color = 'gray')
     letter.append('Folder: ' + APP_DIR, color = 'gray')
     letter.append('Config file: ' + CONFIG_FILE, color = 'gray')
     letter.append()
     letter.append('Report', 'h3')
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def print_error(error: str, stop_program: bool = False):
     global letter
     global email_sender
@@ -159,6 +171,7 @@ def print_error(error: str, stop_program: bool = False):
         print('\033[33m{}\033[37m\033[40m'.format(error))
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def print_file_line(number,
                     year, month, day, time, age, file_name, file_size,
                     difference, show_plus_space: bool,
@@ -201,6 +214,7 @@ def print_file_line(number,
     print(line)
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def show_mode():
     ok = True
     global ring
@@ -339,6 +353,7 @@ def show_mode():
     sys.exit()
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def send_emails(subject: str = ''):
     global config
     global letter
@@ -429,6 +444,7 @@ def send_emails(subject: str = ''):
         # END TEST
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def show_content_zip_file(file_index: int = -1):
     global ring
     global console
@@ -449,6 +465,7 @@ def show_content_zip_file(file_index: int = -1):
         print_error(content, False)
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def test_zip_file(file_index: int = -1):
     global ring
 
@@ -460,6 +477,7 @@ def test_zip_file(file_index: int = -1):
         print_error(test_result, False)
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def cut_bad_mode():
     global ring
     total_deleted_files = 0
@@ -482,6 +500,7 @@ def cut_bad_mode():
     print('Всего удалено файлов:', total_deleted_files)
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def load_ring_files():
     path = config.get('ring', 'dir')
     prefix = config.get('ring', 'prefix')
@@ -499,6 +518,7 @@ def load_ring_files():
         print_error('Не найден ring-каталог: {}'.format(path), True)
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def create_new_archive():
     global config
     global ring
@@ -616,6 +636,7 @@ def create_new_archive():
     return ok
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def print_help():
     print('usage: ring archive|cut|show \n[--cut-bad] [--config file] ' +
           '[--settings] [--test] [--content] [--config-export]')
@@ -624,6 +645,7 @@ def print_help():
     print('--test -t\t\t- ???')
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def cut_mode():
     global ring
     global console
@@ -660,11 +682,13 @@ def cut_mode():
     return ok
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def sort_ring_files():
     global ring
     ring.sort()
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def fix_config():
     # Фиксим: последний символ в пути к папке, должен быть '/'
     ring_dir = config.get('ring', 'dir')
@@ -705,12 +729,14 @@ def fix_config():
         pass
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def export_config():
     global config
     full_path = '{}config_exp'.format(APP_DIR)
     config.write_file(full_path)
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def mount_remote_source():
     global config
     global console
@@ -755,6 +781,7 @@ def mount_remote_source():
             print_error('Ошибка монтирования remote_source!', True)
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def mount_remote_ring():
     global config
     global console
@@ -799,6 +826,7 @@ def mount_remote_ring():
             print_error('Ошибка монтирования remote_ring!', True)
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def calculate_index_from_number(number: int):
     global ring
     files_count = ring.get_total_files()
@@ -817,6 +845,7 @@ def calculate_index_from_number(number: int):
     return file_index
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def kill_archive(file_index: int):
     global ring
     files_count = ring.get_total_files()
@@ -826,6 +855,7 @@ def kill_archive(file_index: int):
     ring.kill(file_index)
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def main():
     global console
     global CONFIG_FILE
@@ -835,7 +865,7 @@ def main():
     # ИСКЛЮЧАЮЩИЕ РЕЖИМЫ (И СРАЗУ ВЫХОД)
     if '--version' in args:
         message = ['Algorithm Computers', 'dev@a-computers.ru',
-                   '', 'Ring v.{}'.format(VERSION),
+                   '', 'Ring v.{}'.format(__version__),
                    'Утилита управления архивными файлами']
 
         console.print_title(message, '*', 55, False, False)
@@ -971,4 +1001,5 @@ def main():
         create_new_archive()
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 main()

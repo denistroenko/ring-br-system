@@ -1,7 +1,6 @@
+__version__ = '0.0.16'
 
-# version 0.0.16
 
-# imports
 import random
 import smtplib
 from email.mime.text import MIMEText
@@ -10,6 +9,7 @@ import inspect
 import sys
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def get_script_dir(follow_symlinks=True):
     if getattr(sys, 'frozen', False): # py2exe, PyInstaller, cx_Freeze
         path = os.path.abspath(sys.executable)
@@ -20,6 +20,7 @@ def get_script_dir(follow_symlinks=True):
     return '{}/'.format(os.path.dirname(path))
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 def human_space(bytes: int) -> str:
     if bytes >= 1024 ** 3:
         result = str('{}G'.format(round(bytes/1024**3, 1)))
@@ -32,6 +33,7 @@ def human_space(bytes: int) -> str:
     return result
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 class PasswordGenerator:
 
     def __init__(self):
@@ -116,6 +118,7 @@ class PasswordGenerator:
         return self.curent_password
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 class EmailSender:
 
     def __init__(self):
@@ -157,6 +160,7 @@ class EmailSender:
         server.quit()
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 class HtmlLetter:
 
     def __init__(self, background_color: str = '#fff',
@@ -215,6 +219,7 @@ class HtmlLetter:
         self.__body = ''
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 class Config:
 
     def __init__(self):
@@ -339,6 +344,7 @@ class Config:
         self.settings[section][setting] = str(value)
 
 
+# ПЕРЕДЕЛАТЬ: clean & pep8
 class Console:
 
     def __init__(self):
