@@ -363,27 +363,27 @@ class Console:
                 result.append(arg)
         return result
 
-    def print_title(self, title: list, border_simbol: str = "#",
+    def print_title(self, title: list, border_symbol: str = "#",
                     width: int = 40, space_before: bool = True,
                     space_after: bool = True):
         if type(title) != list:
             title = [str(title), ]
-        if len(border_simbol) * (width // len(border_simbol)) != width:
-            width = len(border_simbol) * (width // len(border_simbol))
+        if len(border_symbol) * (width // len(border_symbol)) != width:
+            width = len(border_symbol) * (width // len(border_symbol))
 
         if space_before:
             print()
 
-        print(border_simbol * (width // len(border_simbol)))
+        print(border_symbol * (width // len(border_symbol)))
         for string in title:
-            half1 = width // 2 - len(string) // 2 - len(border_simbol)
-            half2 = width - (half1 + len(string)) - len(border_simbol) * 2
-            print(border_simbol +
+            half1 = width // 2 - len(string) // 2 - len(border_symbol)
+            half2 = width - (half1 + len(string)) - len(border_symbol) * 2
+            print(border_symbol +
                 ' ' * half1 +
                 string +
                 ' ' * half2 +
-                border_simbol)
-        print(border_simbol * (width // len(border_simbol)))
+                border_symbol)
+        print(border_symbol * (width // len(border_symbol)))
 
         if space_after:
             print()

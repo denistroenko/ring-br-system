@@ -106,7 +106,6 @@ def configure_sender():
     Эта функция начально конфигурирует объект email_sender из настроек
     глобальной конфигурации
     """
-
     host = config.get('smtp_server', 'hostname')
     port = int(config.get('smtp_server', 'port'))
     login = config.get('smtp_server', 'login')
@@ -131,20 +130,46 @@ def configure_letter_head():
     Изначальное заполнение шапки письма (объект letter). Добавляются в шапку
     стандартные данные о системе, версии ring и имени файла конфигурации
     """
-
     uname = os.uname()
     hostname = socket.gethostname()
 
-    letter.append('System', 'h3', color = 'gray')
-    letter.append(str(uname).replace('#', ''), color = 'gray')
-    letter.append('hostname: ' + hostname, color = 'gray')
+    letter.append(text='System',
+                  tag_type='h3',
+                  color='gray',
+                  )
+
+    letter.append(text=str(uname).replace('#', ''),
+                  color = 'gray',
+                  )
+
+    letter.append(text='hostname: {}'.format(hostname),
+                  color = 'gray',
+                  )
+
     letter.append()
-    letter.append('Ring tool', 'h3', color = 'gray')
-    letter.append('Version: ' + __version__, color = 'gray')
-    letter.append('Folder: ' + APP_DIR, color = 'gray')
-    letter.append('Config file: ' + CONFIG_FILE, color = 'gray')
+
+    letter.append(text='Ring tool',
+                  tag_type='h3',
+                  color = 'gray',
+                  )
+
+    letter.append(text='Version: {}'.format(__version__),
+                  color = 'gray',
+                  )
+
+    letter.append(text='Folder: {}'.format(APP_DIR),
+                  color = 'gray',
+                  )
+
+    letter.append(text='Config file: {}'.format(CONFIG_FILE),
+                  color = 'gray',
+                  )
+
     letter.append()
-    letter.append('Report', 'h3')
+
+    letter.append(text='Report',
+                  tag_type='h3',
+                  )
 
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
@@ -446,17 +471,20 @@ def send_emails(subject: str = ''):
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def show_content_zip_file(file_index: int = -1):
-    global ring
-    global console
-
+    """
+    Выводит на экран содержимое zip-архива.
+    Один из основных режимов работы программы.
+    """
+    # Определяем номер файла по индексу (строковая переменная).
+    # Если индекс = -1, то номер представить как "last"
+    file_number = str(file_index + 1)
     if file_index == -1:
         file_number = 'last'
-    else:
-        file_number = file_index + 1
 
     message = ['CONTENT SHOW MODE', 'file number: {}'.format(file_number)]
-    console.print_title(message, '~', 55)
+    console.print_title(title=message, border_symbol='~', width=55)
 
+    # Получаем переменные УСПЕХ и КОНТЕНТ
     ok, content = ring.get_content(file_index)
 
     if ok:
@@ -465,16 +493,17 @@ def show_content_zip_file(file_index: int = -1):
         print_error(content, False)
 
 
-# ПЕРЕДЕЛАТЬ: clean & pep8
-def test_zip_file(file_index: int = -1):
-    global ring
-
+def test_zip_file(file_index: int=-1):
+    """
+    Функция тестирует архив в ring-директории, но фактически -
+    делает это через метод объекта ring
+    """
     ok, test_result = ring.test_archive(file_index)
 
     if ok:
         print(test_result)
     else:
-        print_error(test_result, False)
+        print_error(test_result, stop_program=False)
 
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
@@ -500,22 +529,27 @@ def cut_bad_mode():
     print('Всего удалено файлов:', total_deleted_files)
 
 
-# ПЕРЕДЕЛАТЬ: clean & pep8
 def load_ring_files():
+    """
+    Функция "загружает" объект ring файлами,
+    по сути - вызов метода ring.load()
+    """
     path = config.get('ring', 'dir')
     prefix = config.get('ring', 'prefix')
-    # Read show_excluded parameter
+
+    show_excluded = False
     if config.get('ring', 'show_excluded') == 'yes':
         show_excluded = True
-    else:
-        show_excluded = False
 
+    # Очистка ring
     ring.clear()
 
     try:
         ring.load(path, prefix, show_excluded)
     except FileNotFoundError:
-        print_error('Не найден ring-каталог: {}'.format(path), True)
+        print_error('Не найден ring-каталог: {}'.format(path),
+                    stop_program=True,
+                    )
 
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
@@ -682,9 +716,10 @@ def cut_mode():
     return ok
 
 
-# ПЕРЕДЕЛАТЬ: clean & pep8
 def sort_ring_files():
-    global ring
+    """
+    Сортировка ring
+    """
     ring.sort()
 
 
@@ -729,9 +764,11 @@ def fix_config():
         pass
 
 
-# ПЕРЕДЕЛАТЬ: clean & pep8
 def export_config():
-    global config
+    """
+    Экспорт конфигурации в файл ./config_ext,
+    по сути - вызвывает метод объекта config
+    """
     full_path = '{}config_exp'.format(APP_DIR)
     config.write_file(full_path)
 
@@ -826,17 +863,27 @@ def mount_remote_ring():
             print_error('Ошибка монтирования remote_ring!', True)
 
 
-# ПЕРЕДЕЛАТЬ: clean & pep8
-def calculate_index_from_number(number: int):
-    global ring
+def calculate_index_from_number(number: int) -> int:
+    """
+    Вычисляет номер файла исходя из его индекса путем формирования
+    СПИСКА, содержащего числа (эквиваленты номеров файлов в ring).
+    Похоже, что сложности это только для того, чтобы именно здесь определить,
+    есть ли такой номер файла в ring, не обращаясь в сам ring,
+    и исключение отловить здесь, и не связанное с объектом rung
+    """
+    # Определяем количество файлов в ring-папке
     files_count = ring.get_total_files()
 
+    # Создаем пустой список номеров файлов
     numbers_list = []
 
+    # Заполняем список номерами
     for n in range(files_count):
         numbers_list.append(n + 1)
 
+    # Проверяем на исключение
     try:
+        # Запрашиваем индекс нужного номера в списке номеров
         file_index = numbers_list.index(number)
     except ValueError:
         print_error('Такого номера файла нет!')
@@ -845,13 +892,16 @@ def calculate_index_from_number(number: int):
     return file_index
 
 
-# ПЕРЕДЕЛАТЬ: clean & pep8
 def kill_archive(file_index: int):
-    global ring
+    """
+    Функция удаляет архив из ring-папки, но по сути -
+    вызывает метод объекта ring
+    """
     files_count = ring.get_total_files()
     if files_count == 0:
         print_error('В ring-папке нет ни одного файла! Нечего удалять!')
         sys.exit()
+
     ring.kill(file_index)
 
 
@@ -1001,5 +1051,5 @@ def main():
         create_new_archive()
 
 
-# ПЕРЕДЕЛАТЬ: clean & pep8
-main()
+if __name__ == '__main__':
+    main()
