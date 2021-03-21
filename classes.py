@@ -271,7 +271,10 @@ class Ring:
                                 print(' ИСКЛЮЧЕН!')
                                 continue
                             else:
-                                zip_file.write(file, arcname)
+                                try:
+                                    zip_file.write(file, arcname)
+                                except FileNotFoundError:
+                                    print('Файл не найден: ', file)
                         else:
                             print(' НЕСВЕЖИЙ!')
                             continue
@@ -280,7 +283,10 @@ class Ring:
                             print(' ИСКЛЮЧЕН!')
                             continue
                         else:
-                            zip_file.write(file, arcname)
+                            try:
+                                zip_file.write(file, arcname)
+                            except FileNotFoundError:
+                                print('Файл не найден: ', file)
 
                     compress_size = (
                             zip_file.infolist()[-1].compress_size)

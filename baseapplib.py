@@ -391,15 +391,15 @@ class Console:
     def clear_screen(self):
         os.system('clear')
 
-    def print(
-        self,
-        msg: str = '',
-        color: str = 'white',
-        bg_color: str = 'black',
-        effect: str = '0',
-        end: str = '\n',
-        flush: bool = False,
-    ):
+    def print(self,
+              msg: str = '',
+              color: str = 'white',
+              bg_color: str = 'black',
+              effect: str = '0',
+              end: str = '\n',
+              flush: bool = False,
+              ):
+
         colors = {'black': '\033[30m',
                   'red': '\033[31m',
                   'green': '\033[32m',
@@ -417,6 +417,7 @@ class Console:
                   '6': '\033[36m',
                   '7': '\033[37m',
                   }
+
         bg_colors = {'black': '\033[40m',
                      'red': '\033[41m',
                      'green': '\033[42m',
