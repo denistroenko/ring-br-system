@@ -376,7 +376,7 @@ def show_mode():
         console.print_progress_bar(percents, width=55, fill_symbol=' ',
                            msg=msg_inside_bar)
     elif ring_type == 'count':
-        percents = ring.get_total_files / int(ring_type_value) * 100
+        percents = ring.get_total_files() / int(ring_type_value) * 100
         console.print_progress_bar(percents, width=55, fill_symbol=' ',
                            msg=msg_inside_bar)
     else:
