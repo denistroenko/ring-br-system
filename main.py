@@ -366,20 +366,38 @@ def show_mode():
         prev_size = size
         total_space = ring.get_total_space()
 
-    msg_inside_bar = ('Всего файлов: {}'.format(ring.get_total_files())
-                      + '; Занято места: {}'.format(human_space(total_space)))
 
     print('~' * 55)
 
     if ring_type == 'space':
+        msg_inside_bar = ('Всего файлов: {}'.format(ring.get_total_files())
+                           + '; Занято места: {} из {}G'.format(
+                                   human_space(total_space),
+                                   ring_type_value,
+                                   )
+                          )
+
         percents = total_space / (int(ring_type_value) * 1024**3) * 100
         console.print_progress_bar(percents, width=55, fill_symbol=' ',
                            msg=msg_inside_bar)
     elif ring_type == 'count':
+        msg_inside_bar = ('Всего файлов: {} из {}'.format(
+                                  ring.get_total_files(),
+                                  ring_type_value,
+                                  )
+                          + '; Занято места: {}'.format(
+                                  human_space(total_space),
+                                  )
+                          )
         percents = ring.get_total_files() / int(ring_type_value) * 100
         console.print_progress_bar(percents, width=55, fill_symbol=' ',
                            msg=msg_inside_bar)
     else:
+        msg_inside_bar = ('Всего файлов: {}'.format(ring.get_total_files())
+                          + '; Занято места: {}'.format(
+                                  human_space(total_space),
+                                  )
+                          )
         print(msg_inside_bar)
 
     print()
