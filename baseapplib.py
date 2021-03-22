@@ -460,3 +460,38 @@ class Console:
             flush = flush,
             end = end,
         )
+
+    def print_progress_bar(self,
+                           percents: int,
+                           width: int=50,
+                           fill_symbol: str='*',
+                           msg: str='',
+                           used_color: str='white',
+                           used_bg_color: str='red',
+                           avaiable_color: str='white',
+                           avaiable_bg_color: str='green',
+                           ):
+        used = int(width * (percents / 100))
+        avaiable = width - used
+
+        symbols_line = msg[:width + 1]
+        symbols_line = symbols_line + fill_symbol * (width - len(symbols_line))
+
+
+        used_symbols_line = symbols_line[:used + 1]
+        avaiable_symbols_line = symbols_line[used + 1:]
+
+        for symbol in used_symbols_line:
+            self.print(msg=symbol,
+                        color=used_color,
+                        bg_color=used_bg_color,
+                        end='',
+                        effect='1',
+                        )
+        for symbol in avaiable_symbols_line:
+            self.print(msg=symbol,
+                        color=avaiable_color,
+                        bg_color=avaiable_bg_color,
+                        end='',
+                        effect='1',
+                        )

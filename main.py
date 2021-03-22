@@ -242,10 +242,6 @@ def print_file_line(number,
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def show_mode():
     ok = True
-    global ring
-    global config
-    global letter
-    global email_sender
 
     letter.append('Show mode', 'h4')
 
@@ -369,8 +365,25 @@ def show_mode():
                             color_date = color_date)
         prev_size = size
         total_space = ring.get_total_space()
-    print('Всего файлов: ', ring.get_total_files(), '; Занято места: ',
-         human_space(total_space), sep = '')
+
+    msg_inside_bar = ('Всего файлов: {}'.format(ring.get_total_files())
+                      + '; Занято места: {}'.format(human_space(total_space)))
+
+    print('~' * 55)
+
+    if ring_type == 'space':
+        percents = total_space / (int(ring_type_value) * 1024**3) * 100
+        console.print_progress_bar(percents, width=55, fill_symbol=' ',
+                           msg=msg_inside_bar)
+    elif ring_type == 'count':
+        percents = ring.get_total_files / int(ring_type_value) * 100
+        console.print_progress_bar(percents, width=55, fill_symbol=' ',
+                           msg=msg_inside_bar)
+    else:
+        print(msg_inside_bar)
+
+    print()
+
     letter.append(f'Всего файлов: {ring.get_total_files()}, Занято места: ' +
          f'{human_space(total_space)}')
 
