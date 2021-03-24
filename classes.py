@@ -114,7 +114,6 @@ class RingFile:
         except zipfile.BadZipfile:
             ok = False
             result = 'Это не zip-файл!'
-
             return ok, result
 
         result = zip_file.testzip()
