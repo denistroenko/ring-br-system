@@ -5,7 +5,6 @@ import zipfile
 from baseapplib import human_space
 
 
-
 class RingFile:
     def __init__(self, file_name: str, full_path: str, size: int,
                  date_modify: datetime.datetime):
@@ -38,10 +37,10 @@ class RingFile:
 
         return age
 
-    def get_zip_info(self):
+    def get_zip_info(self) -> None:
         pass
 
-    def zip_content(self) -> bool, str:
+    def zip_content(self) -> (bool, str):
         try:
             zip_file = zipfile.ZipFile(self.__full_path, 'r')
         except zipfile.BadZipfile:
@@ -106,7 +105,7 @@ class RingFile:
         else:
             return False, result
 
-    def zip_test(self) -> bool, str:
+    def zip_test(self) -> (bool, str):
         ok = True
 
         try:
@@ -125,7 +124,7 @@ class RingFile:
 
         return ok, result
 
-    def delete_from_disk(self) -> bool, str:
+    def delete_from_disk(self) -> (bool, str):
         try:
             os.remove(self.__full_path)
             ok = True
