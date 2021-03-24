@@ -14,21 +14,39 @@ class RingFile:
         self.__date_modify = date_modify
 
     def __str__(self) -> str:
+        """
+        Возвращает имя файла
+        """
         return self.__name
 
     def get_file_name(self) -> str:
+        """
+        Возвращает имя файла
+        """
         return self.__name
 
     def get_full_path(self) -> str:
+        """
+        Возвращает полный путь к файлу
+        """
         return self.__full_path
 
     def get_date_modify(self) -> datetime.datetime:
+        """
+        Возвращает дату изменения файла
+        """
         return self.__date_modify
 
     def get_size(self) -> int:
+        """
+        Возвращает размер файла
+        """
         return self.__size
 
     def get_age(self) -> int:
+        """
+        Возвращает "возраст" файла в днях с округлением
+        """
         date_now = datetime.datetime.now()
         date_modify = self.__date_modify
 
@@ -41,6 +59,9 @@ class RingFile:
         pass
 
     def zip_content(self) -> (bool, str):
+        """
+        Возвращает содержимое архива и итог по числу файлов и объему
+        """
         try:
             zip_file = zipfile.ZipFile(self.__full_path, 'r')
         except zipfile.BadZipfile:
@@ -106,6 +127,9 @@ class RingFile:
             return False, result
 
     def zip_test(self) -> (bool, str):
+        """
+        Возвращает результат тестирования архива
+        """
         ok = True
 
         try:
@@ -125,6 +149,9 @@ class RingFile:
         return ok, result
 
     def delete_from_disk(self) -> (bool, str):
+        """
+        Удаляет файл с диска средствами ОС
+        """
         try:
             os.remove(self.__full_path)
             ok = True
