@@ -32,7 +32,7 @@ class RingFile:
     def get_age(self) -> int:
         date_now = datetime.datetime.now()
         date_modify = self.__date_modify
-        
+
         age_seconds = (date_now - date_modify).total_seconds()
         age = round(age_seconds / 60 / 60 / 24)
 
@@ -64,7 +64,7 @@ class RingFile:
                 # append line to Name List
                 names.append(line)
 
-                # + files counter 
+                # + files counter
                 files_count += 1
 
                 # get zip-info about curent file (line)
@@ -73,12 +73,12 @@ class RingFile:
                 # + total files size counter
                 files_size += info.file_size
 
-                # + total files compress counter 
+                # + total files compress counter
                 files_compress_size += info.compress_size
-        
+
         # init result
         result = ''
-        
+
         # creating result
         if names != None:
             for name in names:
@@ -123,7 +123,7 @@ class RingFile:
             result = '\33[32mок!\33[37mТест успешно пройден.'
         else:
             ok = False
-        
+
         return ok, result
 
     def delete_from_disk(self) -> bool, str:
@@ -134,7 +134,7 @@ class RingFile:
         except Exception:
             ok = False
             result = 'Ошибка при удалении файла {}'.format(self.__name)
-        
+
         return ok, result
 
 
