@@ -1,14 +1,18 @@
+__version__ = '0.0.3'
+
 import glob
 import socket
 import re
 import sh
-from baseapplib import *
-from classes import *
+import os
+import sys
+
+from baseapplib import get_script_dir, human_space
+from baseapplib import EmailSender, HtmlLetter, Config, Console
+from classes import Ring, RingFile
 
 
 # GLOBAL
-
-__version__ = '0.0.3'
 
 APP_DIR = get_script_dir()
 CONFIG_FILE = '{}config'.format(APP_DIR)
@@ -196,18 +200,19 @@ def print_error(error: str, stop_program: bool = False):
         print('\033[33m{}\033[37m\033[40m'.format(error))
 
 
-# ПЕРЕДЕЛАТЬ: clean & pep8
+# ПЕРЕДЕЛАТЬ:   clean & pep8
 def print_file_line(number,
                     year, month, day, time, age, file_name, file_size,
                     difference, show_plus_space: bool,
-               color_date = '\033[30m\033[47m',
-               color_time = '\033[37m\033[40m',
-               color_age = '\033[30m\033[47m',
-               color_file_name = '\033[37m\033[40m',
-               color_file_size = '\033[537m\033[40m',
-               color_difference = '\033[32m\033[40m',
-               color_default = '\033[37m\033[40m',
-               date_separator = '-'):
+                    color_date = '\033[30m\033[47m',
+                    color_time = '\033[37m\033[40m',
+                    color_age = '\033[30m\033[47m',
+                    color_file_name = '\033[37m\033[40m',
+                    color_file_size = '\033[537m\033[40m',
+                    color_difference = '\033[32m\033[40m',
+                    color_default = '\033[37m\033[40m',
+                    date_separator = '-',
+                    ):
 
     # Default string formats for data
     number = "{:03d}".format(number)
@@ -343,26 +348,26 @@ def show_mode():
         letter.append('<br>', 'span')
 
         if ratio >= green_min and ratio <= green_max:
-            print_file_line(file_no,
-                            date.year, date.month, date.day, time, age,
-                            file_name, size, ratio, show_plus_space,
-                            color_difference = color_difference,
-                            color_age = color_age,
-                            color_date = color_date)
+            pass # color_difference = color_difference
         elif ratio >= red_min and ratio <= red_max:
-            print_file_line(file_no,
-                            date.year, date.month, date.day, time, age,
-                            file_name, size, ratio, show_plus_space,
-                            color_difference = '\033[31m',
-                            color_age = color_age,
-                            color_date = color_date)
+            color_difference = '\033[31m'
         else:
-            print_file_line(file_no,
-                            date.year, date.month, date.day, time, age,
-                            file_name, size, ratio, show_plus_space,
-                            color_difference = '\033[37m\033[41m',
-                            color_age = color_age,
-                            color_date = color_date)
+            color_difference = '\033[37m\033[41m'
+
+        print_file_line(number=file_no,
+                        year=date.year,
+                        month=date.month,
+                        day=date.day,
+                        time=time,
+                        age=age,
+                        file_name=file_name,
+                        file_size=size,
+                        difference=ratio,
+                        show_plus_space=show_plus_space,
+                        color_difference=color_difference,
+                        color_age=color_age,
+                        color_date=color_date,
+                        )
         prev_size = size
         total_space = ring.get_total_space()
 
@@ -378,8 +383,13 @@ def show_mode():
                           )
 
         percents = total_space / (int(ring_type_value) * 1024**3) * 100
-        console.print_progress_bar(percents, width=55, fill_symbol=' ',
-                           msg=msg_inside_bar)
+        console.print_progress_bar(percents=percents,
+                                   width=55,
+                                   fill_symbol=' ',
+                                   used_bg_color='purple',
+                                   avaiable_bg_color='blue',
+                                   msg=msg_inside_bar,
+                                   )
     elif ring_type == 'count':
         msg_inside_bar = ('Всего файлов: {} из {}'.format(
                                   ring.get_total_files(),
@@ -390,8 +400,13 @@ def show_mode():
                                   )
                           )
         percents = ring.get_total_files() / int(ring_type_value) * 100
-        console.print_progress_bar(percents, width=55, fill_symbol=' ',
-                           msg=msg_inside_bar)
+        console.print_progress_bar(percents=percents,
+                                   width=55,
+                                   fill_symbol=' ',
+                                   used_bg_color='purple',
+                                   avaiable_bg_color='blue',
+                                   msg=msg_inside_bar,
+                                   )
     else:
         msg_inside_bar = ('Всего файлов: {}'.format(ring.get_total_files())
                           + '; Занято места: {}'.format(
