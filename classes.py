@@ -5,14 +5,13 @@ import zipfile
 from baseapplib import human_space
 
 
-# ПЕРЕДЕЛАТЬ: clean & pep8
-class RingFile:
 
+class RingFile:
     def __init__(self, file_name: str, full_path: str, size: int,
                  date_modify: datetime.datetime):
-        self.__name: str = str(file_name)
-        self.__full_path: str = str(full_path)
-        self.__size: int = int(size)
+        self.__name = str(file_name)
+        self.__full_path = str(full_path)
+        self.__size = int(size)
         self.__date_modify = date_modify
 
     def __str__(self) -> str:
@@ -24,53 +23,80 @@ class RingFile:
     def get_full_path(self) -> str:
         return self.__full_path
 
-    def get_date_modify(self):
+    def get_date_modify(self) -> datetime.datetime:
         return self.__date_modify
 
     def get_size(self) -> int:
         return self.__size
 
-    def get_age(self):
+    def get_age(self) -> int:
         date_now = datetime.datetime.now()
         date_modify = self.__date_modify
-        age = (date_now - date_modify).total_seconds()
-        age = round(age / 60 / 60 / 24)
+        
+        age_seconds = (date_now - date_modify).total_seconds()
+        age = round(age_seconds / 60 / 60 / 24)
+
         return age
 
     def get_zip_info(self):
         pass
 
-    def zip_content(self):
+    def zip_content(self) -> bool, str:
         try:
             zip_file = zipfile.ZipFile(self.__full_path, 'r')
         except zipfile.BadZipfile:
-            return False, 'Ошибка чтения содержимого файла!'
+            return False, 'Ошибка формата zip-файла!'
 
+        # Name List of files inside archive
         name_list = zip_file.namelist()
 
+        # Counters
         files_count = 0
         files_size = 0
         files_compress_size = 0
-        # Create new list with out folders
-        names = []
-        for line in name_list:
-            if len(line) > 0 and line[-1] != '/':
-                names.append(line)
-                files_count += 1
-                info = zip_file.getinfo(line)
-                files_size += info.file_size
-                files_compress_size += info.compress_size
 
+        # Create new Name List (w/o folders)
+        names = []
+
+        for line in name_list:
+            # if it is file
+            if len(line) > 0 and line[-1] != '/':
+                # append line to Name List
+                names.append(line)
+
+                # + files counter 
+                files_count += 1
+
+                # get zip-info about curent file (line)
+                info = zip_file.getinfo(line)
+
+                # + total files size counter
+                files_size += info.file_size
+
+                # + total files compress counter 
+                files_compress_size += info.compress_size
+        
+        # init result
         result = ''
+        
+        # creating result
         if names != None:
             for name in names:
                 result += name + '\n'
+
+            # for draw line
             result += '-' * 55 + '\n'
+
+            # for total files count
             result += '\33[35mИТОГО:\33[37m Файлов в архиве - '
             result += str(files_count) + ' | '
+
+            # for total size
             result += human_space(files_size)
             result += ' >>> '
             result += human_space(files_compress_size) + ' '
+
+            # for compress percents
             if files_size > 0:
                 result += '\33[32m'
                 result += str(int(files_compress_size / files_size * 100))
@@ -80,22 +106,36 @@ class RingFile:
         else:
             return False, result
 
-    def zip_test(self):
+    def zip_test(self) -> bool, str:
+        ok = True
+
         try:
             zip_file = zipfile.ZipFile(self.__full_path, 'r')
         except zipfile.BadZipfile:
-            return False, 'Это не zip-файл!'
+            ok = False
+            result = 'Это не zip-файл!'
+
+            return ok, result
 
         result = zip_file.testzip()
 
         if result == None:
-            return True, '\33[32mок!\33[37mТест успешно пройден.'
+            result = '\33[32mок!\33[37mТест успешно пройден.'
         else:
-            return False, result
+            ok = False
+        
+        return ok, result
 
-    def delete_from_disk(self):
-        os.remove(self.__full_path)
-        print('Файл удален:', self.__name)
+    def delete_from_disk(self) -> bool, str:
+        try:
+            os.remove(self.__full_path)
+            ok = True
+            result =  'Файл удален: {}'.format(self.__name)
+        except Exception:
+            ok = False
+            result = 'Ошибка при удалении файла {}'.format(self.__name)
+        
+        return ok, result
 
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
@@ -194,7 +234,14 @@ class Ring:
         killing_file = self.__files[file_index]
 
         print('Удаляется', killing_file.get_full_path())
-        killing_file.delete_from_disk()
+
+        ok, msg = killing_file.delete_from_disk()
+
+        if ok:
+            print(msg)
+        else:
+            print_error(msg)
+
         self.__files.pop(file_index)
         self.__calculate()
 
