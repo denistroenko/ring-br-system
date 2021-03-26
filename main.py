@@ -7,6 +7,7 @@ import sh
 import os
 import sys
 
+from datetime import datetime
 from baseapplib import get_script_dir, human_space
 from baseapplib import EmailSender, HtmlLetter, Config, Console
 from classes import Ring, RingFile
@@ -100,15 +101,16 @@ def set_config_defaults():
 
 def print_settings():
     """
-    Вывод на экран __str__ объекта config, т.е. всей глобальной конфигурации
+    Вывод на экран __str__ объекта config,
+    т.е. всей глобальной конфигурации
     """
     print(config)
 
 
 def configure_sender():
     """
-    Эта функция начально конфигурирует объект email_sender из настроек
-    глобальной конфигурации
+    Эта функция начально конфигурирует объект email_sender
+    из настроек глобальной конфигурации
     """
     host = config.get('smtp_server', 'hostname')
     port = int(config.get('smtp_server', 'port'))
@@ -661,7 +663,7 @@ def create_new_archive():
     date_format = date_format.replace('ss', '{ss}')
 
     # Take now date, take date properties
-    date_now = datetime.datetime.now()
+    date_now = datetime.now()
     YYYY = '{:04d}'.format(date_now.year)
     MM = '{:02d}'.format(date_now.month)
     DD = '{:02d}'.format(date_now.day)
