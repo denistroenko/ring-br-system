@@ -15,14 +15,15 @@ from classes import Ring, RingFile
 
 # GLOBAL
 
-APP_DIR = get_script_dir()
-CONFIG_FILE = '{}config'.format(APP_DIR)
+APP_DIR = get_script_dir()      # path to app dir
+CONFIG_FILE = '{}config'.format(APP_DIR)  # path to config file
 
-console = Console()
-config = Config()
-ring = Ring()
-letter = HtmlLetter()
-email_sender = EmailSender()
+console = Console()             # console object
+args = console.get_args()       # argumetns from console
+config = Config()               # global config
+ring = Ring()                   # ring object
+letter = HtmlLetter()           # letter object
+email_sender = EmailSender()    # email_sender object
 
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
@@ -955,16 +956,31 @@ def kill_archive(file_index: int):
 
     ring.kill(file_index)
 
+def apply_alternative_config_file():
+    global CONFIG_FILE
+
+    try:
+        index = args.index('--config')
+    except ValueError:
+        index = args.index('-c')
+
+    next_index = index + 1
+    CONFIG_FILE = '{}{}'.format(
+        get_script_dir(), args[next_index])
+    try:
+        test_file = open(CONFIG_FILE, 'r')
+        test_file.close()
+    except FileNotFoundError:
+        print_error(
+            "Не найден файл, указанный в параметре --config: {}".format(
+                CONFIG_FILE), True)
+
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def main():
-    global console
-    global CONFIG_FILE
-    # Read args command line
-    args = console.get_args()
-
     # ИСКЛЮЧАЮЩИЕ РЕЖИМЫ (И СРАЗУ ВЫХОД)
-    if '--version' in args:
+    if '--version' in args or \
+            '-V' in args:
         message = ['Algorithm Computers', 'dev@a-computers.ru',
                    '', 'Ring v.{}'.format(__version__),
                    'Утилита управления архивными файлами']
@@ -978,19 +994,11 @@ def main():
     # Set default settings in global config
     set_config_defaults()
 
-    # СМЕНА НАСТРОЕК
-    if '--config' in args:
-        index = args.index('--config')
-        next_index = index + 1
-        CONFIG_FILE = '{}{}'.format(
-            get_script_dir(), args[next_index])
-        try:
-            test_file = open(CONFIG_FILE, 'r')
-            test_file.close()
-        except FileNotFoundError:
-            print_error(
-                "Не найден файл, указанный в параметре --config: {}".format(
-                    CONFIG_FILE), True)
+    # if use alternative config file
+    if '--config' in args or \
+            '-c' in args:
+        apply_alternative_config_file()
+
 
     # Read config file
     config.read_file(CONFIG_FILE)
