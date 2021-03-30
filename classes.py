@@ -2,7 +2,7 @@ import datetime
 import time
 import os
 import zipfile
-from baseapplib import human_space
+from baseapplib import human_space, Console
 
 
 class RingFile:
@@ -165,63 +165,105 @@ class RingFile:
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
 class Ring:
+    """
+    Кольцо архивов резервных копий. Содержит файлы (объекты)
+    """
 
-    def __init__(self, path: str = '', prefix: str = '',
-                 show_excluded: bool = True):
-        self.__path = path
-        self.__files_prefix = prefix
-        self.__show_excluded = show_excluded
-        self.__files = []
-        self.__total_files = 0
-        self.__total_space = 0
+    def __init__(self):
+        self.__files = []  # Список файлов в кольце (ring)
+        self.__total_files = 0  # total of files in ring
+        self.__total_space = 0  # total used space by files
 
     def __calculate(self):
+        """
+        Подсчитывает и присваевает атрибутам __total_files и __total_space
+        количество файлов в ring и их совокупный объем
+        """
         self.__total_files = int(len(self.__files))
         self.__total_space = 0
         for file in self.__files:
             self.__total_space += file.get_size()
 
     def sort(self):
+        """
+        Сортирует по дате модификации список файлов в атрибуте __files
+        """
         new_list = sorted(self.__files,
                           key=lambda file: file.get_date_modify())
+
         self.__files = new_list
 
-    def append(self, file_object: object):
+    def __append(self, file_object: object):
+        """
+        Присоединяет файл к списку (атрибуту __files)
+        """
         self.__files.append(file_object)
         self.__calculate()
 
     def clear(self):
+        """
+        Полностью очищает список файлов
+        """
         self.__files = []
         self.__calculate()
 
-    def load(self, path: str, prefix: str, show_excluded: bool = True):
-        self.__path = path
-        self.__files_prefix = prefix
-        self.__show_excluded = show_excluded
-
+    def load(self, path: str, prefix: str, show_excluded: bool=True):
+        """
+        Загружает список файлов и информацию о них
+        непосредственно из папки ring.
+        Добавляет в списку файлов (метод self.__append)
+        """
+        self.__path = path            # Full path to ring dir
+        self.__files_prefix = prefix  # Name file prefix for include. '' - all
+        self.__show_excluded = show_excluded  # show excluded files (if the
+                                              # files doesn't match the prefix)
+        # Get file list from OS
         all_files_list = os.listdir(self.__path)
+
+        # init
         excluded_files_count = 0
         excluded_files_size = 0
+
         for file_name in all_files_list:
-            # Получаем объем файла средствами ОС
             full_path = self.__path + file_name
-            size = os.path.getsize(full_path)
-            if file_name[0:len(self.__files_prefix)] == self.__files_prefix \
+
+            # Если файл соотв. префиксу и это файл, а не папка
+            if file_name[:len(self.__files_prefix)] == self.__files_prefix \
                     and os.path.isfile(full_path):
+
+                # Получаем объем файла средствами ОС
+                size = os.path.getsize(full_path)
+
                 # Получаем дату изм. файла средствами ОС
                 date_modify = os.path.getmtime(full_path)
+
                 # Преобразуем в локальное время (будет строка)
                 date_modify = time.ctime(date_modify)
+
                 # Преобразуем в datetime.datetime
                 date_modify = datetime.datetime.strptime(
                         date_modify, "%a %b %d %H:%M:%S %Y")
-                file = RingFile(file_name, full_path, size, date_modify)
-                self.append(file)
+
+                # Создать объект RingFile
+                file = RingFile(file_name=file_name,
+                                full_path=full_path,
+                                size=size,
+                                date_modify=date_modify,
+                                )
+
+                # Присоединить файл (вызывается метод)
+                self.__append(file)
+
+            # Иначе показать, что файл исключен, если show_excluded
             else:
                 if show_excluded:
                     print('Исключен файл:', file_name)
+
+                # excluded files count and size counters
                 excluded_files_count += 1
                 excluded_files_size += size
+
+        # Show excluded files info
         if excluded_files_count > 0:
             excluded_files_size = human_space(excluded_files_size)
             print('Файлы в папке, но не соответствуют префиксу:')
@@ -229,33 +271,45 @@ class Ring:
             print('Общий объем:', excluded_files_size)
             print('Они исключены из работы.')
 
-    def cut_by_count(self, count: int) -> bool:
-        ok = True
+    def cut_by_count(self, count: int):
+        """
+        Обрезает кольцо архивов в ring-папке по количеству файлов
+        (лишние файлы удаляются физически с диска от старых к новым)
+        """
         while len(self.__files) > count:
             self.__files[0].delete_from_disk()
             self.__files.pop(0)
-            self.__calculate()
-        return ok
 
-    def cut_by_age(self, max_age: int) -> bool:
-        ok = True
+        self.__calculate()
 
+    def cut_by_age(self, max_age: int):
+        """
+        Обрезает кольцо архивов в ring-папке по возрасту файлов
+        (файлы, старше указанного возраста в днях,
+        удаляются физически с диска)
+        """
         while len(self.__files) > 0 and \
                 self.__files[0].get_age() > max_age:
             self.__files[0].delete_from_disk()
             self.__files.pop(0)
-            self.__calculate()
-        return ok
 
-    def cut_by_space(self, gigabytes: int) -> bool:
-        ok = True
+        self.__calculate()
+
+    def cut_by_space(self, gigabytes: int):
+        """
+        Обрезает кольцо архивов в ring-папке по объему
+        (файлы удаляются физически с диска до тех пор, пока их совокупный
+        объем не будет превышать переданный максимальный)
+        """
         while self.__total_space > gigabytes * 1024**3:
             self.__files[0].delete_from_disk()
             self.__files.pop(0)
             self.__calculate()
-        return ok
 
     def kill(self, file_index: int):
+        """
+        Физически удаляет файл с диска (с указанным индексом)
+        """
         killing_file = self.__files[file_index]
 
         print('Удаляется', killing_file.get_full_path())
@@ -264,27 +318,43 @@ class Ring:
 
         if ok:
             print(msg)
+            self.__files.pop(file_index)
+            self.__calculate()
         else:
-            print_error(msg)
+            console = Console()
+            console.print_error(msg)
 
-        self.__files.pop(file_index)
-        self.__calculate()
-
-    def get_files(self) -> list:
+    def get_files(self) -> [object, ...]:
+        """
+        Возвращает список объектов RingFile
+        """
         return self.__files
 
     def get_total_space(self) -> int:
+        """
+        Возвращает текущий совокупный объем файлов в ring-папке
+        """
         return self.__total_space
 
     def get_total_files(self):
+        """
+        Возвращает количество файлов в ring-папке
+        """
         return self.__total_files
 
-    def new_archive(self, zip_file_name: str, source_dir: str, objects: dict,
-                    deflated: bool = True, compression_level: int = None,
-                    only_today_files: bool = False,
-                    exclude_file_names: list = []):
+    def new_archive(self, zip_file_name: str,       # Имя создаваемого архива
+                    source_dir_name: str,           # Имя папки-источника
+                    objects: dict,                  # ???????????????
+                    deflated: bool = True,          # флаг deflated - "сжатый"
+                    compression_level: int = None,  # степень сжатия
+                    only_today_files: bool = False, # только сегодняшние файлы
+                    exclude_file_names: list = []): # имена файлов-исключений
+                                                    # (не включаются в архив)
+        """СОЗДАЕТ АРХИВ И СКЛАДЫВАЕТ ЕГО В ring-ПАПКУ"""
         ok = True
+
         zip_compression = zipfile.ZIP_STORED
+
         if deflated:
             zip_compression = zipfile.ZIP_DEFLATED
         full_path = '{}{}'.format(self.__path, zip_file_name)
@@ -297,7 +367,8 @@ class Ring:
             total_file_sizes = 0
             total_file_compress_sizes = 0
             total_files = 0
-
+            # print(objects)
+            # exit()
             print('Создаю:', full_path)
             for folder in objects:
                 print('\33[35m', folder, '\33[37m', sep = '')
@@ -316,8 +387,8 @@ class Ring:
                           flush=True)
 
                     # Имя файла внутри zip-архива такое:
-                    if file[:len(source_dir)] == source_dir:
-                        arcname = folder + file[len(source_dir)-1:]
+                    if file[:len(source_dir_name)] == source_dir_name:
+                        arcname = folder + file[len(source_dir_name)-1:]
                     else:
                         arcname = folder + '/absolute_path/'+ file
                     # Исключение двойной косой //
@@ -346,7 +417,8 @@ class Ring:
                                 try:
                                     zip_file.write(file, arcname)
                                 except FileNotFoundError:
-                                    print('Файл не найден: ', file)
+                                    print('Файл не найден!')
+                                    continue
                         else:
                             print(' НЕСВЕЖИЙ!')
                             continue
@@ -358,7 +430,8 @@ class Ring:
                             try:
                                 zip_file.write(file, arcname)
                             except FileNotFoundError:
-                                print('Файл не найден: ', file)
+                                print('Файл не найден!')
+                                continue
 
                     compress_size = (
                             zip_file.infolist()[-1].compress_size)
@@ -413,7 +486,10 @@ class Ring:
             result = ''
         return ok, result
 
-    def get_content(self, file_index: int = -1):
+    def get_content(self, file_index: int=-1) -> (bool, str):
+        """
+        Возвращает содержимое архива (ring-файла в папке ring)
+        """
         ok = True
 
         try:
@@ -429,7 +505,11 @@ class Ring:
         result = file.zip_content()[1]
         return ok, result
 
-    def test_archive(self, file_index: int = -1):
+    def test_archive(self, file_index: int=-1) -> (bool, str):
+        """
+        Тестирует архив в ring-папке (с конкретным индексом)
+        на предмет ошибок zip-формата
+        """
         ok = True
 
         try:

@@ -184,6 +184,7 @@ def print_error(error: str, stop_program: bool = False):
     global email_sender
     global config
 
+    ok = True
     send_to_admin = False
     if config.get('report', 'send_to_admin') == 'yes':
         send_to_admin = True
@@ -200,6 +201,8 @@ def print_error(error: str, stop_program: bool = False):
         letter.append('В Ring tool произошла ошибка: ' + error,
                       color = 'orange', weight = 600)
         print('\033[33m{}\033[37m\033[40m'.format(error))
+
+    return ok
 
 
 # ПЕРЕДЕЛАТЬ:   clean & pep8
@@ -992,7 +995,9 @@ def main():
     # Read config file
     config.read_file(CONFIG_FILE)
 
-    fix_config()
+    ok = fix_config()
+    if ok == False:
+        sys.exit()
 
     configure_sender()
 
