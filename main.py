@@ -999,7 +999,6 @@ def main():
             '-c' in args:
         apply_alternative_config_file()
 
-
     # Read config file
     config.read_file(CONFIG_FILE)
 

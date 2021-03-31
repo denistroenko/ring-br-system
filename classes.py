@@ -227,12 +227,12 @@ class Ring:
         for file_name in all_files_list:
             full_path = self.__path + file_name
 
+            # Получаем объем файла средствами ОС
+            size = os.path.getsize(full_path)
+
             # Если файл соотв. префиксу и это файл, а не папка
             if file_name[:len(self.__files_prefix)] == self.__files_prefix \
                     and os.path.isfile(full_path):
-
-                # Получаем объем файла средствами ОС
-                size = os.path.getsize(full_path)
 
                 # Получаем дату изм. файла средствами ОС
                 date_modify = os.path.getmtime(full_path)
@@ -248,20 +248,20 @@ class Ring:
                 file = RingFile(file_name=file_name,
                                 full_path=full_path,
                                 size=size,
-                                date_modify=date_modify,
-                                )
+                                date_modify=date_modify)
 
                 # Присоединить файл (вызывается метод)
                 self.__append(file)
 
-            # Иначе показать, что файл исключен, если show_excluded
-            else:
-                if show_excluded:
-                    print('Исключен файл:', file_name)
+                continue
 
-                # excluded files count and size counters
-                excluded_files_count += 1
-                excluded_files_size += size
+            # Иначе показать, что файл исключен, если show_excluded
+            if show_excluded:
+                print('Исключен по префиксу:', file_name)
+
+            # excluded files count and size counters
+            excluded_files_count += 1
+            excluded_files_size += size
 
         # Show excluded files info
         if excluded_files_count > 0:
@@ -342,9 +342,17 @@ class Ring:
         """
         return self.__total_files
 
-    def new_archive(self, zip_file_name: str,       # Имя создаваемого архива
-                    source_dir_name: str,           # Имя папки-источника
-                    objects: dict,                  # ???????????????
+    def new_archive(self, zip_file_name: str,  # Имя создаваемого архива
+                    source_dir_name: str,      # Имя папки-источника
+                    objects: dict,  # словарь, заполненный сл. обр.:
+                                    # {'имя папки в архиве':
+                                    #  ['полный путь к файлу1',
+                                    #   'полный путь к файлу2',
+                                    #   ...
+                                    #  ],
+                                    #
+                                    #  ...
+                                    # }
                     deflated: bool = True,          # флаг deflated - "сжатый"
                     compression_level: int = None,  # степень сжатия
                     only_today_files: bool = False, # только сегодняшние файлы
