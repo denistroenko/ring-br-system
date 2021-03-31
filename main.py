@@ -606,10 +606,6 @@ def load_ring_files():
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def create_new_archive():
-    global config
-    global ring
-    global console
-
     console.print_title('ARCHIVE MODE', '~', 55)
 
     source_dir = config.get('source', 'dir')
@@ -694,16 +690,19 @@ def create_new_archive():
 
     try:
         ok, new_archive_info = \
-            ring.new_archive(
-                             file_name, source_dir, zip_dict, deflated,
-                             compression_level, only_today_files,
-                             exclude_file_names)
+            ring.new_archive(zip_file_name=file_name,
+                             source_dir_name=source_dir,
+                             objects=zip_dict,
+                             deflated=deflated,
+                             compression_level=compression_level,
+                             only_today_files=only_today_files,
+                             exclude_file_names=exclude_file_names,
+                             )
         new_archive_info = new_archive_info.replace('\n', '<br>')
     except NotADirectoryError:
         print_error('Среди списка папок [source_dirs] найден элемент, ' +
                     'не относящийся к папке!', True)
 
-    global letter
     letter.append('Arhive mode', 'h4')
     if ok:
         letter.append(new_archive_info)

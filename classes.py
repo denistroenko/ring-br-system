@@ -342,23 +342,28 @@ class Ring:
         """
         return self.__total_files
 
-    def new_archive(self, zip_file_name: str,  # Имя создаваемого архива
-                    source_dir_name: str,      # Имя папки-источника
-                    objects: dict,  # словарь, заполненный сл. обр.:
-                                    # {'имя папки в архиве':
-                                    #  ['полный путь к файлу1',
-                                    #   'полный путь к файлу2',
-                                    #   ...
-                                    #  ],
-                                    #
-                                    #  ...
-                                    # }
-                    deflated: bool = True,          # флаг deflated - "сжатый"
-                    compression_level: int = None,  # степень сжатия
-                    only_today_files: bool = False, # только сегодняшние файлы
-                    exclude_file_names: list = []): # имена файлов-исключений
-                                                    # (не включаются в архив)
-        """СОЗДАЕТ АРХИВ И СКЛАДЫВАЕТ ЕГО В ring-ПАПКУ"""
+    def new_archive(
+            self,
+            zip_file_name: str,        # Имя создаваемого архива
+            source_dir_name: str,      # Имя папки-источника
+            deflated: bool,            # флаг deflated - "сжатый"
+            compression_level: int,    # степень сжатия
+            only_today_files: bool,    # только сегодняшние файлы
+            exclude_file_names: list,  # имена файлов-исключений
+                                       # (не включаются в архив)
+            objects: dict,  # словарь, заполненный сл. обр.:
+                            # {'имя папки в архиве':
+                            #  ['полный путь к файлу1',
+                            #   'полный путь к файлу2',
+                            #   ...
+                            #  ],
+                            #
+                            #  ...
+                            # }
+            ):
+        """
+        СОЗДАЕТ АРХИВ И СКЛАДЫВАЕТ ЕГО В ring-ПАПКУ
+        """
         ok = True
 
         zip_compression = zipfile.ZIP_STORED
