@@ -101,30 +101,31 @@ class RingFile:
 
         # creating result
         if names != None:
-            for name in names:
-                result += name + '\n'
-
-            # for draw line
-            result += '-' * 55 + '\n'
-
-            # for total files count
-            result += '\33[35mИТОГО:\33[37m Файлов в архиве - '
-            result += str(files_count) + ' | '
-
-            # for total size
-            result += human_space(files_size)
-            result += ' >>> '
-            result += human_space(files_compress_size) + ' '
-
-            # for compress percents
-            if files_size > 0:
-                result += '\33[32m'
-                result += str(int(files_compress_size / files_size * 100))
-                result += '%' + '\33[37m'
-
-            return True, result
-        else:
             return False, result
+
+        for name in names:
+            result += name + '\n'
+
+        # for draw line
+        result += '-' * 55 + '\n'
+
+        # for total files count
+        result += '\33[35mИТОГО:\33[37m Файлов в архиве - '
+        result += str(files_count) + ' | '
+
+        # for total size
+        result += human_space(files_size)
+        result += ' >>> '
+        result += human_space(files_compress_size) + ' '
+
+        # for compress percents
+        if files_size > 0:
+            result += '\33[32m'
+            result += str(int(files_compress_size / files_size * 100))
+            result += '%' + '\33[37m'
+
+        return True, result
+
 
     def zip_test(self) -> (bool, str):
         """
