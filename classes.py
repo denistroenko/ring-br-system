@@ -100,7 +100,7 @@ class RingFile:
         result = ''
 
         # creating result
-        if names != None:
+        if names == None:
             return False, result
 
         for name in names:
@@ -169,11 +169,6 @@ class Ring:
     """
     Кольцо архивов резервных копий. Содержит файлы (объекты)
     """
-
-    def __init__(self):
-        self.__files = []  # Список файлов в кольце (ring)
-        self.__total_files = 0  # total of files in ring
-        self.__total_space = 0  # total used space by files
 
     def __calculate(self):
         """
@@ -509,9 +504,9 @@ class Ring:
         try:
             file = self.__files[file_index]
         except IndexError:
-           ok = False
-           result = 'Нет файла с номером {}!'.format(file_index)
-           return ok, result
+            ok = False
+            result = 'Нет файла с номером {}!'.format(file_index)
+            return ok, result
 
         full_path = file.get_full_path()
 

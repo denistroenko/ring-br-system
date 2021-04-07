@@ -1,12 +1,12 @@
+__version__ = '0.0.16'
+
+
 import random
 import smtplib
 import os
 import inspect
 import sys
 from email.mime.text import MIMEText
-
-
-__version__ = '0.0.16'
 
 
 # need edit for pep8!!!!!!!!!!!!!!!!!!!!!!!!

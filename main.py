@@ -15,7 +15,7 @@ from classes import Ring, RingFile
 
 # GLOBAL
 
-APP_DIR = get_script_dir()      # path to app dir
+APP_DIR = get_script_dir()                # path to app dir
 CONFIG_FILE = '{}config'.format(APP_DIR)  # path to config file
 
 console = Console()             # console object
