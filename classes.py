@@ -5,6 +5,10 @@ import zipfile
 from baseapplib import human_space, Console
 
 
+# Global
+console = Console()
+
+
 class RingFile:
     def __init__(self, file_name: str, full_path: str, size: int,
                  date_modify: datetime.datetime):
@@ -55,10 +59,7 @@ class RingFile:
 
         return age
 
-    def get_zip_info(self) -> None:
-        pass
-
-    def zip_content(self) -> (bool, str):
+    def get_content(self) -> (bool, str):
         """
         Возвращает содержимое архива и итог по числу файлов и объему
         """
@@ -125,7 +126,6 @@ class RingFile:
             result += '%' + '\33[37m'
 
         return True, result
-
 
     def zip_test(self) -> (bool, str):
         """
@@ -205,9 +205,8 @@ class Ring:
 
     def load(self, path: str, prefix: str, show_excluded: bool=True):
         """
-        Загружает список файлов и информацию о них
-        непосредственно из папки ring.
-        Добавляет в списку файлов (метод self.__append)
+        Загружает список файлов в атрибут __files и информацию о них
+        непосредственно из указанной папки.
         """
         self.__path = path            # Full path to ring dir
         self.__files_prefix = prefix  # Name file prefix for include. '' - all
@@ -262,10 +261,9 @@ class Ring:
         # Show excluded files info
         if excluded_files_count > 0:
             excluded_files_size = human_space(excluded_files_size)
-            print('Файлы в папке, но не соответствуют префиксу:')
+            print('Исключенные по префиксу файлы в папке:')
             print('Количество:', excluded_files_count, end='; ')
             print('Общий объем:', excluded_files_size)
-            print('Они исключены из работы.')
 
     def cut_by_count(self, count: int):
         """
@@ -295,7 +293,7 @@ class Ring:
         """
         Обрезает кольцо архивов в ring-папке по объему
         (файлы удаляются физически с диска до тех пор, пока их совокупный
-        объем не будет превышать переданный максимальный)
+        объем не будет меньше или равен переданному)
         """
         while self.__total_space > gigabytes * 1024**3:
             self.__files[0].delete_from_disk()
@@ -363,53 +361,82 @@ class Ring:
         ok = True
 
         zip_compression = zipfile.ZIP_STORED
-
         if deflated:
             zip_compression = zipfile.ZIP_DEFLATED
-        full_path = '{}{}'.format(self.__path, zip_file_name)
 
-        with zipfile.ZipFile(
-                full_path, mode='w',
-                compression = zip_compression,
-                allowZip64=True,
-                compresslevel = compression_level) as zip_file:
+        full_path = '{}{}'.format(self.__path, zip_file_name)  # полный путь к
+                                                               # архиву
+
+        # Если будем забирать только сегодняшние файлы, то сразу сохранить дату
+        if only_today_files:
+            date_now = '{:04d}-{:02d}-{:02d}'.format(
+                    datetime.datetime.now().year,
+                    datetime.datetime.now().month,
+                    datetime.datetime.now().day,
+                    )
+
+        with zipfile.ZipFile(full_path,
+                             mode='w',
+                             compression=zip_compression,
+                             allowZip64=True,
+                             compresslevel=compression_level,
+                             ) as zip_file:
+            # init
             total_file_sizes = 0
             total_file_compress_sizes = 0
             total_files = 0
-            # print(objects)
-            # exit()
+
             print('Создаю:', full_path)
+
+            # Перечисляем 'source_dirs', т.е имена папок в корне архива,
+            # которые задаются словарем objects (ключ)
             for folder in objects:
-                print('\33[35m', folder, '\33[37m', sep = '')
+                console.print(color='purple', msg=folder)
+
+                # Перечисляем Список файлов (значение)
                 for file in objects[folder]:
+
+                    # Отбрасываем пути и сохраняем в переменной чистое
+                    # ИМЯ ФАЙЛА
                     file_name = str(file.split('/')[-1])
 
-                    if file_name == '':
+                    # Пропускаем итерацию, если это папка
+                    if os.path.isdir(file):
                         continue
 
+                    # Пропускаем итерацию, если файл в списке исключенных
+                    if file_name in exclude_file_names:
+                        print(' ИСКЛЮЧЕН!')
+                        continue
+
+                    # Получаем обрезанное имя файла (послед. 50 сим.)
                     file_print = file[-50:]
+                    # Если обрезанное имя не совпадает с полным, то добавляем
+                    # [...] к началу обрезанного имени
                     if file_print != file:
                         file_print = '[..]{}'.format(file_print)
+                    # Иначе - заполняем пробелами слева
                     else:
                         file_print += f'{" " * (54 - len(file_print))}'
-                    print('+ {}'.format(file_print), end = ' ',
-                          flush=True)
 
+                    # Печатаем имя файла
+                    print('+ {}'.format(file_print),
+                          end=' ',
+                          flush=True,
+                          )
+
+                    ### ТРЕБУЕТ ИСПРАВЛЕНИЯ SOURCE_DIRS ### !!! !!! !!!
                     # Имя файла внутри zip-архива такое:
                     if file[:len(source_dir_name)] == source_dir_name:
                         arcname = folder + file[len(source_dir_name)-1:]
                     else:
                         arcname = folder + '/absolute_path/'+ file
+
                     # Исключение двойной косой //
                     arcname = arcname.replace('//', '/')
 
-                    # Если только сегодняшние, то проверить дату. Если все
-                    # подряд - просто добавть файл, не проверяя дату
+                    # Если только сегодняшние
                     if only_today_files:
-                        date_now = '{:04d}-{:02d}-{:02d}'.format(
-                            datetime.datetime.now().year,
-                            datetime.datetime.now().month,
-                            datetime.datetime.now().day)
                         # Получаем дату изм. файла средствами ОС
                         date_modify = os.path.getmtime(file)
                         # Преобразуем в локальное время (будет строка)
@@ -418,48 +445,60 @@ class Ring:
                         date_modify = datetime.datetime.strptime(
                                 date_modify, "%a %b %d %H:%M:%S %Y")
                         date_modify = str(date_modify)[:10]
-                        if date_now == date_modify:
-                            if file_name in exclude_file_names:
-                                print(' ИСКЛЮЧЕН!')
-                                continue
-                            else:
-                                try:
-                                    zip_file.write(file, arcname)
-                                except FileNotFoundError:
-                                    print('Файл не найден!')
-                                    continue
-                        else:
+
+                        # Если не сегодняшний - пропустить итерацию
+                        if date_now != date_modify:
                             print(' НЕСВЕЖИЙ!')
                             continue
-                    else:
-                        if file_name in exclude_file_names:
-                            print(' ИСКЛЮЧЕН!')
-                            continue
-                        else:
-                            try:
-                                zip_file.write(file, arcname)
-                            except FileNotFoundError:
-                                print('Файл не найден!')
-                                continue
 
+                    # Записываем файл в архив
+                    try:
+                        zip_file.write(file, arcname)
+                    except FileNotFoundError:
+                        print('Файл не найден!')
+                        continue
+
+                    # Получаем сжатый размер файла в архиве
                     compress_size = (
                             zip_file.infolist()[-1].compress_size)
+
+                    # Нарастить счетчик совокупного объема файлов в сжатом виде
                     total_file_compress_sizes += compress_size
+
+                    # Получаем исходный размер файла в архиве
                     file_size = (
                         zip_file.infolist()[-1].file_size)
+
+                    # Нарастить счетчик совокупного объема файлов в исход. виде
                     total_file_sizes += file_size
 
-                    if file_size > 0:
-                        file_compression = '\33[32m{:3d}%\33[37m '.format(
+                    # Вывод на экран инф. о степени компрессии добавленного
+                    # в архив файла
+                    if file_size > 0: # Проверка, что больше 0,
+                                      # предотвращение деления на 0
+                        # Вычислить степень сжатия
+                        file_compression = '{:3d}% '.format(
                             int(compress_size / file_size * 100))
 
+                    # Вывод на экран  инф. о компрессии
                     if file_size != 0:
-                        print(file_compression, human_space(file_size),
-                              ' >>> ', human_space(compress_size),
-                              sep = '')
+                        console.print(color='green',
+                                      msg=file_compression,
+                                      end='',
+                                      )
+                        console.print(msg=human_space(file_size),
+                                      end='',
+                                      )
+                        console.print(color='green',
+                                      msg=' >>> ',
+                                      end = '',
+                                      )
+                        console.print(msg=human_space(compress_size))
+                    # или знака = , если это папка?
                     else:
-                        print('\33[32m   =\33[37m')
-                    # Прибавить к счетчику файлов, если это файл, а не папка
+                        console.print(color='green', msg='   =')
+
+                    # Нарастить счетчик файлов, если это файл, а не папка
                     if os.path.isfile(file):
                         total_files += 1
 
@@ -511,7 +550,7 @@ class Ring:
         full_path = file.get_full_path()
 
         print('Читаю файл {} ...'.format(full_path))
-        result = file.zip_content()[1]
+        result = file.get_content()[1]
         return ok, result
 
     def test_archive(self, file_index: int=-1) -> (bool, str):

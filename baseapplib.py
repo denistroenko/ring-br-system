@@ -396,6 +396,7 @@ class Console:
               color: str = 'white',
               bg_color: str = 'black',
               effect: str = '0',
+              sep=' ',
               end: str = '\n',
               flush: bool = False,
               ):
@@ -455,11 +456,11 @@ class Console:
         if not effect in effects:
             effect = '0'
 
-        print(
-            f'{effects[effect]}{colors[color]}{bg_colors[bg_color]}{msg}{default_colors}',
-            flush = flush,
-            end = end,
-        )
+        print(f'{effects[effect]}{colors[color]}{bg_colors[bg_color]}{msg}{default_colors}',
+              flush=flush,
+              sep=sep,
+              end=end,
+              )
 
     def print_progress_bar(self,
                            percents: int,
