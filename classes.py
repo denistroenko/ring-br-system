@@ -400,14 +400,14 @@ class Ring:
                     if os.path.isdir(file):
                         continue
 
-                    # Пропускаем итерацию, если файл в списке исключенных
-                    if file_name in exclude_file_names:
-                        print(' ИСКЛЮЧЕН!')
-                        continue
-
                     # Отбрасываем пути и сохраняем в переменной чистое
                     # ИМЯ ФАЙЛА
                     file_name = str(file.split('/')[-1])
+
+                    # Пропускаем итерацию, если имя файла в списке исключенных
+                    if file_name in exclude_file_names:
+                        print(' ИСКЛЮЧЕН!')
+                        continue
 
                     # Получаем обрезанное имя файла (послед. 50 сим.)
                     file_print = file[-50:]
