@@ -396,10 +396,6 @@ class Ring:
                 # Перечисляем Список файлов (значение)
                 for file in objects[folder]:
 
-                    # Отбрасываем пути и сохраняем в переменной чистое
-                    # ИМЯ ФАЙЛА
-                    file_name = str(file.split('/')[-1])
-
                     # Пропускаем итерацию, если это папка
                     if os.path.isdir(file):
                         continue
@@ -408,6 +404,10 @@ class Ring:
                     if file_name in exclude_file_names:
                         print(' ИСКЛЮЧЕН!')
                         continue
+
+                    # Отбрасываем пути и сохраняем в переменной чистое
+                    # ИМЯ ФАЙЛА
+                    file_name = str(file.split('/')[-1])
 
                     # Получаем обрезанное имя файла (послед. 50 сим.)
                     file_print = file[-50:]
@@ -437,6 +437,7 @@ class Ring:
 
                     # Если только сегодняшние
                     if only_today_files:
+
                         # Получаем дату изм. файла средствами ОС
                         date_modify = os.path.getmtime(file)
                         # Преобразуем в локальное время (будет строка)
@@ -455,7 +456,9 @@ class Ring:
                     try:
                         zip_file.write(file, arcname)
                     except FileNotFoundError:
-                        print('Файл не найден!')
+                        console.print(color='yellow',
+                                      msg='Файл больше не существует!',
+                                      )
                         continue
 
                     # Получаем сжатый размер файла в архиве
