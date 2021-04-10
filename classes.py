@@ -164,7 +164,6 @@ class RingFile:
         return ok, result
 
 
-# ПЕРЕДЕЛАТЬ: clean & pep8
 class Ring:
     """
     Кольцо архивов резервных копий. Содержит файлы (объекты)
@@ -415,7 +414,7 @@ class Ring:
                     # [...] к началу обрезанного имени
                     if file_print != file:
                         file_print = '[..]{}'.format(file_print)
-                    # Иначе - заполняем пробелами слева
+                    # Иначе - заполняем пробелами
                     else:
                         file_print += f'{" " * (54 - len(file_print))}'
 
@@ -487,36 +486,35 @@ class Ring:
                     if file_size != 0:
                         console.print(color='green',
                                       msg=file_compression,
-                                      end='',
-                                      )
+                                      end='')
                         console.print(msg=human_space(file_size),
-                                      end='',
-                                      )
-                        console.print(color='green',
-                                      msg=' >>> ',
-                                      end = '',
-                                      )
+                                      end='')
+                        console.print(color='green', msg=' >>> ', end='')
                         console.print(msg=human_space(compress_size))
                     # или знака = , если это папка?
                     else:
                         console.print(color='green', msg='   =')
 
-                    # Нарастить счетчик файлов, если это файл, а не папка
-                    if os.path.isfile(file):
-                        total_files += 1
+                    # Нарастить счетчик файлов
+                    total_files += 1
 
+        # Вычислить присвоить общую компрессию
+        total_file_compression = ' '
         if total_file_sizes > 0:
-            total_file_compression = '\33[32m{}%\33[37m'.format(
-                int(total_file_compress_sizes / total_file_sizes * 100))
-        else:
-            total_file_compression = ' '
-        print('-' * 56)
-        print('\33[35mИТОГО\33[37m:',
-              total_file_compression,
-              human_space(total_file_sizes), '>>>',
-              human_space(total_file_compress_sizes),
-              f'\33[37m({total_files} файлов)\33[37m', sep=' ', end = '\n')
+            percents = int(total_file_compress_sizes
+                           / total_file_sizes * 100)
+            total_file_compression = f'{percents}% '
 
+        # Вывод на экран итога с количеством файлов и объемом
+        print('-' * 56)
+        console.print(color='purple', msg='ИТОГО: ', end='')
+        print(f'{total_files} файлов | ', end='')
+        console.print(color='green', msg=total_file_compression, end='')
+        print(human_space(total_file_sizes), end='')
+        console.print(color='green', msg=' >>> ', end='')
+        print(human_space(total_file_compress_sizes))
+
+        # Если файлы есть в архиве.......
         if total_file_sizes > 0:
             total_file_compression_result = \
                 str(int(total_file_compress_sizes /
@@ -527,6 +525,7 @@ class Ring:
                 f'{human_space(total_file_sizes)} >>> ' +\
                 f'{human_space(total_file_compress_sizes)}, ' +\
                 f'{total_files} файлов\n'
+        # Если нет - удаляем архив и ......
         else:
             total_file_compression_result = ''
             ok = False
@@ -574,4 +573,5 @@ class Ring:
 
         print('Тестирую файл {} ...'.format(full_path))
         ok, result = file.zip_test()
+
         return ok, result
