@@ -169,6 +169,10 @@ class Ring:
     Кольцо архивов резервных копий. Содержит файлы (объекты)
     """
 
+    def __init__(self):
+        self.__total_files = 0
+        self.__total_space = 0
+
     def __calculate(self):
         """
         Подсчитывает и присваевает атрибутам __total_files и __total_space
@@ -263,6 +267,8 @@ class Ring:
             print('Исключенные по префиксу файлы в папке:')
             print('Количество:', excluded_files_count, end='; ')
             print('Общий объем:', excluded_files_size)
+
+        self.__calculate()
 
     def cut_by_count(self, count: int):
         """

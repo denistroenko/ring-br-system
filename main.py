@@ -732,8 +732,6 @@ def print_help():
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def cut_mode():
-    global ring
-    global console
     ok = True
 
     message = 'CUT MODE'
