@@ -151,17 +151,16 @@ class RingFile:
 
     def delete_from_disk(self) -> (bool, str):
         """
-        Удаляет файл с диска средствами ОС
+        Удаляет файл с диска средствами ОС,
+        пишет об этом сообщение в консоль
         """
         try:
             os.remove(self.__full_path)
-            ok = True
-            result =  'Файл удален: {}'.format(self.__name)
+            print('Файл удален: {}'.format(self.__name))
         except Exception:
-            ok = False
-            result = 'Ошибка при удалении файла {}'.format(self.__name)
-
-        return ok, result
+            console.print('Ошибка при удалении файла {}'.format(self.__name),
+                          color='red',
+                          )
 
 
 class Ring:
