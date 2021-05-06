@@ -312,15 +312,7 @@ class Ring:
 
         print('Удаляется', killing_file.get_full_path())
 
-        ok, msg = killing_file.delete_from_disk()
-
-        if ok:
-            print(msg)
-            self.__files.pop(file_index)
-            self.__calculate()
-        else:
-            console = Console()
-            console.print_error(msg)
+        killing_file.delete_from_disk()
 
     def get_files(self) -> [object, ...]:
         """
