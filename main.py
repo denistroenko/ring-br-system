@@ -953,6 +953,29 @@ def kill_archive(file_index: int):
 
     ring.kill(file_index)
 
+
+def restore_source(file_index: int):
+    """
+    Восстанавливает соержимое source, УДАЛЯЯ перед этим все файлы из source
+    """
+
+    # НАПИСАТЬ УДАЛЕНИЕ ВСЕХ ФАЙЛОВ !!!
+
+    files_count = ring.get_total_files()
+    if files_count == 0:
+        print_error('В ring-папке нет ни одного файла! Нечего восстанавливать!')
+        sys.exit()
+
+    dir_name = config.get('source', 'dir')
+    ok, result = ring.extract_archive(dir_name=dir_name)
+
+    if ok:
+        pass
+    else:
+        print_error(result, True)
+
+
+
 def apply_alternative_config_file():
     global CONFIG_FILE
 
@@ -1088,6 +1111,7 @@ def main():
 
         kill_archive(file_index)
 
+
     # ОСНОВНЫЕ РЕЖИМЫ РАБОТЫ
     if 'show' in args:
         show_mode()
@@ -1095,6 +1119,26 @@ def main():
         cut_mode()
 
     mount_remote_source()
+
+    if 'restore' in args:
+        file_number = 0
+        curent_arg_index = args.index('restore')
+        next_arg_index = curent_arg_index + 1
+
+        try:
+            next_arg = args[next_arg_index]
+            file_number = int(next_arg)
+        except IndexError:
+            pass
+        except ValueError:
+            pass
+
+        if file_number != 0:
+            file_index = calculate_index_from_number(file_number)
+        else:
+            file_index = -1
+
+        restore_source(file_index)
 
     if 'period' in args:
         config.set('run', 'period', 'yes')

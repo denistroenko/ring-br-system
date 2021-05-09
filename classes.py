@@ -1,6 +1,7 @@
 import datetime
 import time
 import os
+import sys
 import zipfile
 from baseapplib import human_space, Console
 
@@ -171,6 +172,7 @@ class Ring:
     def __init__(self):
         self.__total_files = 0
         self.__total_space = 0
+        self.__files = []
 
     def __calculate(self):
         """
@@ -572,3 +574,49 @@ class Ring:
         ok, result = file.zip_test()
 
         return ok, result
+
+    def extract_archive(self,
+                        file_index: int=-1,
+                        dir_name: str='',
+                        ) -> (bool, str):
+        """
+        Извлекает содержимое архивного файла
+        """
+        ok = True
+
+        try:
+            file = self.__files[file_index]
+        except IndexError:
+            ok = False
+            result = 'Нет файла с номером {}!'.format(file_index)
+            return ok, result
+
+        print('Извлекается', file.get_file_name(), 'в', dir_name)
+
+        with zipfile.ZipFile(file.get_full_path(), 'r') as zip_file:
+
+            zip_names_list = zip_file.namelist()
+            total_files = len(zip_names_list)
+
+            curent_number = 0
+            for name in zip_names_list:
+                curent_number += 1
+                console.print(msg=f'- ({curent_number}/{total_files}) ', end='')
+                console.print(
+                        msg=human_space(zip_file.infolist()[zip_names_list.index(name)].compress_size),
+                        end=' ',
+                        )
+                console.print(msg='{}...'.format(name), end='', flush=True)
+                try:
+                    zip_file.extract(name, dir_name)
+                except OSError:
+                    ok = False
+                    result = 'Запись в ' + dir_name + 'невозможна!'
+                    return ok, result
+                except KeyboardInterrupt:
+                    ok = False
+                    console.print(msg='\nПрервано пользователем.',
+                                  color='yellow')
+                    sys.exit()
+                console.print(msg='ok', color='green')
+
