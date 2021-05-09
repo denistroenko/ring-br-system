@@ -458,6 +458,11 @@ class Ring:
                                       msg='Файл больше не существует!',
                                       )
                         continue
+                    except KeyboardInterrupt:
+                        ok = False
+                        console.print(msg='\nПрервано пользователем.',
+                                      color='yellow')
+                        sys.exit()
 
                     # Получаем сжатый размер файла в архиве
                     compress_size = (

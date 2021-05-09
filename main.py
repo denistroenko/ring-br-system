@@ -959,6 +959,9 @@ def restore_source(file_index: int):
     Восстанавливает соержимое source, УДАЛЯЯ перед этим все файлы из source
     """
 
+    message = 'RESTORE MODE'
+    console.print_title(message, '~', 55)
+
     # НАПИСАТЬ УДАЛЕНИЕ ВСЕХ ФАЙЛОВ !!!
 
     files_count = ring.get_total_files()
