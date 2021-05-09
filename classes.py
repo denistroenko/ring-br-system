@@ -395,8 +395,15 @@ class Ring:
                 for file in objects[folder]:
 
                     # Пропускаем итерацию, если это папка
-                    if os.path.isdir(file):
-                        continue
+                    try:
+                        if os.path.isdir(file):
+                            continue
+                    except KeyboardInterrupt:
+                        ok = False
+                        console.print(msg='\nПрервано пользователем.',
+                                      color='yellow')
+                        sys.exit()
+
 
                     # Отбрасываем пути и сохраняем в переменной чистое
                     # ИМЯ ФАЙЛА
