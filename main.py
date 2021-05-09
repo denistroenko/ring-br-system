@@ -645,7 +645,13 @@ def create_new_archive():
             effect = '6',
             flush = True,
         )
-        recursive_objects = sorted(glob.glob(folder, recursive = True))
+        try:
+            recursive_objects = sorted(glob.glob(folder, recursive = True))
+        except KeyboardInterrupt:
+            console.print(msg='\nПрервано пользователем.',
+                          color='yellow')
+            sys.exit()
+
         console.print('ok', color = 'green')
         # Создаем ключ словаря и значение. Значение - это то,
         # что вернула функция glob (она вернула список),
