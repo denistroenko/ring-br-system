@@ -575,27 +575,27 @@ class Ring:
 
         return ok, result
 
-    def extract_archive(self,
-                        file_index: int=-1,
-                        dir_name: str='',
-                        ) -> (bool, str):
+    def extract_archive(self, dir_name, file_index: int=-1) -> (bool, str):
         """
-        Успешно.Извлекает содержимое архивного файла
+        Извлекает содержимое архивного файлав указанную директорию
         """
         ok = True
         result = 'Успешно.'
 
+        # Добавить в конец пути извлечения папку
         dir_name =  dir_name + '_RING_RESTORED/'
 
         try:
-            file = self.__files[file_index]
-        except IndexError:
+            file = self.__files[file_index]  # Получить объект (файл)
+        except IndexError:  # Обработка исключения, если неверно передан индекс
             ok = False
             result = 'Нет файла с номером {}!'.format(file_index)
             return ok, result
 
         print('Извлекается', file.get_file_name(), 'в', dir_name)
 
+        # Открывается файл архива и все его файлы извлекаются в цикле с выводом
+        # информации о номере файла и его размере
         with zipfile.ZipFile(file.get_full_path(), 'r') as zip_file:
 
             zip_names_list = zip_file.namelist()
@@ -612,7 +612,7 @@ class Ring:
                 console.print(msg='{}...'.format(name), end='', flush=True)
                 try:
                     zip_file.extract(name, dir_name)
-                except OSError:
+                except OSError:  # Обработка исключения: в папку нет прав писать
                     ok = False
                     result = 'Запись в ' + dir_name + 'невозможна!'
                     return ok, result

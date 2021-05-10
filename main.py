@@ -964,7 +964,7 @@ def kill_archive(file_index: int):
 
 def restore_source(file_index: int):
     """
-    Восстанавливает содержимое source
+    Восстанавливает содержимое source из указанного архива
     """
 
     message = 'RESTORE MODE'
@@ -978,9 +978,10 @@ def restore_source(file_index: int):
     dir_name = config.get('source', 'dir')
 
     try:
+        # Здесь вызывается метод объекта ring
         ok, result = ring.extract_archive(file_index=file_index,
                                           dir_name=dir_name)
-    except KeyboardInterrupt:
+    except KeyboardInterrupt:  # Обработка прерывания клавиатурой
         ok = False
         print_error('\nПрервано пользователем.', True)
 
