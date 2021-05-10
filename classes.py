@@ -585,7 +585,7 @@ class Ring:
         ok = True
         result = 'Успешно.'
 
-        dir_name =  dir_name + '/_RING_RESTORED/'
+        dir_name =  dir_name + '_RING_RESTORED/'
 
         try:
             file = self.__files[file_index]
@@ -620,4 +620,3 @@ class Ring:
                 console.print(msg='ok', color='green')
 
         return ok, result
-
