@@ -395,15 +395,8 @@ class Ring:
                 for file in objects[folder]:
 
                     # Пропускаем итерацию, если это папка
-                    try:
-                        if os.path.isdir(file):
-                            continue
-                    except KeyboardInterrupt:
-                        ok = False
-                        console.print(msg='\nПрервано пользователем.',
-                                      color='yellow')
-                        sys.exit()
-
+                    if os.path.isdir(file):
+                        continue
 
                     # Отбрасываем пути и сохраняем в переменной чистое
                     # ИМЯ ФАЙЛА
@@ -465,11 +458,6 @@ class Ring:
                                       msg='Файл больше не существует!',
                                       )
                         continue
-                    except KeyboardInterrupt:
-                        ok = False
-                        console.print(msg='\nПрервано пользователем.',
-                                      color='yellow')
-                        sys.exit()
 
                     # Получаем сжатый размер файла в архиве
                     compress_size = (
@@ -592,9 +580,10 @@ class Ring:
                         dir_name: str='',
                         ) -> (bool, str):
         """
-        Извлекает содержимое архивного файла
+        Успешно.Извлекает содержимое архивного файла
         """
         ok = True
+        result = 'Успешно.'
 
         try:
             file = self.__files[file_index]
@@ -625,10 +614,8 @@ class Ring:
                     ok = False
                     result = 'Запись в ' + dir_name + 'невозможна!'
                     return ok, result
-                except KeyboardInterrupt:
-                    ok = False
-                    console.print(msg='\nПрервано пользователем.',
-                                  color='yellow')
-                    sys.exit()
+
                 console.print(msg='ok', color='green')
+
+        return ok, result
 

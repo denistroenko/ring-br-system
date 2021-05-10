@@ -708,6 +708,8 @@ def create_new_archive():
     except NotADirectoryError:
         print_error('Среди списка папок [source_dirs] найден элемент, ' +
                     'не относящийся к папке!', True)
+    except KeyboardInterrupt:
+        print_error('\nПрервано пользователем.', True)
 
     letter.append('Arhive mode', 'h4')
     if ok:
@@ -976,13 +978,17 @@ def restore_source(file_index: int):
         sys.exit()
 
     dir_name = config.get('source', 'dir')
-    ok, result = ring.extract_archive(dir_name=dir_name)
+
+    try:
+        ok, result = ring.extract_archive(dir_name=dir_name)
+    except KeyboardInterrupt:
+        ok = False
+        print_error('\nПрервано пользователем.', True)
 
     if ok:
-        pass
+        console.print(msg=result, color='green')
     else:
         print_error(result, True)
-
 
 
 def apply_alternative_config_file():
