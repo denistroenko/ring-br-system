@@ -964,13 +964,11 @@ def kill_archive(file_index: int):
 
 def restore_source(file_index: int):
     """
-    Восстанавливает соержимое source, УДАЛЯЯ перед этим все файлы из source
+    Восстанавливает содержимое source
     """
 
     message = 'RESTORE MODE'
     console.print_title(message, '~', 55)
-
-    # НАПИСАТЬ УДАЛЕНИЕ ВСЕХ ФАЙЛОВ !!!
 
     files_count = ring.get_total_files()
     if files_count == 0:
@@ -980,7 +978,8 @@ def restore_source(file_index: int):
     dir_name = config.get('source', 'dir')
 
     try:
-        ok, result = ring.extract_archive(dir_name=dir_name)
+        ok, result = ring.extract_archive(file_index=file_index,
+                                          dir_name=dir_name)
     except KeyboardInterrupt:
         ok = False
         print_error('\nПрервано пользователем.', True)
