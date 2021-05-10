@@ -585,6 +585,8 @@ class Ring:
         ok = True
         result = 'Успешно.'
 
+        dir_name = '_RING_RESTORED/' + dir_name
+
         try:
             file = self.__files[file_index]
         except IndexError:
