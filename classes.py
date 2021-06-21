@@ -50,13 +50,14 @@ class RingFile:
 
     def get_age(self) -> int:
         """
-        Возвращает "возраст" файла в днях с округлением
+        Возвращает "возраст" файла в ПОЛНЫХ в днях,
+        т.е., если файлу 3 дня и 23 часа, то все равно полных дней вернется 3
         """
         date_now = datetime.datetime.now()
         date_modify = self.__date_modify
 
         age_seconds = (date_now - date_modify).total_seconds()
-        age = round(age_seconds / 60 / 60 / 24)
+        age = int(age_seconds / 60 / 60 / 24)
 
         return age
 
