@@ -3,12 +3,13 @@ import time
 import os
 import sys
 import zipfile
+import logging
 from baseapplib import human_space, Console
 
 
 # Global
 console = Console()
-
+logger = logging.getLogger(__name__)
 
 class RingFile:
     def __init__(self, file_name: str, full_path: str, size: int,

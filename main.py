@@ -19,24 +19,27 @@ from classes import Ring, RingFile
 APP_DIR = get_script_dir()                # path to app dir
 CONFIG_FILE = '{}config'.format(APP_DIR)  # path to config file
 
-console = Console()             # console object
-args = console.get_args()       # argumetns from console
-config = Config()               # global config
-ring = Ring()                   # ring object
-letter = HtmlLetter()           # letter object
-email_sender = EmailSender()    # email_sender object
-logger = logging.getLogger('Main logger')    # logger obj
+console = Console()                     # console object
+args = console.get_args()               # argumetns from console
+config = Config()                       # global config
+ring = Ring()                           # ring object
+letter = HtmlLetter()                   # letter object
+email_sender = EmailSender()            # email_sender object
+logger = logging.getLogger(__name__)    # logger obj
 
 
 def configure_logging(file_name='debug.log'):
+    # Настройка базовой глобальной конфигурации logging
     logging.basicConfig(
-            format='%(asctime)s | %(name)s | %(levelname)s: %(message)s',
+            format='%(asctime)s (%(name)s) %(levelname)s: %(message)s',
             filename=file_name,
             level=logging.DEBUG,
             datefmt='%Y.%m.%d %I:%M:%S %p',
             )
-    logger.info('########## Ring запущена. ##########')
-    logger.debug('Logging has been configured.')
+    # Устанавливается уровень логирования для библиотеки sh
+    logger_sh = logging.getLogger('sh').setLevel(logging.ERROR)
+
+    logger.info('########## Ring запущена ##########')
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def set_config_defaults():
@@ -650,7 +653,6 @@ def create_new_archive():
             print_error('Нельзя указывать маски файлов в пути source_dirs!\n' +
                         'указано в ' + dir + ':' + source_dirs_dict[dir],
                         True)
-
         console.print(
             'Сканирую {} ({})... '.format (dir, folder[:-2]),
             end = '',
@@ -658,7 +660,9 @@ def create_new_archive():
             flush = True,
         )
         try:
+            logger.info('Сканирование source...')
             recursive_objects = sorted(glob.glob(folder, recursive = True))
+            logger.info('Сканирование завершено.')
         except KeyboardInterrupt:
             console.print(msg='\nПрервано пользователем.',
                           color='yellow')
@@ -707,6 +711,8 @@ def create_new_archive():
         only_today_files = True
 
     try:
+        logger.info('Создание нового архива в ring...')
+
         ok, new_archive_info = \
             ring.new_archive(zip_file_name=file_name,
                              source_dir_name=source_dir,
@@ -716,7 +722,10 @@ def create_new_archive():
                              only_today_files=only_today_files,
                              exclude_file_names=exclude_file_names,
                              )
+        logger.info('Создание архива завершено.')
+
         new_archive_info = new_archive_info.replace('\n', '<br>')
+
     except NotADirectoryError:
         print_error('Среди списка папок [source_dirs] найден элемент, ' +
                     'не относящийся к папке!', True)
@@ -1023,7 +1032,7 @@ def apply_alternative_config_file():
         test_file.close()
         logger.info('Использован файл конфигурации ' + config_file_name)
     except FileNotFoundError:
-        logger.error('Нет такого файла:' + config_file_name)
+        logger.error('Нет такого файла конфигурации (указан в --config): ' + config_file_name)
         print_error(
             "Не найден файл, указанный в параметре --config: {}".format(
                 CONFIG_FILE), True)
