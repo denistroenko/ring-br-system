@@ -6,6 +6,7 @@ import re
 import sh
 import os
 import sys
+import logging
 
 from datetime import datetime
 from baseapplib import get_script_dir, human_space
@@ -24,7 +25,18 @@ config = Config()               # global config
 ring = Ring()                   # ring object
 letter = HtmlLetter()           # letter object
 email_sender = EmailSender()    # email_sender object
+logger = logging.getLogger('Main logger')    # logger obj
 
+
+def configure_logging(file_name='debug.log'):
+    logging.basicConfig(
+            format='%(asctime)s | %(name)s | %(levelname)s: %(message)s',
+            filename=file_name,
+            level=logging.DEBUG,
+            datefmt='%Y.%m.%d %I:%M:%S %p',
+            )
+    logger.info('########## Ring запущена. ##########')
+    logger.debug('Logging has been configured.')
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def set_config_defaults():
@@ -1000,12 +1012,18 @@ def apply_alternative_config_file():
         index = args.index('-c')
 
     next_index = index + 1
+    config_file_name = args[next_index]
+
     CONFIG_FILE = '{}{}'.format(
-        get_script_dir(), args[next_index])
+        get_script_dir(), config_file_name)
+
+
     try:
         test_file = open(CONFIG_FILE, 'r')
         test_file.close()
+        logger.info('Использован файл конфигурации ' + config_file_name)
     except FileNotFoundError:
+        logger.error('Нет такого файла:' + config_file_name)
         print_error(
             "Не найден файл, указанный в параметре --config: {}".format(
                 CONFIG_FILE), True)
@@ -1013,12 +1031,14 @@ def apply_alternative_config_file():
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def main():
+    configure_logging()  # Конфигурация модуля logging
+
     # ИСКЛЮЧАЮЩИЕ РЕЖИМЫ (И СРАЗУ ВЫХОД)
     if '--version' in args or \
             '-V' in args:
         message = ['Algorithm Computers', 'dev@a-computers.ru',
-                   '', 'Ring v.{}'.format(__version__),
-                   'Утилита управления архивными файлами']
+                '', 'Ring v.{}'.format(__version__),
+                'Утилита управления архивными файлами']
 
         console.print_title(message, '*', 55, False, False)
         sys.exit()
@@ -1168,4 +1188,5 @@ def main():
 
 
 if __name__ == '__main__':
+    logger.info('##### Ring has been started. #####')
     main()
