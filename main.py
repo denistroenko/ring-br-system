@@ -34,7 +34,7 @@ def configure_logging(file_name='debug.log'):
             format='%(asctime)s (%(name)s) %(levelname)s: %(message)s',
             filename=file_name,
             level=logging.DEBUG,
-            datefmt='%Y.%m.%d %I:%M:%S %p',
+            datefmt='%d.%m.%Y %I:%M:%S %p',
             )
     # Устанавливается уровень логирования для библиотеки sh
     logger_sh = logging.getLogger('sh').setLevel(logging.ERROR)
@@ -205,6 +205,8 @@ def print_error(error: str, stop_program: bool = False):
     if config.get('report', 'send_to_admin') == 'yes':
         send_to_admin = True
     admin_email = config.get('report', 'admin_email')
+
+    logger.error('print_error: "%s"' % error)
 
     if stop_program:
         print('\033[31m{}\033[37m\033[40m'.format(error))
@@ -1041,6 +1043,7 @@ def apply_alternative_config_file():
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def main():
     configure_logging()  # Конфигурация модуля logging
+    logger.debug('Параметры командной строки: %s' % args)
 
     # ИСКЛЮЧАЮЩИЕ РЕЖИМЫ (И СРАЗУ ВЫХОД)
     if '--version' in args or \
