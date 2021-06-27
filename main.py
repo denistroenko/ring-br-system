@@ -28,23 +28,40 @@ email_sender = EmailSender()            # email_sender object
 logger = logging.getLogger(__name__)    # logger obj
 
 
-def configure_logging(file_name='debug.log'):
-    # Настройка базовой глобальной конфигурации logging
-    logging.basicConfig(
-            format='%(asctime)s (%(name)s) %(levelname)s: %(message)s',
-            filename=file_name,
-            level=logging.DEBUG,
+def configure_logger():
+    # set level
+    logger.setLevel(logging.DEBUG)
+
+    # create and configure formatter
+    file_formatter = logging.Formatter(
+            fmt='%(asctime)s (%(name)s) %(levelname)s: %(message)s',
             datefmt='%d.%m.%Y %I:%M:%S %p',
             )
-    # Устанавливается уровень логирования для библиотеки sh
-    logger_sh = logging.getLogger('sh').setLevel(logging.ERROR)
+    # screen_formatter = logging.Formatter(
+            # fmt='%(message)s',
+            # )
 
-    logger.info('########## Ring запущена ##########')
+    # create and configure file debug handler
+    file_debug_handler = logging.FileHandler('debug.log')
+    file_debug_handler.setLevel(logging.DEBUG)
+    file_debug_handler.setFormatter(file_formatter)
+
+    # create and configure error handler
+    file_error_handler = logging.FileHandler('error.log')
+    file_error_handler.setLevel(logging.WARNING)
+    file_error_handler.setFormatter(file_formatter)
+
+    # screen_handler = logging.StreamHandler()
+    # screen_handler.setLevel(logging.INFO)
+    # screen_handler.setFormatter(screen_formatter)
+
+    # add handlers for logger
+    logger.addHandler(file_debug_handler)
+    logger.addHandler(file_error_handler)
+    # logger.addHandler(screen_handler)
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def set_config_defaults():
-    global config
-
     # Запуск был выполнен с параметром 'period'
 
     config_defaults = [
@@ -206,7 +223,7 @@ def print_error(error: str, stop_program: bool = False):
         send_to_admin = True
     admin_email = config.get('report', 'admin_email')
 
-    logger.error('print_error: "%s"' % error)
+    logger.error('def print_error: %s' % error)
 
     if stop_program:
         print('\033[31m{}\033[37m\033[40m'.format(error))
@@ -269,6 +286,7 @@ def print_file_line(number,
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def show_mode():
+    logger.debug('Запуск режима: show')
     ok = True
 
     letter.append('Show mode', 'h4')
@@ -297,7 +315,9 @@ def show_mode():
     console.print_title(message, '~', 55)
 
     ring_dir = config.get('ring', 'dir')
+
     print(ring_dir)
+    logger.info('ring-папка %s' % ring_dir)
 
     files = ring.get_files()
     file_no = 0
@@ -314,6 +334,7 @@ def show_mode():
             files = short_list
             print('...', ' (не показаны предыдущие ', short_count, ')',
                   sep = '')
+
     green_min = round(float(config.get('show', 'green_min')), 2)
     green_max = round(float(config.get('show', 'green_max')), 2)
     red_min = round(float(config.get('show', 'red_min')), 2)
@@ -663,8 +684,10 @@ def create_new_archive():
         )
         try:
             logger.info('Сканирование source...')
+            print('Сканирование source...')
             recursive_objects = sorted(glob.glob(folder, recursive = True))
             logger.info('Сканирование завершено.')
+            print('Сканирование завершено.')
         except KeyboardInterrupt:
             console.print(msg='\nПрервано пользователем.',
                           color='yellow')
@@ -877,6 +900,7 @@ def mount_remote_source():
             sh.umount(target)
             console.print('ok', color = 'green')
         except:
+            logger.exception(Exception)
             console.print('ok', color = 'green')
 
         console.print(
@@ -892,9 +916,11 @@ def mount_remote_source():
                      'vers=' + smb_version)
             console.print('ok', color = 'green')
         except sh.ErrorReturnCode_32:
+            logger.exception(Exception)
             print_error('Ошибка монтирования remote_source! ' + \
                         'Устройство занято!', True)
         except:
+            logger.exception(Exception)
             print_error('Ошибка монтирования remote_source!', True)
 
 
@@ -1034,7 +1060,6 @@ def apply_alternative_config_file():
         test_file.close()
         logger.info('Использован файл конфигурации ' + config_file_name)
     except FileNotFoundError:
-        logger.error('Нет такого файла конфигурации (указан в --config): ' + config_file_name)
         print_error(
             "Не найден файл, указанный в параметре --config: {}".format(
                 CONFIG_FILE), True)
@@ -1042,7 +1067,8 @@ def apply_alternative_config_file():
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def main():
-    configure_logging()  # Конфигурация модуля logging
+    configure_logger()
+    logger.debug('########## Ring запущена ##########')
     logger.debug('Параметры командной строки: %s' % args)
 
     # ИСКЛЮЧАЮЩИЕ РЕЖИМЫ (И СРАЗУ ВЫХОД)
@@ -1200,5 +1226,4 @@ def main():
 
 
 if __name__ == '__main__':
-    logger.info('##### Ring has been started. #####')
     main()

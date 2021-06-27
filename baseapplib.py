@@ -339,7 +339,6 @@ class Config:
 
 # need edit for pep8!!!!!!!!!!!!!!!!!!!!!!!!
 class Console:
-
     def __init__(self):
         self.__args_list = []
         self.__args_list = sys.argv[1:]
