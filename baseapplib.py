@@ -6,6 +6,7 @@ import smtplib
 import os
 import inspect
 import sys
+import logging
 from email.mime.text import MIMEText
 
 
@@ -18,6 +19,42 @@ def get_script_dir(follow_symlinks=True):
     if follow_symlinks:
         path = os.path.realpath(path)
     return '{}/'.format(os.path.dirname(path))
+
+
+def configure_logger(
+        logger: object,
+        screen_logging: bool=False,
+        debug_file_name: str='%sdebug.log' % get_script_dir(),
+        error_file_name: str='%serror.log' % get_script_dir(),
+        date_format: str='%Y-%m-%d %H:%M:%S',
+        message_format: str='%(asctime)s [%(name)s] %(levelname)s %(message)s',
+        ):
+    # set level
+    logger.setLevel(logging.DEBUG)
+
+    # create and configure formatters
+    # standard formats
+    file_formatter = logging.Formatter(fmt=message_format,
+                                       datefmt=date_format,
+                                       )
+    if screen_logging:
+        screen_formatter = logging.Formatter(fmt='%(message)s')
+        screen_handler = logging.StreamHandler()
+        screen_handler.setLevel(logging.INFO)
+        screen_handler.setFormatter(screen_formatter)
+        logger.addHandler(screen_handler)
+
+    if debug_file_name != '':
+        file_debug_handler = logging.FileHandler(debug_file_name)
+        file_debug_handler.setLevel(logging.DEBUG)
+        file_debug_handler.setFormatter(file_formatter)
+        logger.addHandler(file_debug_handler)
+
+    if error_file_name != '':
+        file_error_handler = logging.FileHandler(error_file_name)
+        file_error_handler.setLevel(logging.WARNING)
+        file_error_handler.setFormatter(file_formatter)
+        logger.addHandler(file_error_handler)
 
 
 # need edit for pep8!!!!!!!!!!!!!!!!!!!!!!!!
@@ -340,10 +377,11 @@ class Config:
 # need edit for pep8!!!!!!!!!!!!!!!!!!!!!!!!
 class Console:
     def __init__(self):
-        self.__args_list = []
         self.__args_list = sys.argv[1:]
 
-    def get_args(self) -> list:
+    def get_args(self, original_sys_argv: bool=False) -> list:
+        if original_sys_argv:
+            return self.__args_list
         result = []
         for arg in self.__args_list:
             if arg[0:2] == '--':

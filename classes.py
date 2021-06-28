@@ -4,47 +4,13 @@ import os
 import sys
 import zipfile
 import logging
-from baseapplib import human_space, Console
+from baseapplib import human_space, Console, configure_logger
 
 
 # Global
 console = Console()
 logger = logging.getLogger(__name__)
-
-
-def configure_logger():
-    # set level
-    logger.setLevel(logging.DEBUG)
-
-    # create and configure formatters
-    file_formatter = logging.Formatter(
-            fmt='%(asctime)s (%(name)s) %(levelname)s: %(message)s',
-            datefmt='%d.%m.%Y %I:%M:%S %p',
-            )
-    screen_formatter = logging.Formatter(
-            fmt='%(message)s',
-            )
-
-    # create and configure file debug handler
-    file_debug_handler = logging.FileHandler('debug_classes.log')
-    file_debug_handler.setLevel(logging.DEBUG)
-    file_debug_handler.setFormatter(file_formatter)
-
-    # create and configure error handler
-    file_error_handler = logging.FileHandler('error_classes.log')
-    file_error_handler.setLevel(logging.WARNING)
-    file_error_handler.setFormatter(file_formatter)
-
-    # create and configure screen handler
-    screen_handler = logging.StreamHandler()
-    screen_handler.setLevel(logging.INFO)
-    screen_handler.setFormatter(screen_formatter)
-
-    # add handlers for logger
-    logger.addHandler(file_debug_handler)
-    logger.addHandler(file_error_handler)
-    logger.addHandler(screen_handler)
-
+configure_logger(logger=logger, screen_logging=True)
 
 class RingFile:
     def __init__(self, file_name: str, full_path: str, size: int,
@@ -197,8 +163,7 @@ class RingFile:
             logger.info('Файл удален: {}'.format(self.__name))
         except Exception:
             console.print('Ошибка при удалении файла {}'.format(self.__name),
-                          color='red',
-                          )
+                          color='red')
 
 
 class Ring:
@@ -658,4 +623,3 @@ class Ring:
 
         return ok, result
 
-configure_logger()

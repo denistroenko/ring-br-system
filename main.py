@@ -9,7 +9,7 @@ import sys
 import logging
 
 from datetime import datetime
-from baseapplib import get_script_dir, human_space
+from baseapplib import get_script_dir, human_space, configure_logger
 from baseapplib import EmailSender, HtmlLetter, Config, Console
 from classes import Ring, RingFile
 
@@ -27,38 +27,6 @@ letter = HtmlLetter()                   # letter object
 email_sender = EmailSender()            # email_sender object
 logger = logging.getLogger(__name__)    # logger obj
 
-
-def configure_logger():
-    # set level
-    logger.setLevel(logging.DEBUG)
-
-    # create and configure formatter
-    file_formatter = logging.Formatter(
-            fmt='%(asctime)s (%(name)s) %(levelname)s: %(message)s',
-            datefmt='%d.%m.%Y %I:%M:%S %p',
-            )
-    # screen_formatter = logging.Formatter(
-            # fmt='%(message)s',
-            # )
-
-    # create and configure file debug handler
-    file_debug_handler = logging.FileHandler('debug.log')
-    file_debug_handler.setLevel(logging.DEBUG)
-    file_debug_handler.setFormatter(file_formatter)
-
-    # create and configure error handler
-    file_error_handler = logging.FileHandler('error.log')
-    file_error_handler.setLevel(logging.WARNING)
-    file_error_handler.setFormatter(file_formatter)
-
-    # screen_handler = logging.StreamHandler()
-    # screen_handler.setLevel(logging.INFO)
-    # screen_handler.setFormatter(screen_formatter)
-
-    # add handlers for logger
-    logger.addHandler(file_debug_handler)
-    logger.addHandler(file_error_handler)
-    # logger.addHandler(screen_handler)
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def set_config_defaults():
@@ -1067,9 +1035,10 @@ def apply_alternative_config_file():
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def main():
-    configure_logger()
-    logger.debug('########## Ring запущена ##########')
-    logger.debug('Параметры командной строки: %s' % args)
+    configure_logger(logger)
+    logger.debug('# # # # # # # # # #   Ring запущена   # # # # # # # # # #')
+    logger.debug('Параметры командной строки: %s преобразованы в %s' %
+                 (console.get_args(True), args))
 
     # ИСКЛЮЧАЮЩИЕ РЕЖИМЫ (И СРАЗУ ВЫХОД)
     if '--version' in args or \
