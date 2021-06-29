@@ -7,11 +7,14 @@ import os
 import inspect
 import sys
 import logging
+import logging.handlers
 from email.mime.text import MIMEText
 
 
-# need edit for pep8!!!!!!!!!!!!!!!!!!!!!!!!
 def get_script_dir(follow_symlinks=True):
+    """
+    Возвращает путь к скрипту __main__ (папку)
+    """
     if getattr(sys, 'frozen', False): # py2exe, PyInstaller, cx_Freeze
         path = os.path.abspath(sys.executable)
     else:
@@ -29,6 +32,18 @@ def configure_logger(
         date_format: str='%Y-%m-%d %H:%M:%S',
         message_format: str='%(asctime)s [%(name)s] %(levelname)s %(message)s',
         ):
+
+    """
+    Стандартная конфигурация логгера. Передаваемый объект логгера должен быть
+    создан на глобальном уровне модуля, в который импортируется эта функция
+    или весь этот модуль.
+
+    logger - Объект логгера
+    screen_logging (False) - включить хендлер экрана
+    debug_file_name и error_file_name - имена файлов для файловых хендлеров
+    (если пустая строка - файловые хендлеры не создаются).
+    """
+
     # set level
     logger.setLevel(logging.DEBUG)
 
@@ -45,13 +60,15 @@ def configure_logger(
         logger.addHandler(screen_handler)
 
     if debug_file_name != '':
-        file_debug_handler = logging.FileHandler(debug_file_name)
+        file_debug_handler = logging.handlers.RotatingFileHandler(
+                filename=debug_file_name, maxBytes=10485760, backupCount=5)
         file_debug_handler.setLevel(logging.DEBUG)
         file_debug_handler.setFormatter(file_formatter)
         logger.addHandler(file_debug_handler)
 
     if error_file_name != '':
-        file_error_handler = logging.FileHandler(error_file_name)
+        file_error_handler = logging.handlers.RotatingFileHandler(
+                filename=error_file_name, maxBytes=10485760, backupCount=5)
         file_error_handler.setLevel(logging.WARNING)
         file_error_handler.setFormatter(file_formatter)
         logger.addHandler(file_error_handler)
