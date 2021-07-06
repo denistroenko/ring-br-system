@@ -191,19 +191,25 @@ def print_error(error: str, stop_program: bool = False):
         send_to_admin = True
     admin_email = config.get('report', 'admin_email')
 
-    logger.error('def print_error: %s' % error)
 
     if stop_program:
-        print('\033[31m{}\033[37m\033[40m'.format(error))
+        logger.error(error)
+        console.print(msg=error, color='red')
         letter.append('Ring tool остановлена с ошибкой: ' + error,
                       color = 'red', weight = 600)
+        curent_log_file = open('%s%s' % (get_script_dir(), 'curent.log'))
+        curent_log = curent_log_file.readlines()
+
+        for line in curent_log:
+            letter.append(line)
         send_emails('FATAL ERROR report from "Ring tool"')
         sys.exit()
     else:
+        logger.warning(error)
         letter.append()
         letter.append('В Ring tool произошла ошибка: ' + error,
                       color = 'orange', weight = 600)
-        print('\033[33m{}\033[37m\033[40m'.format(error))
+        console.print(msg=error, color='yellow')
 
     return ok
 

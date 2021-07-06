@@ -29,6 +29,7 @@ def configure_logger(
         screen_logging: bool=False,
         debug_file_name: str='%sdebug.log' % get_script_dir(),
         error_file_name: str='%serror.log' % get_script_dir(),
+        curent_file_name: str='%scurent.log' % get_script_dir(),
         date_format: str='%Y-%m-%d %H:%M:%S',
         message_format: str='%(asctime)s [%(name)s] %(levelname)s %(message)s',
         ):
@@ -40,8 +41,8 @@ def configure_logger(
 
     logger - Объект логгера
     screen_logging (False) - включить хендлер экрана
-    debug_file_name и error_file_name - имена файлов для файловых хендлеров
-    (если пустая строка - файловые хендлеры не создаются).
+    debug_file_name, error_file_name и curent_file_name  - имена файлов для
+    файловых хендлеров (если пустая строка - файловые хендлеры не создаются).
     """
 
     # set level
@@ -69,10 +70,16 @@ def configure_logger(
     if error_file_name != '':
         file_error_handler = logging.handlers.RotatingFileHandler(
                 filename=error_file_name, maxBytes=10485760, backupCount=5)
-        file_error_handler.setLevel(logging.WARNING)
+        file_error_handler.setLevel(logging.ERROR)
         file_error_handler.setFormatter(file_formatter)
         logger.addHandler(file_error_handler)
 
+    if curent_file_name != '':
+        file_curent_handler = logging.FileHandler(
+                filename=curent_file_name, mode='w')
+        file_curent_handler.setLevel(logging.DEBUG)
+        file_curent_handler.setFormatter(file_formatter)
+        logger.addHandler(file_curent_handler)
 
 # need edit for pep8!!!!!!!!!!!!!!!!!!!!!!!!
 def human_space(bytes: int) -> str:
@@ -184,9 +191,9 @@ class EmailSender:
                    use_html_format: bool = False):
 
         if use_html_format:
-            msg = MIMEText(message, "html", "utf8")
+            msg = MIMEText(message, "html", "utf-8")
         else:
-            msg = MIMEText(message, "plain", "utf8")
+            msg = MIMEText(message, "plain", "utf-8")
 
         msg['Subject'] = subject
         msg['From'] = self.__from
