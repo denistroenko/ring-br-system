@@ -197,11 +197,18 @@ def print_error(error: str, stop_program: bool = False):
         console.print(msg=error, color='red')
         letter.append('Ring tool остановлена с ошибкой: ' + error,
                       color = 'red', weight = 600)
-        curent_log_file = open('%s%s' % (get_script_dir(), 'curent.log'))
-        curent_log = curent_log_file.readlines()
+        try:
+            curent_log_file_name = '%s%s' % (get_script_dir(), 'curent.log')
+            curent_log_file = open(curent_log_file_name)
+            curent_log = curent_log_file.readlines()
+            curent_log_file.close()
 
-        for line in curent_log:
-            letter.append(line)
+            for line in curent_log:
+                letter.append(line)
+        except FileNotFoundError:
+            logger.error('Не найден файл для считывания: %s' % curent_log_file_name)
+        except:
+            logger.exception(Exception)
         send_emails('FATAL ERROR report from "Ring tool"')
         sys.exit()
     else:
