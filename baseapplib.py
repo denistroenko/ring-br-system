@@ -29,7 +29,6 @@ def configure_logger(
         screen_logging: bool=False,
         debug_file_name: str='%sdebug.log' % get_script_dir(),
         error_file_name: str='%serror.log' % get_script_dir(),
-        curent_file_name: str='%scurent.log' % get_script_dir(),
         date_format: str='%Y-%m-%d %H:%M:%S',
         message_format: str='%(asctime)s [%(name)s] %(levelname)s %(message)s',
         ):
@@ -41,7 +40,7 @@ def configure_logger(
 
     logger - Объект логгера
     screen_logging (False) - включить хендлер экрана
-    debug_file_name, error_file_name и curent_file_name  - имена файлов для
+    debug_file_name, error_file_name - имена файлов для
     файловых хендлеров (если пустая строка - файловые хендлеры не создаются).
     """
 
@@ -74,12 +73,6 @@ def configure_logger(
         file_error_handler.setFormatter(file_formatter)
         logger.addHandler(file_error_handler)
 
-    if curent_file_name != '':
-        file_curent_handler = logging.FileHandler(
-                filename=curent_file_name, mode='w')
-        file_curent_handler.setLevel(logging.DEBUG)
-        file_curent_handler.setFormatter(file_formatter)
-        logger.addHandler(file_curent_handler)
 
 # need edit for pep8!!!!!!!!!!!!!!!!!!!!!!!!
 def human_space(bytes: int) -> str:

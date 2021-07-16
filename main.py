@@ -758,11 +758,10 @@ def create_new_archive():
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def print_help():
-    print('usage: ring archive|cut|show \n[--cut-bad] [--config file] ' +
-          '[--settings] [--test] [--content] [--config-export]')
-    print('--help\t\t\t- выдает это сообщение помощи по командам')
-    print('--settings -s\t\t- вывод текущих настроек программы')
-    print('--test -t\t\t- ???')
+    print('usage: ring -[options] [--config config_name] '
+          + '[mode] [mode argument]\n'
+          + '--help\t\t\t- выдает это сообщение помощи по командам'
+          )
 
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
