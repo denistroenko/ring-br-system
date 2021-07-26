@@ -666,7 +666,9 @@ def create_new_archive():
         try:
             logger.info('Сканирование source...')
             print('Сканирование source...')
-            recursive_objects = sorted(glob.glob(folder, recursive = True))
+            recursive_objects_wo_hidden = glob.glob(folder, recursive = True)
+            recursive_objects_w_hidden = glob.glob(folder + '/.*', recursive = True)
+            recursive_objects = sorted(recursive_objects_wo_hidden + recursive_objects_w_hidden)
             logger.info('Сканирование завершено.')
             print('Сканирование завершено.')
         except KeyboardInterrupt:
