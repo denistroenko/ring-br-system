@@ -318,18 +318,16 @@ class Config:
                     if section_start in line and section_end in line:
                         section = line[1:-1].strip()
                     if separator in line:
-                        settings_pair = line.split(separator)
-                        # Работать только в том случае, если
-                        # separator один на строку
-                        if len(settings_pair) == 2:
-                            # Удаляем пробелы в начале и конце
-                            settings_pair[0] = settings_pair[0].strip()
-                            settings_pair[1] = settings_pair[1].strip()
+                        # разделить с макс. кол-вом делений: 1
+                        settings_pair = line.split(separator, maxsplit=1)
+                        # Удаляем пробелы в начале и конце
+                        settings_pair[0] = settings_pair[0].strip()
+                        settings_pair[1] = settings_pair[1].strip()
 
-                            self.set(section=section,
-                                     setting=settings_pair[0],
-                                     value=settings_pair[1],
-                                     )
+                        self.set(section=section,
+                                 setting=settings_pair[0],
+                                 value=settings_pair[1],
+                                 )
         except FileNotFoundError:
             print('ОШИБКА! Файл', full_path, 'не найден!')
             ok = False
