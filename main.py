@@ -11,13 +11,13 @@ import logging
 from datetime import datetime
 from baseapplib import get_script_dir, human_space, configure_logger
 from baseapplib import EmailSender, HtmlLetter, Config, Console
-from classes import Ring, RingFile
+from core.classes import Ring, RingFile
 
 
 # GLOBAL
 
 APP_DIR = get_script_dir()                # path to app dir
-CONFIG_FILE = '{}config'.format(APP_DIR)  # path to config file
+CONFIG_FILE = '{}config/default'.format(APP_DIR)  # path to config file
 
 console = Console()                     # console object
 args = console.get_args()               # argumetns from console
@@ -1053,6 +1053,8 @@ def main():
     logger.debug('# # # # # # # # # #   Ring запущена   # # # # # # # # # #')
     logger.debug('Параметры командной строки: %s преобразованы в %s' %
                  (console.get_args(True), args))
+
+    # configure_args_parser()
 
     # ИСКЛЮЧАЮЩИЕ РЕЖИМЫ (И СРАЗУ ВЫХОД)
     if '--version' in args or \
