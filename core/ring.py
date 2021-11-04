@@ -1,5 +1,3 @@
-__version__ = '0.0.4'
-
 import glob
 import socket
 import re
@@ -9,9 +7,13 @@ import sys
 import logging
 
 from datetime import datetime
-from baseapplib import get_script_dir, human_space, configure_logger
-from baseapplib import EmailSender, HtmlLetter, Config, Console
-from core.classes import Ring, RingFile
+
+from .baseapplib import get_script_dir, human_space, configure_logger
+from .baseapplib import EmailSender, HtmlLetter, Console
+from .classes import Ring, RingFile
+
+from . import config
+from . import __version__
 
 
 # GLOBAL
@@ -21,7 +23,7 @@ CONFIG_FILE = '{}config/default'.format(APP_DIR)  # path to config file
 
 console = Console()                     # console object
 args = console.get_args()               # argumetns from console
-config = Config()                       # global config
+config = config.Config()                       # global config
 ring = Ring()                           # ring object
 letter = HtmlLetter()                   # letter object
 email_sender = EmailSender()            # email_sender object
@@ -35,7 +37,7 @@ def set_config_defaults():
     config_defaults = [
         ('run', 'period', 'no'),
 
-        ('ring', 'name', 'noname'),
+        ('ring', 'name', 'Ring archive folder'),
         ('ring', 'dir', '/mnt/ring/'),
         ('ring', 'prefix', ''),
         ('ring', 'count', '30'),

@@ -1,4 +1,3 @@
-#!/usr/bin/python3
-import console_tool
-
-console_tool.main()
+#!/usr/bin/bash
+cd ./console_tool
+python3 ./main.py $*

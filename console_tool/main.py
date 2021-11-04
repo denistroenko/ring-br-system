@@ -1,9 +1,8 @@
+import sys
+sys.path.append("..") # Adds higher directory to python modules path.
+
 import core
-from . import args_parser
-
-
-#global
-parser = args_parser.parser
+from args_parser import parser
 
 
 def apply_settings_from_parsed_args():
@@ -40,8 +39,16 @@ def apply_settings_from_parsed_args():
 
 
 def main():
-    args_parser.configure_parser()
-    args_parser.print_parsed_args()
-    apply_settings_from_parsed_args()
-    print('Mode:', core.settings.MODE)
-    print('file number', core.settings.FILE_NUMBER)
+    # args_parser.configure_parser()
+    # args_parser.print_parsed_args()
+    # apply_settings_from_parsed_args()
+    # print('Mode:', core.settings.MODE)
+    # print('file number', core.settings.FILE_NUMBER)
+
+    core.ring.config.set('ring', 'name' , '!!!!!!!!!!')
+    core.ring.main()
+
+
+
+if __name__ == '__main__':
+    main()

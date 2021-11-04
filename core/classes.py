@@ -4,8 +4,7 @@ import os
 import sys
 import zipfile
 import logging
-from baseapplib import human_space, Console, configure_logger
-
+from .baseapplib import human_space, Console, configure_logger
 
 # Global
 console = Console()
