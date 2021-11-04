@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import main
+import main.main as ring
 
 
-main.main()
+main()
