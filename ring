@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-import main.main as ring
+import console_tool
 
-
-main()
+console_tool.main()

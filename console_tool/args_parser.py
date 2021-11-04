@@ -5,13 +5,14 @@ import argparse
 
 
 #GLOBAL
-args_parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser()
 
-def configure_args_parser():
-    # args_parser.prefix_chars = ''
-    args_parser.description = 'Rign remote backup&restore tool'
 
-    args_parser.add_argument('-c',
+def configure_parser():
+    # parser.prefix_chars = ''
+    parser.description = 'Rign remote backup&restore tool'
+
+    parser.add_argument('-c',
                              '--config',
                              type=str,
                              default='config',
@@ -21,7 +22,7 @@ def configure_args_parser():
                              )
 
 
-    args_parser.add_argument('-s',
+    parser.add_argument('-s',
                              '--settings',
                              default=False,
                              action='store_true',
@@ -29,7 +30,7 @@ def configure_args_parser():
                              )
 
     # Subparsers (MODES)
-    subparsers = args_parser.add_subparsers(help='modes')
+    subparsers = parser.add_subparsers(help='modes')
 
 
     # Subparser show
@@ -70,19 +71,21 @@ def configure_args_parser():
                              help='file number for kill',
                              )
 
-    args_parser.add_argument('-V',
+    parser.add_argument('-V',
                              '--version',
                              action='version',
                              version='version: %s' %__version__,
                              )
 
-    print(args_parser.parse_args())
-    try:
-        test_number = args_parser.parse_args().test_number
-    except:
-        pass
-    else:
-        print('test mode', test_number)
+
+def print_parsed_args():
+    print(parser.parse_args())
+
+
+def main():
+    configure_parser()
+    print_parsed_args()
+
 
 if __name__ == '__main__':
-    configure_args_parser()
+    main()
