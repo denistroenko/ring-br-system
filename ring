@@ -1,3 +1,3 @@
 #!/usr/bin/bash
-cd ./console_tool
+cd ./tool
 python3 ./main.py $*
