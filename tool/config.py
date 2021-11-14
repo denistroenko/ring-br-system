@@ -1,26 +1,15 @@
 """
-Config module for read|write|load|export settings
+Config module for get|set|load|export settings
 """
-import sys
-import os
-import inspect
 
 
-def get_script_dir(follow_symlinks=True):
-    """
-    Возвращает путь к скрипту __main__ (папку)
-    """
-    if getattr(sys, 'frozen', False): # py2exe, PyInstaller, cx_Freeze
-        path = os.path.abspath(sys.executable)
-    else:
-        path = inspect.getabsfile(get_script_dir)
-    if follow_symlinks:
-        path = os.path.realpath(path)
-    return '{}/'.format(os.path.dirname(path))
-
-
-#need !!! pep8
 class Section():
+    """
+    Section class.
+    Init need dict 'section dict' ({key:value, ...}),
+    create namespace, available in object.<key>
+    object.<key> return value
+    """
     def __init__(self, section_dict):
         for key in section_dict:
             setattr(self, key, section_dict[key])
@@ -28,37 +17,51 @@ class Section():
 
 # need edit for pep8!!!!!!!!!!!!!!!!!!!!!!!!
 class Config:
-
+    """
+    Class of global config.
+    """
     def __init__(self):
+        """
+        Init. Set defaults.
+        """
         self.settings = {}
 
     def __getattr__(self, attr):
+        """
+        If exist attr, returned attr.
+        Else returned
+        """
         try:
             return getattr(self, attr)
-        except:
+        except Exception:
             section_dict = self.get_section_dict(attr)
             section = Section(section_dict)
             return section
 
     def __str__(self) -> str:
+        """
+        Return lines of settings in text format.
+        """
         out_str = ''
         for key_section in self.settings:
             for key_setting in self.settings[key_section]:
-                out_str += '[{}] {} = {}\n'.format\
-                    (key_section, key_setting,
-                    self.settings[key_section][key_setting])
+                out_str += '[{}] {} = {}\n'.format(
+                        key_section,
+                        key_setting,
+                        self.settings[key_section][key_setting],
+                        )
         return out_str
 
     def read_file(self,
-                  full_path: str = '{}config'.format(get_script_dir()),
+                  config_file: str,
                   separator: str = '=',
                   comment: str = '#',
                   section_start: str = '[',
-                  section_end: str = ']'):
+                  section_end: str = ']') -> bool:
         ok = True
 
         try:
-            with open(full_path, 'r') as file:
+            with open(config_file, 'r') as file:
                 # считать все строки файла в список
                 lines = file.readlines()  # грязный список
 
@@ -102,13 +105,16 @@ class Config:
                                  value=settings_pair[1],
                                  )
         except FileNotFoundError:
-            print('ОШИБКА! Файл', full_path, 'не найден!')
+            print('ОШИБКА! Файл', config_file, 'не найден!')
+            ok = False
+        except IsADirectoryError:
+            print('ОШИБКА!', config_file, '- это каталог!')
             ok = False
 
         return ok
 
     def write_file(self,
-                   full_path: str = get_script_dir() + 'config_exp',
+                   config_file: str,
                    separator: str = '=',
                    comment: str = '#',
                    section_start: str = '[',
@@ -117,7 +123,7 @@ class Config:
         ok = True
 
         try:
-            with open(full_path, 'w') as file:
+            with open(config_file, 'w') as file:
                 for section in self.settings:
                     tab = 25 - len(section)
                     if tab < 2:
@@ -142,7 +148,7 @@ class Config:
                     file.write('\n\n')
 
         except FileNotFoundError:
-            print('ОШИБКА! Файл', full_path, 'не найден!')
+            print('ОШИБКА! Файл', config_file, 'не найден!')
             ok = False
 
         return ok
@@ -157,6 +163,10 @@ class Config:
         return self.settings[section]
 
     def set(self, section: str, setting: str, value: str):
+        """
+        Create or rewrited section, setting, value
+        """
+        # if 'section' not exist, create it
         if section not in self.settings.keys():
             self.settings[section] = {}
         self.settings[section][setting] = str(value)

@@ -1,6 +1,10 @@
 __version__ = '0.0.0'
 
 
+import sys
+sys.path.append('..')
+
+
 import argparse
 
 
@@ -9,35 +13,39 @@ parser = argparse.ArgumentParser()
 
 
 def configure_parser():
-    # parser.prefix_chars = ''
-    parser.description = 'Rign remote backup&restore tool'
+    parser.description = 'ring tool - part of RING Backup&Restore System. ' \
+            + 'Command line tool.'
 
     parser.add_argument('-c',
-                             '--config',
-                             type=str,
-                             default='config',
-                             dest='config_file_path',
-                             action='store',
-                             help='config file path',
-                             )
-
+                        '--config',
+                        type=str,
+                        default='',
+                        dest='config_file',
+                        action='store',
+                        help='config file',
+                        )
 
     parser.add_argument('-s',
-                             '--settings',
-                             default=False,
-                             action='store_true',
-                             help='show all config settings',
-                             )
+                        '--settings',
+                        default=False,
+                        action='store_true',
+                        help='show all config settings',
+                        )
+
+    parser.add_argument('-V',
+                        '--version',
+                        action='version',
+                        version='version: %s' %__version__,
+                        )
 
     # Subparsers (MODES)
     subparsers = parser.add_subparsers(help='modes')
-
 
     # Subparser show
     show_parser = subparsers.add_parser('show',
                                         help='show ring of archives',
                                         )
-    show_parser.add_argument('show_count',
+    show_parser.add_argument('show_last',
                              nargs='?',
                              action='store',
                              type=int,
@@ -50,7 +58,7 @@ def configure_parser():
                                         help='test archive file',
                                         )
 
-    test_parser.add_argument('test_number',
+    test_parser.add_argument('test_file_number',
                              nargs='?',
                              action='store',
                              type=int,
@@ -63,18 +71,12 @@ def configure_parser():
                                         help='kill archive file',
                                         )
 
-    kill_parser.add_argument('kill_number',
+    kill_parser.add_argument('kill_file_number',
                              nargs='?',
                              action='store',
                              type=int,
                              default=0,
                              help='file number for kill',
-                             )
-
-    parser.add_argument('-V',
-                             '--version',
-                             action='version',
-                             version='version: %s' %__version__,
                              )
 
 
@@ -83,8 +85,7 @@ def print_parsed_args():
 
 
 def main():
-    configure_parser()
-    print_parsed_args()
+    print('This is args_parser.')
 
 
 if __name__ == '__main__':

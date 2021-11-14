@@ -1,0 +1,6 @@
+#!/usr/bin/python3
+from main_new import main
+# from main import main
+
+
+main()

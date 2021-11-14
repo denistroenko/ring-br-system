@@ -6,10 +6,12 @@ import zipfile
 import logging
 from .baseapplib import human_space, Console, configure_logger
 
+
 # Global
 console = Console()
 logger = logging.getLogger(__name__)
 configure_logger(logger=logger, screen_logging=True)
+
 
 class Backup_file:
     def __init__(self, file_name: str, full_path: str, size: int,
