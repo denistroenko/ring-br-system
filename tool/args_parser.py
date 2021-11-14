@@ -79,6 +79,18 @@ def configure_parser():
                              help='file number for kill',
                              )
 
+    # Subparser content
+    content_parser = subparsers.add_parser('content',
+                                           help='content show mode',
+                                           )
+
+    content_parser.add_argument('content_file_number',
+                                nargs='?',
+                                action='store',
+                                type=int,
+                                default=0,
+                                help='file number for content',
+                                )
 
 def print_parsed_args():
     print(parser.parse_args())

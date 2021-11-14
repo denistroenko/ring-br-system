@@ -33,6 +33,13 @@ def apply_settings_from_parsed_args(config):
         config.set('run', 'mode', 'kill')
         config.set('run', 'file_number', kill_file_number)
 
+    # set content mode and file number if use in command line
+    content_file_number = getattr(parser.parse_args(), 'content_file_number',
+                                  None)
+    if content_file_number != None:
+        config.set('run', 'mode', 'content')
+        config.set('run', 'file_number', content_file_number)
+
     # set 'print_all_settings'
     if parser.parse_args().settings:
         config.set('run', 'print_all_settings', 'yes')
