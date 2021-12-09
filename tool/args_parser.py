@@ -92,6 +92,7 @@ def configure_parser():
                                 help='file number for content',
                                 )
 
+
 def print_parsed_args():
     print(parser.parse_args())
 

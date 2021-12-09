@@ -4,7 +4,7 @@ Use 'load_default_config(config: object)'
 """
 
 
-def load_default_config(config: object):
+def init_default_config(config: object):
 
     config_defaults = [
         # OLD. Режим period: yes|no
@@ -80,4 +80,3 @@ def load_default_config(config: object):
     # Брать только сегодняшние файлы
     config.set('source', 'only_today_files', 'no')
     # config.set('source-dirs', '', '')  # Критический по условию
-

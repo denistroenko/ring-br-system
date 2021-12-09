@@ -14,12 +14,22 @@ configure_logger(logger=logger, screen_logging=True)
 
 
 class Backup_file:
-    def __init__(self, file_name: str, full_path: str, size: int,
-                 date_modify: datetime.datetime):
-        self.__name = str(file_name)
-        self.__full_path = str(full_path)
-        self.__size = int(size)
-        self.__date_modify = date_modify
+    """
+    Backup_file - base file object for each buckup file in the ring directory.
+    """
+    def __init__(self,
+                 file_name: str,    # file name in filesystem
+                 full_path: str,    # full path from without name of file
+                 size: int,         # file size in bytes
+                 date_modify: datetime.datetime,    # date modify in
+                                                    # datetime.datetime format
+                 ):
+
+        self.__name = str(file_name)        # file name
+        self.__full_path = str(full_path)   # full path without file name
+        self.__size = int(size)             # file size in bytes
+        self.__date_modify = date_modify    # date modify in datetime.datetime
+                                            # format
 
     def __str__(self) -> str:
         """
@@ -438,16 +448,19 @@ class Ring:
 
                     # Если только сегодняшние
                     if only_today_files:
-
-                        # Получаем дату изм. файла средствами ОС
-                        date_modify = os.path.getmtime(file)
-                        # Преобразуем в локальное время (будет строка)
-                        date_modify = time.ctime(date_modify)
-                        # Преобразуем в datetime.datetime
-                        date_modify = datetime.datetime.strptime(
-                                date_modify, "%a %b %d %H:%M:%S %Y")
-                        date_modify = str(date_modify)[:10]
-
+                        try:
+                            # Получаем дату изм. файла средствами ОС
+                            date_modify = os.path.getmtime(file)
+                            # Преобразуем в локальное время (будет строка)
+                            date_modify = time.ctime(date_modify)
+                            # Преобразуем в datetime.datetime
+                            date_modify = datetime.datetime.strptime(
+                                    date_modify, "%a %b %d %H:%M:%S %Y")
+                            date_modify = str(date_modify)[:10]
+                        except FileNotFoundError:
+                            console.print(color='yellow',
+                                          msg='Файл больше не существует!',
+                                          )
                         # Если не сегодняшний - пропустить итерацию
                         if date_now != date_modify:
                             print(' НЕСВЕЖИЙ!')
@@ -456,10 +469,13 @@ class Ring:
                     # Записываем файл в архив
                     try:
                         zip_file.write(file, arcname)
+
                     except FileNotFoundError:
-                        console.print(color='yellow',
-                                      msg='Файл больше не существует!',
-                                      )
+                        console.print(color='yellow', msg='Файл больше не существует!')
+                        continue
+
+                    except Exception:
+                        console.print(color='red', msg='Критическая ошибка')
                         continue
 
                     # Получаем сжатый размер файла в архиве
@@ -623,4 +639,3 @@ class Ring:
                 console.print(msg='ok', color='green')
 
         return ok, result
-

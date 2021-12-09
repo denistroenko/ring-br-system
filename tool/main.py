@@ -40,7 +40,7 @@ def set_config_defaults():
     """
     Setup default config values
     """
-    default_config.load_default_config(config)
+    default_config.init_default_config(config)
 
 
 def print_settings():
@@ -851,9 +851,6 @@ def mount_remote_source():
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def mount_remote_ring():
-    global config
-    global console
-
     type_remote_ring = config.get('remote_ring', 'type')
 
     if type_remote_ring == 'smb':
@@ -1029,7 +1026,7 @@ def main():
 
     configure_letter_head()
 
-    mount_remote_ring()
+    #mount_remote_ring()
 
     # Load ring files (objects)
     load_ring_files()

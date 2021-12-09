@@ -54,12 +54,14 @@ def main():
     args_parser.configure_parser()
 
     # set defaults settings
-    default_config.load_default_config(config)
+    default_config.set_default_config(config)
+
     # apply settings from config file
     config_file = parser.parse_args().config_file
     if config_file != '':  # if exist argument after '--config'
         if config.read_file(config_file) == False:
             exit()
+
     # apply settings from parsed args
     apply_settings_from_parsed_args(config)
 
