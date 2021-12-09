@@ -13,9 +13,9 @@ logger = logging.getLogger(__name__)
 configure_logger(logger=logger, screen_logging=True)
 
 
-class Backup_file:
+class BackupFile:
     """
-    Backup_file - base file object for each buckup file in the ring directory.
+    BackupFile - base file object for each buckup file in the ring directory.
     """
     def __init__(self,
                  file_name: str,    # file name in filesystem
@@ -256,8 +256,8 @@ class Ring:
                 date_modify = datetime.datetime.strptime(
                         date_modify, "%a %b %d %H:%M:%S %Y")
 
-                # Создать объект Backup_file
-                file = Backup_file(file_name=file_name,
+                # Создать объект BackupFile
+                file = BackupFile(file_name=file_name,
                                 full_path=full_path,
                                 size=size,
                                 date_modify=date_modify)
@@ -331,7 +331,7 @@ class Ring:
 
     def get_files(self) -> [object, ...]:
         """
-        Возвращает список объектов Backup_file
+        Возвращает список объектов BackupFile
         """
         return self.__files
 
