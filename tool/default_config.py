@@ -1,19 +1,20 @@
 """
-Default config loader module.
-Use 'load_default_config(config: object)'
+Module content default config loader.
 """
 
 
-def init_default_config(config: object):
+def fill(config: object):
 
     config_defaults = [
-        # OLD. Режим period: yes|no
-        ('run', 'period', 'no'),
-        # Run mode: restore|content|kill|test|cut-bad|cut|archive|show|period|
-        ('run', 'mode', 'none'),
-        ('run', 'file_number', '0'),
-        ('run', 'config_file', '../config/default'),
-        ('run', 'print_all_settings', 'no'),
+        #run
+        ('run', 'period', 'no'),              # OLD. Режим period: yes|no
+        ('run', 'mode', 'none'),              # Run mode
+        ('run', 'file_number', '0'),          # Номер файла (аргумент режимов)
+        ('run', 'config_file', '../config/default'),    # файл конфигурации
+        ('run', 'print_all_settings', 'no'),  # Флаг "Печатать все настройки"
+
+
+
 
 
         # Ring (folder of buckup files) name

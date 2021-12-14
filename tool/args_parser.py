@@ -1,21 +1,32 @@
+"""
+agrs_pagser module usage:
+
+from args_parser import parser
+parser.configure()
+"""
 __version__ = '0.0.0'
 
 
 import sys
 sys.path.append('..')
-
-
 import argparse
 
 
-#GLOBAL
+# Global parcer object
 parser = argparse.ArgumentParser()
 
 
-def configure_parser():
+def configure():
+    """
+    This function configure parser: set all subparsers, positional
+    and optional agruments, help.
+    """
+
+    # Descriotion
     parser.description = 'ring tool - part of RING Backup&Restore System. ' \
             + 'Command line tool.'
 
+    # Optional argument --config,
     parser.add_argument('-c',
                         '--config',
                         type=str,
@@ -25,6 +36,7 @@ def configure_parser():
                         help='config file',
                         )
 
+    # Optional argument --settings
     parser.add_argument('-s',
                         '--settings',
                         default=False,
@@ -32,6 +44,7 @@ def configure_parser():
                         help='show all config settings',
                         )
 
+    # Optional argument --version
     parser.add_argument('-V',
                         '--version',
                         action='version',
@@ -41,10 +54,11 @@ def configure_parser():
     # Subparsers (MODES)
     subparsers = parser.add_subparsers(help='modes')
 
-    # Subparser show
+    # Subparser 'show'
     show_parser = subparsers.add_parser('show',
                                         help='show ring of archives',
                                         )
+    # Positional argument of subparser 'show'
     show_parser.add_argument('show_last',
                              nargs='?',
                              action='store',
@@ -53,11 +67,12 @@ def configure_parser():
                              help='count of files for show',
                              )
 
-    # Subparser test
+    # Subparser 'test'
     test_parser = subparsers.add_parser('test',
                                         help='test archive file',
                                         )
 
+    # Positional argument of subparser 'test'
     test_parser.add_argument('test_file_number',
                              nargs='?',
                              action='store',
@@ -66,11 +81,11 @@ def configure_parser():
                              help='file number for test',
                              )
 
-    # Subparser kill
+    # Subparser 'kill'
     kill_parser = subparsers.add_parser('kill',
                                         help='kill archive file',
                                         )
-
+    # Positional argument of subparser 'kill'
     kill_parser.add_argument('kill_file_number',
                              nargs='?',
                              action='store',
@@ -79,11 +94,11 @@ def configure_parser():
                              help='file number for kill',
                              )
 
-    # Subparser content
+    # Subparser 'content'
     content_parser = subparsers.add_parser('content',
                                            help='content show mode',
                                            )
-
+    # Positional argument of subparser 'content'
     content_parser.add_argument('content_file_number',
                                 nargs='?',
                                 action='store',
@@ -94,11 +109,19 @@ def configure_parser():
 
 
 def print_parsed_args():
+    """
+    This test function print parse_args
+    """
     print(parser.parse_args())
 
 
 def main():
-    print('This is args_parser.')
+    """
+    This is main function print message about this modile.
+    This module is not intended to run as an entry point
+    (if __name__ = '__main__').
+    """
+    print('args_parser module is not intended to run as an entry point.')
 
 
 if __name__ == '__main__':
