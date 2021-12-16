@@ -23,7 +23,7 @@ def configure():
     """
 
     # Descriotion
-    parser.description = 'ring tool - part of RING Backup&Restore System. ' \
+    parser.description = 'ring tool - part of Ring Backup&Recovery System. ' \
             + 'Command line tool.'
 
     # Optional argument --config,

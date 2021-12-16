@@ -40,7 +40,7 @@ def set_config_defaults():
     """
     Setup default config values
     """
-    default_config.init_default_config(config)
+    default_config.fill(config)
 
 
 def print_settings():
