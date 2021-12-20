@@ -6,7 +6,7 @@ Module content default config loader.
 def fill(config: object):
 
     config_defaults = [
-        #run
+        # [run] section
         ('run', 'period', 'no'),              # OLD. Режим period: yes|no
         ('run', 'mode', 'none'),              # Run mode
         ('run', 'file_number', '0'),          # Номер файла (аргумент режимов)

@@ -8,7 +8,6 @@ config = config.Config()
 
 
 def set_config():
-    args_parser.configure()
     parser = args_parser.parser
 
     def load_default_settings():
@@ -56,6 +55,13 @@ def set_config():
         if content_file_number != None:
             config.set('run', 'mode', 'content')
             config.set('run', 'file_number', content_file_number)
+
+        # set cut-bad mode and start file number if use in command line
+        cutbad_file_number = getattr(parser.parse_args(), 'cutbad_file_number',
+                                    None)
+        if cutbad_file_number != None:
+            config.set('run', 'mode', 'cut-bad')
+            config.set('run', 'file_number', cutbad_file_number)
 
         # set 'print_all_settings'
         if parser.parse_args().settings:

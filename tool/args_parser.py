@@ -1,9 +1,10 @@
 """
-agrs_pagser module usage:
+agrs_pagser module. Content parser object for ring tool.
 
+usage:
 from args_parser import parser
-parser.configure()
 """
+
 __version__ = '0.0.0'
 
 
@@ -16,10 +17,11 @@ import argparse
 parser = argparse.ArgumentParser()
 
 
-def configure():
+def configure(parser: object) -> None:
     """
     This function configure parser: set all subparsers, positional
     and optional agruments, help.
+    Need parser object.
     """
 
     # Descriotion
@@ -64,7 +66,7 @@ def configure():
                              action='store',
                              type=int,
                              default=0,
-                             help='count of files for show',
+                             help='count of files for show mode',
                              )
 
     # Subparser 'test'
@@ -78,12 +80,12 @@ def configure():
                              action='store',
                              type=int,
                              default=0,
-                             help='file number for test',
+                             help='file number for test mode',
                              )
 
     # Subparser 'kill'
     kill_parser = subparsers.add_parser('kill',
-                                        help='kill archive file',
+                                        help='kill archive file mode',
                                         )
     # Positional argument of subparser 'kill'
     kill_parser.add_argument('kill_file_number',
@@ -91,7 +93,7 @@ def configure():
                              action='store',
                              type=int,
                              default=0,
-                             help='file number for kill',
+                             help='file number for kill mode',
                              )
 
     # Subparser 'content'
@@ -104,9 +106,21 @@ def configure():
                                 action='store',
                                 type=int,
                                 default=0,
-                                help='file number for content',
+                                help='file number for content mode',
                                 )
 
+    # Subparser 'cut-bad
+    content_parser = subparsers.add_parser('cut-bad',
+                                           help='cut bad backup files mode',
+                                           )
+    # Positional argument of subparser 'cut-bad'
+    content_parser.add_argument('cutbad_file_number',
+                                nargs='?',
+                                action='store',
+                                type=int,
+                                default=0,
+                                help='start file number for cut-bad mode',
+                                )
 
 def print_parsed_args():
     """
@@ -126,3 +140,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+else:
+    configure(parser)
