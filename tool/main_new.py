@@ -50,8 +50,15 @@ def set_config():
             config.set('run', 'file_number', kill_file_number)
 
         # set content mode and file number if use in command line
+        restore_file_number = getattr(parser.parse_args(), 'restore_file_number',
+                                      None)
+        if restore_file_number != None:
+            config.set('run', 'mode', 'restore')
+            config.set('run', 'file_number', restore_file_number)
+
+        # set content mode and file number if use in command line
         content_file_number = getattr(parser.parse_args(), 'content_file_number',
-                                    None)
+                                      None)
         if content_file_number != None:
             config.set('run', 'mode', 'content')
             config.set('run', 'file_number', content_file_number)

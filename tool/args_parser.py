@@ -96,6 +96,19 @@ def configure(parser: object) -> None:
                              help='file number for kill mode',
                              )
 
+    # Subparser 'restore'
+    content_parser = subparsers.add_parser('restore',
+                                           help='restore files  mode',
+                                           )
+    # Positional argument of subparser 'restore'
+    content_parser.add_argument('restore_file_number',
+                                nargs='?',
+                                action='store',
+                                type=int,
+                                default=0,
+                                help='file number for restore mode',
+                                )
+
     # Subparser 'content'
     content_parser = subparsers.add_parser('content',
                                            help='content show mode',
