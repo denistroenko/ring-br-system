@@ -38,6 +38,16 @@ def configure(parser: object) -> None:
                         help='config file',
                         )
 
+    # Optional argument --export-config,
+    parser.add_argument('-e',
+                        '--export-config',
+                        type=str,
+                        default='',
+                        dest='export_config_file',
+                        action='store',
+                        help='export config file',
+                        )
+
     # Optional argument --settings
     parser.add_argument('-s',
                         '--settings',

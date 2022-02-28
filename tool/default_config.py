@@ -11,6 +11,7 @@ def fill(config: object):
         ('run', 'mode', 'none'),              # Run mode
         ('run', 'file_number', '0'),          # Номер файла (аргумент режимов)
         ('run', 'config_file', '../config/default'),    # файл конфигурации
+        ('run', 'export_config_file', '../config/exp_default'),  # файл экспорта конфигурации
         ('run', 'print_all_settings', 'no'),  # Флаг "Печатать все настройки"
 
 

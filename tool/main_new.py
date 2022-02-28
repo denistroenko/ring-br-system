@@ -100,6 +100,11 @@ def set_config():
         if config_file != '':
             config.set('run', 'config_file', config_file)
 
+        # Set 'export_config_file'
+        export_config_file = parser.parse_args().export_config_file
+        if export_config_file != '':
+            config.set('run', 'export_config_file', export_config_file)
+
     load_default_settings()
     load_settings_from_file()
     load_settings_from_args()
@@ -116,6 +121,7 @@ def main():
     # DELETE IT
     args_parser.print_parsed_args()
     print('config file:', config.run.config_file)
+    print('export config file:', config.run.export_config_file)
     print('mode:', config.run.mode)
     print('file number:', config.run.file_number)
     print('show count:', config.show.show_last)
