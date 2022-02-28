@@ -17,7 +17,7 @@ def fill(config: object):
 
 
 
-        # Ring (folder of buckup files) name
+        # Ring (folder of buckup files)
         ('ring', 'name', 'Ring archive folder'),
         ('ring', 'dir', '/mnt/ring/'),
         ('ring', 'prefix', ''),
@@ -74,8 +74,6 @@ def fill(config: object):
 
 
     config.set('source', 'dir', '')  # Критический
-    # Удаленные объекты (брать по маске). Беруться все элементы {source-files}
-    # config.set('source-files', 'files', '*')  # Критический по усл.
     # Режим получения файлов для архивирования (copy/move/none)
     config.set('source', 'mode', 'copy')  # Критический по условию
     # Брать только сегодняшние файлы

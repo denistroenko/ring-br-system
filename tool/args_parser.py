@@ -87,6 +87,7 @@ def configure(parser: object) -> None:
     kill_parser = subparsers.add_parser('kill',
                                         help='kill archive file mode',
                                         )
+
     # Positional argument of subparser 'kill'
     kill_parser.add_argument('kill_file_number',
                              nargs='?',
@@ -100,6 +101,7 @@ def configure(parser: object) -> None:
     content_parser = subparsers.add_parser('restore',
                                            help='restore files  mode',
                                            )
+
     # Positional argument of subparser 'restore'
     content_parser.add_argument('restore_file_number',
                                 nargs='?',
@@ -113,6 +115,7 @@ def configure(parser: object) -> None:
     content_parser = subparsers.add_parser('content',
                                            help='content show mode',
                                            )
+
     # Positional argument of subparser 'content'
     content_parser.add_argument('content_file_number',
                                 nargs='?',
@@ -122,10 +125,38 @@ def configure(parser: object) -> None:
                                 help='file number for content mode',
                                 )
 
+
+    # Subparser 'cut'
+    content_parser = subparsers.add_parser('cut',
+                                           help='cut mode',
+                                           )
+
+    # Positional argument of subparser 'cut'
+    content_parser.add_argument('cut_file_number',
+                                nargs='?',
+                                action='store',
+                                type=int,
+                                default=0,
+                                )
+
+    # Subparser 'period'
+    content_parser = subparsers.add_parser('period',
+                                           help='period mode (cut+archive+show)',
+                                           )
+
+    # Positional argument of subparser 'cut'
+    content_parser.add_argument('period_file_number',
+                                nargs='?',
+                                action='store',
+                                type=int,
+                                default=0,
+                                )
+
     # Subparser 'cut-bad
     content_parser = subparsers.add_parser('cut-bad',
                                            help='cut bad backup files mode',
                                            )
+
     # Positional argument of subparser 'cut-bad'
     content_parser.add_argument('cutbad_file_number',
                                 nargs='?',
