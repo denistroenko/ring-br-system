@@ -63,13 +63,19 @@ def set_config():
             config.set('run', 'mode', 'content')
             config.set('run', 'file_number', content_file_number)
 
-
         # set period mode and start file number if use in command line
         period_file_number = getattr(parser.parse_args(), 'period_file_number',
                                     None)
         if period_file_number != None:
             config.set('run', 'mode', 'period')
             config.set('run', 'file_number', period_file_number)
+
+        # set archive mode and start file number if use in command line
+        archive_file_number = getattr(parser.parse_args(), 'archive_file_number',
+                                    None)
+        if archive_file_number != None:
+            config.set('run', 'mode', 'archive')
+            config.set('run', 'file_number', archive_file_number)
 
         # set cut mode and start file number if use in command line
         cut_file_number = getattr(parser.parse_args(), 'cut_file_number',

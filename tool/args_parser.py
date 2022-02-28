@@ -125,6 +125,18 @@ def configure(parser: object) -> None:
                                 help='file number for content mode',
                                 )
 
+    # Subparser 'archive'
+    content_parser = subparsers.add_parser('archive',
+                                           help='archive mode',
+                                           )
+
+    # Positional argument of subparser 'archive'
+    content_parser.add_argument('archive_file_number',
+                                nargs='?',
+                                action='store',
+                                type=int,
+                                default=0,
+                                )
 
     # Subparser 'cut'
     content_parser = subparsers.add_parser('cut',
