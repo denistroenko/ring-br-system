@@ -4,11 +4,15 @@ __version__ = '0.0.17'
 import random
 import smtplib
 import os
+from os.path import basename
 import inspect
 import sys
 import logging
 import logging.handlers
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+from email.utils import formatdate
 
 
 def get_script_dir(follow_symlinks=True):
@@ -26,22 +30,23 @@ def get_script_dir(follow_symlinks=True):
 
 def configure_logger(
         logger: object,
-        screen_logging: bool=False,
-        debug_file_name: str='%sdebug.log' % get_script_dir(),
-        error_file_name: str='%serror.log' % get_script_dir(),
-        date_format: str='%Y-%m-%d %H:%M:%S',
-        message_format: str='%(asctime)s [%(name)s] %(levelname)s %(message)s',
+        screen_logging: bool = False,
+        debug_file_name: str = '%sdebug.log' % get_script_dir(),
+        error_file_name: str = '%serror.log' % get_script_dir(),
+        date_format: str = '%Y-%m-%d %H:%M:%S',
+        message_format: str = '%(asctime)s [%(name)s] %(levelname)s %(message)s',
+        start_msg: str = ''
         ):
 
     """
     Стандартная конфигурация логгера. Передаваемый объект логгера должен быть
-    создан на глобальном уровне модуля, в который импортируется эта функция
-    или весь этот модуль.
+    создан на глобальном уровне модуля, в который импортируется эта функция.
 
     logger - Объект логгера
     screen_logging (False) - включить хендлер экрана
     debug_file_name, error_file_name - имена файлов для
     файловых хендлеров (если пустая строка - файловые хендлеры не создаются).
+    start_msg - строка, записываемая в лог при старте
     """
 
     # set level
@@ -59,19 +64,22 @@ def configure_logger(
         screen_handler.setFormatter(screen_formatter)
         logger.addHandler(screen_handler)
 
-    if debug_file_name != '':
+    if debug_file_name:
         file_debug_handler = logging.handlers.RotatingFileHandler(
                 filename=debug_file_name, maxBytes=10485760, backupCount=5)
         file_debug_handler.setLevel(logging.DEBUG)
         file_debug_handler.setFormatter(file_formatter)
         logger.addHandler(file_debug_handler)
 
-    if error_file_name != '':
+    if error_file_name:
         file_error_handler = logging.handlers.RotatingFileHandler(
                 filename=error_file_name, maxBytes=10485760, backupCount=5)
         file_error_handler.setLevel(logging.ERROR)
         file_error_handler.setFormatter(file_formatter)
         logger.addHandler(file_error_handler)
+
+    if start_msg:
+        logger.debug(start_msg)
 
 
 # need edit for pep8!!!!!!!!!!!!!!!!!!!!!!!!
@@ -162,7 +170,6 @@ class PasswordGenerator:
 
 # need edit for pep8!!!!!!!!!!!!!!!!!!!!!!!!
 class EmailSender:
-
     def __init__(self):
         self.__host = ''
         self.__login = ''
@@ -171,8 +178,14 @@ class EmailSender:
         self.__use_ssl = None
         self.__port = 0
 
-    def configure(self, smtp_hostname: str, login: str, password: str,
-                 from_address: str, use_ssl: bool = True, port: int = 465):
+    def configure(self,
+                  smtp_hostname: str,
+                  login: str,
+                  password: str,
+                  from_address: str,
+                  use_ssl: bool = True,
+                  port: int = 465,
+                  ):
         self.__host = smtp_hostname
         self.__login = login
         self.__password = password
@@ -181,17 +194,32 @@ class EmailSender:
         self.__port = port
 
     def send_email(self, to_address: str, subject: str, message: str,
-                   use_html_format: bool = False):
+                   use_html_format: bool = False, attachment_files: tuple = ()):
+        # Message object
+        msg = MIMEMultipart()
 
-        if use_html_format:
-            msg = MIMEText(message, "html", "utf-8")
-        else:
-            msg = MIMEText(message, "plain", "utf-8")
-
+        # Set message properties
         msg['Subject'] = subject
         msg['From'] = self.__from
         msg['To'] = to_address
+        msg['Date'] = formatdate(localtime=True)
 
+        # Attach text to message
+        if use_html_format:
+            msg.attach(MIMEText(message, "html", "utf-8"))
+        else:
+            msg.attach(MIMEText(message, "plain", "utf-8"))
+
+        # Attach files
+        for attachment_file in attachment_files:
+            with open(attachment_file, "rb") as attachment:
+                 part = MIMEApplication(attachment.read(),
+                                        Name=basename(attachment_file))
+                 part['Content-Disposition'] = (
+                        'attachment; filename="%s"' % basename(attachment_file))
+                 msg.attach(part)
+
+        # Server choice
         if self.__use_ssl:
             server = smtplib.SMTP_SSL(self.__host, self.__port)
         else:
@@ -259,135 +287,6 @@ class HtmlLetter:
     def reset(self):
 
         self.__body = ''
-
-
-# need edit for pep8!!!!!!!!!!!!!!!!!!!!!!!!
-class Config:
-
-    def __init__(self):
-        self.settings = {}
-
-    def __str__(self) -> str:
-        out_str = ''
-        for key_section in self.settings:
-            for key_setting in self.settings[key_section]:
-                out_str += '[{}] {} = {}\n'.format\
-                    (key_section, key_setting,
-                    self.settings[key_section][key_setting])
-        return out_str
-
-    def read_file(self,
-                  full_path: str = '{}config'.format(get_script_dir()),
-                  separator: str = '=',
-                  comment: str = '#',
-                  section_start: str = '[',
-                  section_end: str = ']'):
-        ok = True
-
-        try:
-            with open(full_path, 'r') as file:
-                # считать все строки файла в список
-                lines = file.readlines()  # грязный список
-
-                # удаляем переводы строк, табы заменяем пробелами
-                for index in range(len(lines)):
-                    lines[index] = lines[index].replace('\n', '')
-                    lines[index] = lines[index].replace('\t', ' ')
-
-                # удаляем строки, начинающиеся с комментария, если это
-                # не пустые строки
-                for line in lines:
-                    if len(line) > 0:
-                        if line[0] == comment:
-                            lines.remove(line)
-
-                # удаляем правую часть строки после комментария
-                for index in range(len(lines)):
-                    if comment in lines[index]:
-                        lines[index] = lines[index].split(comment)[0]
-
-                # удаляем пустые строки из списка
-                while "" in lines:
-                    lines.remove("")
-
-                # проходим по списку,
-                # если встречаем разделитель, делим элемент на 2,
-                # и загружаем key:value в словарь
-                section = "main"  # Секция по-умолчанию
-                for line in lines:
-                    if section_start in line and section_end in line:
-                        section = line[1:-1].strip()
-                    if separator in line:
-                        # разделить с макс. кол-вом делений: 1
-                        settings_pair = line.split(separator, maxsplit=1)
-                        # Удаляем пробелы в начале и конце
-                        settings_pair[0] = settings_pair[0].strip()
-                        settings_pair[1] = settings_pair[1].strip()
-
-                        self.set(section=section,
-                                 setting=settings_pair[0],
-                                 value=settings_pair[1],
-                                 )
-        except FileNotFoundError:
-            print('ОШИБКА! Файл', full_path, 'не найден!')
-            ok = False
-
-        return ok
-
-    def write_file(self,
-                   full_path: str = get_script_dir() + 'config_exp',
-                   separator: str = '=',
-                   comment: str = '#',
-                   section_start: str = '[',
-                   section_end: str = ']'):
-
-        ok = True
-
-        try:
-            with open(full_path, 'w') as file:
-                for section in self.settings:
-                    tab = 25 - len(section)
-                    if tab < 2:
-                        tab = 2
-                    file.write(section_start +
-                               section +
-                               section_end +
-                               ' ' * tab + comment + ' Секция параметров ' +
-                               section + '\n\n')
-                    for setting in self.settings[section]:
-                        if len(self.settings[section][setting]) > 0:
-                            tab = 24 - (len(setting) +
-                                        len(self.settings[section][setting]))
-                            if tab < 2:
-                                tab = 2
-
-                            file.write(setting + ' ' + separator + ' ' +
-                                    self.settings[section][setting] +
-                                    ' ' * tab + comment +
-                                    ' Значение параметра ' +
-                                    setting + '\n')
-                    file.write('\n\n')
-
-        except FileNotFoundError:
-            print('ОШИБКА! Файл', full_path, 'не найден!')
-            ok = False
-
-        return ok
-
-    def clear(self):
-        self.settings = {}
-
-    def get(self, section: str, setting: str) -> str:
-        return str(self.settings[section][setting])
-
-    def get_section_dict(self, section) -> dict:
-        return self.settings[section]
-
-    def set(self, section: str, setting: str, value: str):
-        if section not in self.settings.keys():
-            self.settings[section] = {}
-        self.settings[section][setting] = str(value)
-
 
 # need edit for pep8!!!!!!!!!!!!!!!!!!!!!!!!
 class Console:

@@ -14,6 +14,16 @@ class Section():
         for key in section_dict:
             setattr(self, key, section_dict[key])
 
+    def __getattr__(self, attr):
+        """
+        If exist attr, returned attr.
+        Else returned section
+        """
+        try:
+            return getattr(self, attr)
+        except Exception:
+            return None
+
 
 # need edit for pep8!!!!!!!!!!!!!!!!!!!!!!!!
 class Config:
@@ -29,7 +39,7 @@ class Config:
     def __getattr__(self, attr):
         """
         If exist attr, returned attr.
-        Else returned
+        Else returned section
         """
         try:
             return getattr(self, attr)
@@ -57,7 +67,9 @@ class Config:
                   separator: str = '=',
                   comment: str = '#',
                   section_start: str = '[',
-                  section_end: str = ']') -> bool:
+                  section_end: str = ']',
+                  except_if_error: bool = False,
+                  ) -> bool:
         ok = True
 
         try:
@@ -105,11 +117,23 @@ class Config:
                                  value=settings_pair[1],
                                  )
         except FileNotFoundError:
-            print('ОШИБКА! Файл', config_file, 'не найден!')
             ok = False
+
+            file_not_found_msg = f'Файл{config_file} не найден!'
+            file_is_dir_msg = f'{config_file} - это каталог!'
+
+            if except_if_error:
+                raise FileNotFoundError(file_not_found_msg)
+            else:
+                print(file_not_found_msg)
+
         except IsADirectoryError:
-            print('ОШИБКА!', config_file, '- это каталог!')
             ok = False
+
+            if except_if_error:
+                raise IsADirectoryError(file_is_dir_msg)
+            else:
+                print(file_is_dir_msg)
 
         return ok
 
