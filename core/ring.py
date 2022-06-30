@@ -461,6 +461,10 @@ class Ring:
                             console.print(color='yellow',
                                           msg='Файл больше не существует!',
                                           )
+                        except Exception:
+                            console.print(color='yellow',
+                                          msg='Ошибка...',
+                                          )
                         # Если не сегодняшний - пропустить итерацию
                         if date_now != date_modify:
                             print(' НЕСВЕЖИЙ!')
