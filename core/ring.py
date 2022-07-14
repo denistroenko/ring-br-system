@@ -9,7 +9,10 @@ from .baseapplib import human_space, Console, configure_logger
 
 # Global
 console = Console()
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__,
+                           debug_file_name='../log/debug.log',
+                           error_file_name='../log/error.log',
+                           )
 configure_logger(logger=logger, screen_logging=True)
 
 
@@ -641,5 +644,4 @@ class Ring:
                     return ok, result
 
                 console.print(msg='ok', color='green')
-
         return ok, result
