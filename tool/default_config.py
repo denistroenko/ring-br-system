@@ -80,3 +80,44 @@ def fill(config: object):
     # Брать только сегодняшние файлы
     config.set('source', 'only_today_files', 'no')
     # config.set('source-dirs', '', '')  # Критический по условию
+
+
+# ПЕРЕДЕЛАТЬ: clean & pep8
+def fix_config(config, print_error=print):
+    # Фиксим: последний символ в пути к папке, должен быть '/'
+    ring_dir = config.get('ring', 'dir')
+    if ring_dir[-1] != '/' and ring_dir != '':
+        ring_dir = ring_dir + '/'
+        config.set('ring', 'dir', ring_dir)
+
+    # Фиксим: последний символ в пути к папке, должен быть '/'
+    source_dir = config.get('source', 'dir')
+    if source_dir != '':
+        if source_dir[-1] != '/':
+            source_dir = source_dir + '/'
+            config.set('source', 'dir', source_dir)
+
+    # Фиксим "показывать последние ... файлов": число должно быть положительным
+    show_last = int(config.get('show', 'show_last'))
+    if show_last < 0:
+        show_last = 10
+        config.set('show', 'show_last', show_last)
+
+    # делаем нижний регистр принудительно
+    config.set('ring', 'show_excluded',
+               config.get('ring', 'show_excluded').lower())
+
+    # Если есть список source_dirs, но нет параметра [source] dir
+    try:
+        source_dirs_dict = {}
+        source_dirs_dict = config.get_section_dict('source_dirs')
+        source_dir = config.get('source', 'dir')
+        if source_dirs_dict != {} and \
+                source_dir == '':
+            msg = ('Указан список source_dirs, но не указан параметр dir ' +
+                   'в секции source. Это может привести к неверным именам ' +
+                   'внутри архива. Продолжение работы невозможно!')
+            print_error(msg, True)
+    except:
+        # except может быть, если нет параметров в секции source_dirs
+        pass

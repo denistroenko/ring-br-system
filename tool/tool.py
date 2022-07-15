@@ -207,7 +207,7 @@ def configure_letter_head():
                   color = 'gray',
                   )
 
-    letter.append(text='Config file: {}'.format(CONFIG_FILE),
+    letter.append(text='Config file: {}'.format(config.run.config_file),
                   color = 'gray',
                   )
 
@@ -847,45 +847,6 @@ def sort_ring_files():
     ring.sort()
 
 
-# ПЕРЕДЕЛАТЬ: clean & pep8
-def fix_config():
-    # Фиксим: последний символ в пути к папке, должен быть '/'
-    ring_dir = config.get('ring', 'dir')
-    if ring_dir[-1] != '/' and ring_dir != '':
-        ring_dir = ring_dir + '/'
-        config.set('ring', 'dir', ring_dir)
-
-    # Фиксим: последний символ в пути к папке, должен быть '/'
-    source_dir = config.get('source', 'dir')
-    if source_dir != '':
-        if source_dir[-1] != '/':
-            source_dir = source_dir + '/'
-            config.set('source', 'dir', source_dir)
-
-    # Фиксим "показывать последние ... файлов": число должно быть положительным
-    show_last = int(config.get('show', 'show_last'))
-    if show_last < 0:
-        show_last = 10
-        config.set('show', 'show_last', show_last)
-
-    # делаем нижний регистр принудительно
-    config.set('ring', 'show_excluded',
-               config.get('ring', 'show_excluded').lower())
-
-    # Если есть список source_dirs, но нет параметра [source] dir
-    try:
-        source_dirs_dict = {}
-        source_dirs_dict = config.get_section_dict('source_dirs')
-        source_dir = config.get('source', 'dir')
-        if source_dirs_dict != {} and \
-                source_dir == '':
-            msg = ('Указан список source_dirs, но не указан параметр dir ' +
-                   'в секции source. Это может привести к неверным именам ' +
-                   'внутри архива. Продолжение работы невозможно!')
-            print_error(msg, True)
-    except:
-        # except может быть, если нет параметров в секции source_dirs
-        pass
 
 
 def export_config():
@@ -1058,32 +1019,6 @@ def restore_source(file_index: int):
         print_error(result, True)
 
 
-def apply_alternative_config_file():
-    global CONFIG_FILE
-
-    try:
-        index = args.index('--config')
-    except ValueError:
-        index = args.index('-c')
-
-    next_index = index + 1
-    config_file_name = args[next_index]
-
-    CONFIG_FILE = '{}{}'.format(
-        get_script_dir(), config_file_name)
-
-
-    try:
-        test_file = open(CONFIG_FILE, 'r')
-        test_file.close()
-        logger.info('Использован файл конфигурации ' + config_file_name)
-    except FileNotFoundError:
-        print_error(
-            "Не найден файл, указанный в параметре --config: {}".format(
-                CONFIG_FILE), True)
-
-
-# ПЕРЕДЕЛАТЬ: clean & pep8
 def main():
     set_config()
 
@@ -1100,70 +1035,26 @@ def main():
     print('file number:', config.run.file_number)
     print('show count:', config.show.show_last)
 
-    exit()
 
 
-    # ИСКЛЮЧАЮЩИЕ РЕЖИМЫ (И СРАЗУ ВЫХОД)
-    if '--version' in args or \
-            '-V' in args:
-        message = ['Algorithm Computers', 'dev@a-computers.ru',
-                '', 'Ring v.{}'.format(__version__),
-                'Утилита управления архивными файлами']
-
-        console.print_title(message, '*', 55, False, False)
-        sys.exit()
-    if '--help' in args:
-        print_help()
-        sys.exit()
-
-    # if use alternative config file
-    if '--config' in args or \
-            '-c' in args:
-        apply_alternative_config_file()
-
-    # Read config file
-    config.read_file(CONFIG_FILE)
-
-    ok = fix_config()
+    ok = default_config.fix_config(config, print_error)
     if ok == False:
         sys.exit()
 
     configure_sender()
-
     configure_letter_head()
-
-    #mount_remote_ring()
 
     # Load ring files (objects)
     load_ring_files()
     # Sort ring files (list)
     sort_ring_files()
 
-    # ФЛАГИ
-    if '-s' in args:
-        print('Текущие настройки программы:')
-        print_settings()
-        print()
-    for i in '0123456789':
-        if f'-{i}' in args:
-            config.set('archive', 'compression_level', i)
-            config.set('archive', 'deflated', 'yes')
-
     # ТЕХНИЧЕСКИЕ РЕЖИМЫ РАБОТЫ
-    if 'cut-bad' in args:
+    if config.run.mode == 'cut-bad':
         cut_bad_mode()
-    if 'content' in args:
-        file_number = 0
-        curent_arg_index = args.index('content')
-        next_arg_index = curent_arg_index + 1
 
-        try:
-            next_arg = args[next_arg_index]
-            file_number = int(next_arg)
-        except IndexError:
-            pass
-        except ValueError:
-            pass
+    if config.run.mode == 'content':
+        file_number = config.run.filenumber
 
         if file_number != 0:
             file_index = calculate_index_from_number(file_number)
@@ -1172,18 +1063,9 @@ def main():
 
         show_content_zip_file(file_index)
         sys.exit()
-    if 'test' in args:
-        file_number = 0
-        curent_arg_index = args.index('test')
-        next_arg_index = curent_arg_index + 1
 
-        try:
-            next_arg = args[next_arg_index]
-            file_number = int(next_arg)
-        except IndexError:
-            pass
-        except ValueError:
-            pass
+    if config.run.mode == 'test':
+        file_number = config.run.file_number
 
         if file_number != 0:
             file_index = calculate_index_from_number(file_number)
@@ -1191,20 +1073,11 @@ def main():
             file_index = -1
 
         test_zip_file(file_index)
-    if 'config-export' in args:
+    if config.run.mode == 'config-export':
         export_config()
-    if 'kill' in args:
-        file_number = 0
-        curent_arg_index = args.index('kill')
-        next_arg_index = curent_arg_index + 1
 
-        try:
-            next_arg = args[next_arg_index]
-            file_number = int(next_arg)
-        except IndexError:
-            pass
-        except ValueError:
-            pass
+    if config.run.mode == 'kill':
+        file_number = config.run.file_number
 
         if file_number != 0:
             file_index = calculate_index_from_number(file_number)
@@ -1213,27 +1086,17 @@ def main():
 
         kill_archive(file_index)
 
-
     # ОСНОВНЫЕ РЕЖИМЫ РАБОТЫ
-    if 'show' in args:
+    if config.run.mode == 'show':
         show_mode()
-    if 'cut' in args:
+
+    if config.run.mode == 'cut':
         cut_mode()
 
     mount_remote_source()
 
-    if 'restore' in args:
-        file_number = 0
-        curent_arg_index = args.index('restore')
-        next_arg_index = curent_arg_index + 1
-
-        try:
-            next_arg = args[next_arg_index]
-            file_number = int(next_arg)
-        except IndexError:
-            pass
-        except ValueError:
-            pass
+    if config.run.mode == 'restore':
+        file_number = config.run.file_number
 
         if file_number != 0:
             file_index = calculate_index_from_number(file_number)
@@ -1242,7 +1105,7 @@ def main():
 
         restore_source(file_index)
 
-    if 'period' in args:
+    if config.run.mode == 'period':
         config.set('run', 'period', 'yes')
         ok = create_new_archive()
         if ok:
@@ -1250,7 +1113,7 @@ def main():
         show_mode()
         sys.exit()
 
-    if 'archive' in args:
+    if config.run.mode == 'archive':
         create_new_archive()
 
 
