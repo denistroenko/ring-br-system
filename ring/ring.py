@@ -4,16 +4,18 @@ import os
 import sys
 import zipfile
 import logging
-from .baseapplib import human_space, Console, configure_logger
+from .baseapplib import human_space, Console, configure_logger, get_script_dir
 
 
 # Global
+CORE_PATH = get_script_dir(False)
 console = Console()
-logger = logging.getLogger(__name__,
-                           debug_file_name='../log/debug.log',
-                           error_file_name='../log/error.log',
-                           )
-configure_logger(logger=logger, screen_logging=True)
+logger = logging.getLogger('ring/ring')
+configure_logger(logger=logger,
+                 screen_logging=True,
+                 debug_file_name=f'{CORE_PATH}../log/debug.log',
+                 error_file_name=f'{CORE_PATH}../log/error.log',
+                 )
 
 
 class BackupFile:

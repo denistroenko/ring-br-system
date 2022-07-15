@@ -10,37 +10,133 @@ import re
 import sh
 import os
 import logging
-
 from datetime import datetime
-
-#ПЕРЕДЕЛАТЬ: заменить импорты, переписать ббиблиотеку
-from core.baseapplib import get_script_dir, human_space, configure_logger
-from core.baseapplib import EmailSender, HtmlLetter, Console
-
-from core.ring import Ring as Ring
-
+from baseapplib import get_script_dir, human_space, configure_logger
+from baseapplib import EmailSender, HtmlLetter, Console
+from ring.ring import Ring as Ring
 import config
 import default_config
+import args_parser
 
 
 # GLOBAL
-APP_DIR = get_script_dir()                # path to app dir
-CONFIG_FILE = '{}config/default'.format(APP_DIR)  # path to config file
+APP_DIR = get_script_dir(False)         # path to app dir
 
 console = Console()                     # console object
-args = console.get_args()               # argumetns from console
 config = config.Config()                # global config
 ring = Ring()                           # ring object
 letter = HtmlLetter()                   # letter object
 email_sender = EmailSender()            # email_sender object
+
 logger = logging.getLogger(__name__)    # logger obj
+configure_logger(logger=logger,
+                 debug_file_name=f'{APP_DIR}../log/debug.log',
+                 error_file_name=f'{APP_DIR}../log/error.log',
+                 start_msg= '\n\n # # #   Ring запущена  # # #',
+                 )
 
 
-def set_config_defaults():
-    """
-    Setup default config values
-    """
-    default_config.fill(config)
+def set_config():
+    parser = args_parser.parser
+
+    def load_default_settings():
+        """
+        load defaults settings
+        """
+        default_config.fill(config)
+
+    def load_settings_from_file():
+        """
+        load settings from config file
+        """
+        config_file = parser.parse_args().config_file
+        if config_file != '':  # if exist argument after '--config'
+            if config.read_file(config_file) == False:
+                exit()
+
+    def load_settings_from_args():
+        """
+        load settings from parsed args
+        """
+
+        # set test mode and file number if use in command line
+        test_file_number = getattr(parser.parse_args(), 'test_file_number', None)
+        if test_file_number != None:
+            config.set('run', 'mode', 'test')
+            config.set('run', 'file_number', test_file_number)
+
+        # set show mode and count of show last files if use in command line
+        show_last = getattr(parser.parse_args(), 'show_last', None)
+        if show_last != None:
+            config.set('run', 'mode', 'show')
+            if show_last != 0:  # if exist argument after 'show' in command line
+                config.set('show', 'show_last', show_last)
+
+        # set kill mode and file number if use in command line
+        kill_file_number = getattr(parser.parse_args(), 'kill_file_number', None)
+        if kill_file_number != None:
+            config.set('run', 'mode', 'kill')
+            config.set('run', 'file_number', kill_file_number)
+
+        # set content mode and file number if use in command line
+        restore_file_number = getattr(parser.parse_args(), 'restore_file_number',
+                                      None)
+        if restore_file_number != None:
+            config.set('run', 'mode', 'restore')
+            config.set('run', 'file_number', restore_file_number)
+
+        # set content mode and file number if use in command line
+        content_file_number = getattr(parser.parse_args(), 'content_file_number',
+                                      None)
+        if content_file_number != None:
+            config.set('run', 'mode', 'content')
+            config.set('run', 'file_number', content_file_number)
+
+        # set period mode and start file number if use in command line
+        period_file_number = getattr(parser.parse_args(), 'period_file_number',
+                                    None)
+        if period_file_number != None:
+            config.set('run', 'mode', 'period')
+            config.set('run', 'file_number', period_file_number)
+
+        # set archive mode and start file number if use in command line
+        archive_file_number = getattr(parser.parse_args(), 'archive_file_number',
+                                    None)
+        if archive_file_number != None:
+            config.set('run', 'mode', 'archive')
+            config.set('run', 'file_number', archive_file_number)
+
+        # set cut mode and start file number if use in command line
+        cut_file_number = getattr(parser.parse_args(), 'cut_file_number',
+                                    None)
+        if cut_file_number != None:
+            config.set('run', 'mode', 'cut')
+            config.set('run', 'file_number', cut_file_number)
+
+        # set cut-bad mode and start file number if use in command line
+        cutbad_file_number = getattr(parser.parse_args(), 'cutbad_file_number',
+                                    None)
+        if cutbad_file_number != None:
+            config.set('run', 'mode', 'cut-bad')
+            config.set('run', 'file_number', cutbad_file_number)
+
+        # set 'print_all_settings'
+        if parser.parse_args().settings:
+            config.set('run', 'print_all_settings', 'yes')
+
+        # Set 'config_file'
+        config_file = parser.parse_args().config_file
+        if config_file != '':
+            config.set('run', 'config_file', config_file)
+
+        # Set 'export_config_file'
+        export_config_file = parser.parse_args().export_config_file
+        if export_config_file != '':
+            config.set('run', 'export_config_file', export_config_file)
+
+    load_default_settings()
+    load_settings_from_file()
+    load_settings_from_args()
 
 
 def print_settings():
@@ -989,10 +1085,23 @@ def apply_alternative_config_file():
 
 # ПЕРЕДЕЛАТЬ: clean & pep8
 def main():
-    configure_logger(logger)
-    logger.debug('# # # # # # # # # #   Ring запущена   # # # # # # # # # #')
-    logger.debug('Параметры командной строки: %s преобразованы в %s' %
-                 (console.get_args(True), args))
+    set_config()
+
+    if config.run.print_all_settings == 'yes':
+        print(config)
+
+
+
+    # DELETE IT
+    args_parser.print_parsed_args()
+    print('config file:', config.run.config_file)
+    print('export config file:', config.run.export_config_file)
+    print('mode:', config.run.mode)
+    print('file number:', config.run.file_number)
+    print('show count:', config.show.show_last)
+
+    exit()
+
 
     # ИСКЛЮЧАЮЩИЕ РЕЖИМЫ (И СРАЗУ ВЫХОД)
     if '--version' in args or \
@@ -1006,9 +1115,6 @@ def main():
     if '--help' in args:
         print_help()
         sys.exit()
-
-    # Set default settings in global config
-    set_config_defaults()
 
     # if use alternative config file
     if '--config' in args or \

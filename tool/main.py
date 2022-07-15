@@ -3,7 +3,7 @@ Main entry point
 """
 
 
-from tool_new import main
+from tool import main
 
 
 if __name__ == '__main__':
