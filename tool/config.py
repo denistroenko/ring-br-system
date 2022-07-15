@@ -69,6 +69,7 @@ class Config:
                   section_start: str = '[',
                   section_end: str = ']',
                   except_if_error: bool = False,
+                  out: object = print,
                   ) -> bool:
         ok = True
 
@@ -119,13 +120,13 @@ class Config:
         except FileNotFoundError:
             ok = False
 
-            file_not_found_msg = f'Файл{config_file} не найден!'
+            file_not_found_msg = f'Файл {config_file} не найден!'
             file_is_dir_msg = f'{config_file} - это каталог!'
 
             if except_if_error:
                 raise FileNotFoundError(file_not_found_msg)
             else:
-                print(file_not_found_msg)
+                out(file_not_found_msg)
 
         except IsADirectoryError:
             ok = False
@@ -133,7 +134,7 @@ class Config:
             if except_if_error:
                 raise IsADirectoryError(file_is_dir_msg)
             else:
-                print(file_is_dir_msg)
+                out(file_is_dir_msg)
 
         return ok
 

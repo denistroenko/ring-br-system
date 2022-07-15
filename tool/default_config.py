@@ -10,8 +10,8 @@ def fill(config: object):
         ('run', 'period', 'no'),              # OLD. Режим period: yes|no
         ('run', 'mode', 'none'),              # Run mode
         ('run', 'file_number', '0'),          # Номер файла (аргумент режимов)
-        ('run', 'config_file', './config/default'),    # файл конфигурации
-        ('run', 'export_config_file', './config/exp_default'),  # файл экспорта конфигурации
+        ('run', 'config_file', '/etc/tool/config/default'),    # файл конфигурации
+        ('run', 'export_config_file', '/etc/tool/config/exp_default'),  # файл экспорта конфигурации
         ('run', 'print_all_settings', 'no'),  # Флаг "Печатать все настройки"
 
 
