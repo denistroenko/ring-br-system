@@ -4,7 +4,7 @@ import os
 import sys
 import zipfile
 import logging
-from .baseapplib import human_space, Console, configure_logger, get_script_dir
+from baseapplib import human_space, Console, configure_logger, get_script_dir
 
 
 # Global

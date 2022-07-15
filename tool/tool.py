@@ -1,8 +1,11 @@
 __version__ = '0.1.0'
 
 
+from baseapplib import get_script_dir
+APP_DIR = get_script_dir(False)         # path to app dir
 import sys
-sys.path.append('..')
+sys.path.append(f'{APP_DIR}..')
+
 import inspect
 import glob
 import socket
@@ -11,7 +14,7 @@ import sh
 import os
 import logging
 from datetime import datetime
-from baseapplib import get_script_dir, human_space, configure_logger
+from baseapplib import human_space, configure_logger
 from baseapplib import EmailSender, HtmlLetter, Console
 from ring.ring import Ring as Ring
 import config
@@ -20,7 +23,6 @@ import args_parser
 
 
 # GLOBAL
-APP_DIR = get_script_dir(False)         # path to app dir
 
 console = Console()                     # console object
 config = config.Config()                # global config
