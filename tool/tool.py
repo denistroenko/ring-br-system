@@ -951,35 +951,6 @@ def mount_remote_ring():
             print_error('Ошибка монтирования remote_ring!', True)
 
 
-def calculate_index_from_number(number: int) -> int:
-    """
-    Вычисляет номер файла исходя из его индекса путем формирования
-    СПИСКА, содержащего числа (эквиваленты номеров файлов в ring).
-    Похоже, что сложности это только для того, чтобы именно здесь определить,
-    есть ли такой номер файла в ring, не обращаясь в сам ring,
-    и исключение отловить здесь, и не связанное с объектом rung
-    """
-    # Определяем количество файлов в ring-папке
-    files_count = ring.get_total_files()
-
-    # Создаем пустой список номеров файлов
-    numbers_list = []
-
-    # Заполняем список номерами
-    for n in range(files_count):
-        numbers_list.append(n + 1)
-
-    # Проверяем на исключение
-    try:
-        # Запрашиваем индекс нужного номера в списке номеров
-        file_index = numbers_list.index(number)
-    except ValueError:
-        print_error('Такого номера файла нет!')
-        sys.exit()
-
-    return file_index
-
-
 def kill_archive(file_index: int):
     """
     Функция удаляет архив из ring-папки, но по сути -
@@ -1025,29 +996,19 @@ def restore_source(file_index: int):
 def main():
     set_config()
 
+    file_index = -1
     file_number = int(config.run.file_number)
+    if file_number > 0:
+        file_index = file_number - 1
+
     show_last = int(config.show.show_last)
 
     if config.run.print_all_settings == 'yes':
         print(config)
 
-
-
-    # DELETE IT
-    print('***** ***** ***** *****')
-    args_parser.print_parsed_args()
-    print('config file:', config.run.config_file)
-    print('export config file:', config.run.export_config_file)
-    print('mode:', config.run.mode)
-    print('file number:', file_number)
-    print('show count:', show_last)
-    print('***** ***** ***** *****')
-
-
     ok = default_config.fix_config(config, print_error)
     if ok == False:
         sys.exit()
-
 
     configure_sender()
     configure_letter_head()
@@ -1062,30 +1023,15 @@ def main():
         cut_bad_mode()
 
     if config.run.mode == 'content':
-        if file_number != 0:
-            file_index = calculate_index_from_number(file_number)
-        else:
-            file_index = -1
-
         show_content_zip_file(file_index)
         sys.exit()
 
     if config.run.mode == 'test':
-        if file_number != 0:
-            file_index = calculate_index_from_number(file_number)
-        else:
-            file_index = -1
-
         test_zip_file(file_index)
     if config.run.mode == 'config-export':
         export_config()
 
     if config.run.mode == 'kill':
-        if file_number != 0:
-            file_index = calculate_index_from_number(file_number)
-        else:
-            file_index = -1
-
         kill_archive(file_index)
 
     # ОСНОВНЫЕ РЕЖИМЫ РАБОТЫ
@@ -1098,11 +1044,6 @@ def main():
     mount_remote_source()
 
     if config.run.mode == 'restore':
-        if file_number != 0:
-            file_index = calculate_index_from_number(file_number)
-        else:
-            file_index = -1
-
         restore_source(file_index)
 
     if config.run.mode == 'period':

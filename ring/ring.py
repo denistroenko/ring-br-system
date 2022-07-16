@@ -573,7 +573,7 @@ class Ring:
             file = self.__files[file_index]
         except IndexError:
             ok = False
-            result = 'Нет файла с номером {}!'.format(file_index)
+            result = 'Нет файла с номером {}!'.format(file_index + 1)
             return ok, result
 
         full_path = file.get_full_path()
