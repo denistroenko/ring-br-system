@@ -1026,6 +1026,7 @@ def main():
     set_config()
 
     file_number = int(config.run.file_number)
+    show_last = int(config.show.show_last)
 
     if config.run.print_all_settings == 'yes':
         print(config)
@@ -1038,8 +1039,8 @@ def main():
     print('config file:', config.run.config_file)
     print('export config file:', config.run.export_config_file)
     print('mode:', config.run.mode)
-    print('file number:', config.run.file_number)
-    print('show count:', config.show.show_last)
+    print('file number:', file_number)
+    print('show count:', show_last)
     print('***** ***** ***** *****')
 
 
