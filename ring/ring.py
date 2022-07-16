@@ -593,7 +593,7 @@ class Ring:
             file = self.__files[file_index]
         except IndexError:
             ok = False
-            result = 'Нет файла с номером {}!'.format(file_index)
+            result = 'Нет файла с номером {}!'.format(file_index + 1)
             return ok, result
 
         full_path = file.get_full_path()
@@ -617,7 +617,7 @@ class Ring:
             file = self.__files[file_index]  # Получить объект (файл)
         except IndexError:  # Обработка исключения, если неверно передан индекс
             ok = False
-            result = 'Нет файла с номером {}!'.format(file_index)
+            result = 'Нет файла с номером {}!'.format(file_index + 1)
             return ok, result
 
         print('Извлекается', file.get_file_name(), 'в', dir_name)
