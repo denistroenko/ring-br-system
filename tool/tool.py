@@ -996,8 +996,9 @@ def restore_source(file_index: int):
         print_error(result, True)
 
 
-def main():
-    set_config()
+def choice_mode():
+    if config.run.print_all_settings == 'yes':
+        print(config)
 
     file_index = -1
     file_number = int(config.run.file_number)
@@ -1005,21 +1006,6 @@ def main():
         file_index = file_number - 1
 
     show_last = int(config.show.show_last)
-
-    if config.run.print_all_settings == 'yes':
-        print(config)
-
-    ok = default_config.fix_config(config, print_error)
-    if ok == False:
-        sys.exit()
-
-    configure_sender()
-    configure_letter_head()
-
-    # Load ring files (objects)
-    load_ring_files()
-    # Sort ring files (list)
-    sort_ring_files()
 
     # ТЕХНИЧЕСКИЕ РЕЖИМЫ РАБОТЫ
     if config.run.mode == 'cut-bad':
@@ -1059,6 +1045,22 @@ def main():
 
     if config.run.mode == 'archive':
         create_new_archive()
+
+
+def main():
+    set_config()
+
+    ok = default_config.fix_config(config, print_error)
+    if ok == False:
+        sys.exit()
+
+    configure_sender()
+    configure_letter_head()
+
+    load_ring_files()
+    sort_ring_files()
+
+    choice_mode()
 
 
 if __name__ == '__main__':

@@ -152,6 +152,7 @@ class BackupFile:
         Возвращает результат тестирования архива
         """
         ok = True
+        result = ''
 
         try:
             zip_file = zipfile.ZipFile(self.__full_path, 'r')
@@ -160,7 +161,11 @@ class BackupFile:
             result = 'Это не zip-файл!'
             return ok, result
 
-        result = zip_file.testzip()
+        try:
+            result = zip_file.testzip()
+        except Exception:
+            print('Ошибка выполнения тестирования архива. Аварийный выход.')
+            ok = False
 
         if result == None:
             result = '\33[32mок!\33[37mТест успешно пройден.'
