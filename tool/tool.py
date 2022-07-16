@@ -51,10 +51,11 @@ def set_config():
         """
         load settings from config file
         """
-        config_file = parser.parse_args().config_file
-        if config_file != '':  # if exist argument after '--config'
-            if config.read_file(config_file) == False:
-                exit()
+        config_file = config.run.config_file
+        if  parser.parse_args().config_file:
+            config_file = parser.parse_args().config_file
+        if config.read_file(config_file) == False:
+            exit()
 
     def load_settings_from_args():
         """
@@ -1024,24 +1025,28 @@ def restore_source(file_index: int):
 def main():
     set_config()
 
+    file_number = int(config.run.file_number)
+
     if config.run.print_all_settings == 'yes':
         print(config)
 
 
 
     # DELETE IT
+    print('***** ***** ***** *****')
     args_parser.print_parsed_args()
     print('config file:', config.run.config_file)
     print('export config file:', config.run.export_config_file)
     print('mode:', config.run.mode)
     print('file number:', config.run.file_number)
     print('show count:', config.show.show_last)
-
+    print('***** ***** ***** *****')
 
 
     ok = default_config.fix_config(config, print_error)
     if ok == False:
         sys.exit()
+
 
     configure_sender()
     configure_letter_head()
@@ -1056,8 +1061,6 @@ def main():
         cut_bad_mode()
 
     if config.run.mode == 'content':
-        file_number = config.run.filenumber
-
         if file_number != 0:
             file_index = calculate_index_from_number(file_number)
         else:
@@ -1067,8 +1070,6 @@ def main():
         sys.exit()
 
     if config.run.mode == 'test':
-        file_number = config.run.file_number
-
         if file_number != 0:
             file_index = calculate_index_from_number(file_number)
         else:
@@ -1079,8 +1080,6 @@ def main():
         export_config()
 
     if config.run.mode == 'kill':
-        file_number = config.run.file_number
-
         if file_number != 0:
             file_index = calculate_index_from_number(file_number)
         else:
@@ -1098,8 +1097,6 @@ def main():
     mount_remote_source()
 
     if config.run.mode == 'restore':
-        file_number = config.run.file_number
-
         if file_number != 0:
             file_index = calculate_index_from_number(file_number)
         else:
