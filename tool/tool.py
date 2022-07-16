@@ -961,7 +961,10 @@ def kill_archive(file_index: int):
         print_error('В ring-папке нет ни одного файла! Нечего удалять!')
         sys.exit()
 
-    ring.kill(file_index)
+    ok, result = ring.kill(file_index)
+
+    if not ok:
+        print_error(result, False)
 
 
 def restore_source(file_index: int):

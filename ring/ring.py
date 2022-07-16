@@ -328,11 +328,22 @@ class Ring:
         """
         Физически удаляет файл с диска (с указанным индексом)
         """
-        killing_file = self.__files[file_index]
+        ok = True
+        result = ''
 
-        print('Удаляется', killing_file.get_full_path())
+        try:
+            killing_file = self.__files[file_index]
+        except IndexError:  # Обработка исключения, если неверно передан индекс
+            ok = False
+            result = 'Нет файла с номером {}!'.format(file_index + 1)
+            return ok, result
+
+        print('Удаляется', killing_file.get_full_path(),
+              'index=', file_index, 'file_number =', file_index+1)
 
         killing_file.delete_from_disk()
+
+        return ok, result
 
     def get_files(self) -> [object, ...]:
         """
